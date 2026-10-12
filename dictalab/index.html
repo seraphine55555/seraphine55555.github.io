@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#12203a" />
+    <link rel="icon" type="image/png" href="./icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <!-- PWA：令 web 版可以「加到主畫面」＋離線用。
+         Android APK 內嘅 WebView 唔會註冊 SW（見 src/platform/pwa.ts）。 -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="讀默" />
+    <meta
+      name="description"
+      content="影低默書範圍，用粵語讀出，小朋友自己練。完全離線，唔收集任何資料。"
+    />
+    <title>讀默 DictaLab</title>
+    <script type="module" crossorigin src="./assets/index-EQkm-cBX.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-qydoDF2H.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
