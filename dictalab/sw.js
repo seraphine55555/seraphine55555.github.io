@@ -11,7 +11,9 @@
  *     ⇒ 每次上線都攞到最新版本，唔會出現「改了但用戶見到舊版」
  */
 
-const CACHE = 'dictalab-web-v1';
+// v2（2026-10-15）：OCR 引擎由 Tesseract 換成 PaddleOCR，/ocr/ 內容完全唔同。
+// 一定要升版先可以令舊 Tesseract 資產由 cache 度清走（activate 會刪其他 key）。
+const CACHE = 'dictalab-web-v2';
 
 /** 相對於 service worker 所在目錄（部署到子目錄都啱）。 */
 const SCOPE = self.registration.scope;

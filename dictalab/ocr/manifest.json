@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-10-15T15:44:55.850Z",
+  "model": "PP-OCRv6_small",
+  "files": [
+    {
+      "path": "models/PP-OCRv6_small_det.tar",
+      "bytes": 9891840,
+      "sha256": "d218f6fbf0f1c23d2161bd6ac7f5eaa6104fa89955c09290497e31008e2618e4"
+    },
+    {
+      "path": "models/PP-OCRv6_small_rec.tar",
+      "bytes": 21319680,
+      "sha256": "d267ab077a44a0eedb1ea8f8c542d263f211de8e9d7a029bf9fcfff7e5a88fb1"
+    },
+    {
+      "path": "ort/ort-wasm-simd-threaded.jsep.wasm",
+      "bytes": 28312028,
+      "sha256": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f"
+    },
+    {
+      "path": "ort/ort-wasm-simd-threaded.jsep.mjs",
+      "bytes": 46851,
+      "sha256": "709853412fd1ffc34247af1e73569227b5b79629c5ca3f59cc39cf7e500e4947"
+    },
+    {
+      "path": "ort/ort-wasm-simd-threaded.wasm",
+      "bytes": 14239897,
+      "sha256": "3398c10d07d229bd91b364548e130e0e51a8e5704b88c7c083ebbeb78842dee2"
+    },
+    {
+      "path": "ort/ort-wasm-simd-threaded.mjs",
+      "bytes": 24381,
+      "sha256": "e13f7f94fc51b4ca72b12faeb1ee95f4ace6dfbc8939bc718aabdc0a27c4299b"
+    }
+  ]
+}
