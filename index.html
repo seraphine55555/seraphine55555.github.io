@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      門戶（網站根目錄）。
+
+      ## 設計上嘅一個決定：只講可以自己驗證嘅事
+
+      一般 app 介紹頁會寫「安全」「私隱優先」「免費」—— 呢啲字冇成本，讀者冇得查。
+      呢頁唔講呢啲，改為每一項承諾都附一個**用戶可以自己動手驗證**嘅方法
+      （飛行模式、睇 Android 權限、開 F12 睇 Network）。
+      理由：呢個 app 家族嘅實際差異就係「真係做得到」，而唔係「講得好聽」。
+
+      ## 硬性限制
+
+      * 唔可以有任何第三方資源（字型、CDN、分析、圖示庫）—— 呢頁要同 app 一樣
+        零第三方請求。`scripts/verify-hub.py` 會用真瀏覽器斷言呢件事。
+      * 品牌名（下面 h1）係暫定、描述性嘅。用戶未揀品牌，所以唔憑空作一個出嚟；
+        將來改名只改 h1 同 <title> 就可以。
+      * 連結用相對路徑（`dictalab/`），令本機驗證同正式站（根目錄）都通。
+    -->
+    <title>香港小學練習 App — 離線都用得</title>
+    <meta
+      name="description"
+      content="香港小學練習 app：讀默（中英文默書）、數練（數學）。離線都用得，冇帳號、冇廣告、唔會上傳你嘅資料。"
+    />
+    <link rel="icon" href="icons/dictalab.png" />
+    <link rel="stylesheet" href="hub.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="hero">
+        <h1>香港小學練習 App</h1>
+        <p class="lede">
+          讀默、數練 —— 兩個離線都用得嘅練習 app。<br />
+          冇帳號、冇廣告、唔會上傳你嘅資料。
+        </p>
+      </header>
+
+      <h2>我嘅 app</h2>
+      <section class="apps">
+        <article class="app">
+          <img src="icons/dictalab.png" alt="" width="56" height="56" />
+          <div class="body">
+            <h3>讀默 DictaLab</h3>
+            <p class="tag">中文 · 英文默書練習</p>
+            <p class="desc">
+              影一次老師派嘅詞語表，app 幫你讀。小朋友可以自己練，唔使家長一直陪住讀。
+            </p>
+            <div class="actions">
+              <a class="btn primary" href="dictalab/">直接開網頁版</a>
+              <a class="btn" href="https://groups.google.com/g/dictalab-testers"
+                >Android 版（測試中）</a
+              >
+            </div>
+          </div>
+        </article>
+
+        <article class="app">
+          <img src="icons/mathslab.png" alt="" width="56" height="56" />
+          <div class="body">
+            <h3>數練 MathsLab <span class="badge">即將推出</span></h3>
+            <p class="tag">小學 3–6 年級數學練習</p>
+            <p class="desc">跟香港課程編排嘅數學練習，逐題有解釋。</p>
+            <div class="actions">
+              <span class="btn" aria-disabled="true">網頁版即將推出</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <h2>你可以自己驗證嘅事</h2>
+      <ul class="claims">
+        <li>
+          <span class="claim"><span class="tick">✓</span> 離線都用得</span>
+          <span class="check">開飛行模式，app 照樣開得到、照樣讀得到。</span>
+        </li>
+        <li>
+          <span class="claim"><span class="tick">✓</span> 冇能力上傳任何嘢</span>
+          <span class="check">
+            去 Android「設定 → 應用程式 → 讀默 / 數練 → 權限」，你會見到<b>冇任何權限</b>
+            —— 連 INTERNET 都冇申請，即係佢根本冇能力上網。
+          </span>
+        </li>
+        <li>
+          <span class="claim"><span class="tick">✓</span> 冇廣告、冇追蹤</span>
+          <span class="check">
+            開網頁版，按 F12 → Network，全程只有本站請求，冇任何第三方。
+          </span>
+        </li>
+        <li>
+          <span class="claim"><span class="tick">✓</span> 唔使帳號、唔使畀錢</span>
+          <span class="check">冇註冊、冇登入、冇電郵、冇訂閱。裝完即刻用。</span>
+        </li>
+      </ul>
+
+      <h2>想幫手測試？</h2>
+      <div class="recruit">
+        <p>
+          Android 版而家喺<b>封閉測試</b>階段。Google 要求我搵到 12 位測試者連續用 14 日，
+          先可以正式上架。
+        </p>
+        <p>
+          如果你願意幫手：先加入測試群組，再用<b>同一個</b> Google 帳號去 Play 下載 ——
+          兩個步驟唔可以用唔同帳號，否則 Play 會當你唔係測試人員。
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="https://groups.google.com/g/dictalab-testers"
+            >加入測試群組</a
+          >
+        </div>
+      </div>
+
+      <footer>
+        <p>
+          <a href="https://seraphine55555.github.io/dictalab-privacy/">私隱政策</a>
+        </p>
+        <p>呢一頁同上面所有 app 都唔會追蹤你。</p>
+      </footer>
+    </main>
+  </body>
+</html>

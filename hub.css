@@ -1,0 +1,257 @@
+/*
+ * 門戶樣式 —— 同 app 用同一套設計 token，令用戶覺得係一個家族。
+ *
+ * ## 為何唔用 build step
+ *
+ * 呢頁一年改幾次，唔值得引入 Vite / npm。冇 build 就冇「dist 過期」、
+ * 冇 supply-chain、冇 lockfile —— 改完直接推。
+ *
+ * ## 為何 token 係手抄（唔係 import）
+ *
+ * 跨專案共用 CSS 要 monorepo 或者 CDN，兩個都係大改動。手抄一份、並喺
+ * app 同門戶兩邊都落「對比度」守衛，出錯會即刻紅。將來 app 多過三個再考慮抽。
+ *
+ * ⚠️ 唔可以載入 web font／CDN／任何第三方資源：門戶要同 app 一樣「零上傳」，
+ *    而 verify-hub.py 會用真瀏覽器斷言**零第三方請求**（同 dictalab 冒煙一樣）。
+ */
+:root {
+  --bg: #0f1b30;
+  --card: #17263f;
+  --card-soft: #1e3050;
+  --hairline: rgba(255, 255, 255, 0.055);
+  --text: #eef2f9;
+  --muted: #a3b3ce;
+  --accent: #f6a825;
+  --accent-ink: #2a1c00;
+  --ok: #45c99b;
+  --radius: 16px;
+  --font: system-ui, -apple-system, 'Segoe UI', 'Noto Sans HK', 'PingFang HK',
+    'Microsoft JhengHei', 'Microsoft YaHei', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  -webkit-text-size-adjust: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ---------- 頁首 ---------- */
+
+.hero {
+  padding: 56px 0 8px;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: clamp(28px, 7vw, 38px);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.hero .lede {
+  margin: 0;
+  font-size: 18px;
+  color: var(--muted);
+}
+
+/* ---------- 區塊標題 ---------- */
+
+h2 {
+  margin: 44px 0 14px;
+  font-size: 19px;
+  font-weight: 650;
+}
+
+/* ---------- App 卡 ---------- */
+
+.apps {
+  display: grid;
+  gap: 14px;
+}
+
+.app {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.035) inset;
+}
+
+.app img {
+  width: 56px;
+  height: 56px;
+  border-radius: 13px;
+  flex: 0 0 auto;
+  background: var(--card-soft);
+}
+
+.app .body {
+  flex: 1;
+  min-width: 0;
+}
+
+.app h3 {
+  margin: 0 0 2px;
+  font-size: 19px;
+  font-weight: 650;
+}
+
+.app .tag {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.app .desc {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 11px;
+  border: 1px solid var(--hairline);
+  background: var(--card-soft);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 6px 18px rgba(246, 168, 37, 0.2);
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 「即將推出」等狀態徽章 */
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--card-soft);
+  border: 1px solid var(--hairline);
+  font-size: 12.5px;
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+/* ---------- 承諾（附自行驗證方法）---------- */
+
+.claims {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+@media (min-width: 560px) {
+  .claims {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.claims li {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.claims .claim {
+  display: block;
+  font-weight: 650;
+  margin-bottom: 4px;
+}
+
+.claims .check {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- 測試者招募 ---------- */
+
+.recruit {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.recruit p {
+  margin: 0 0 12px;
+}
+
+/* ---------- 頁尾 ---------- */
+
+footer {
+  margin-top: 48px;
+  padding: 22px 0 40px;
+  border-top: 1px solid var(--hairline);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+footer a {
+  color: var(--muted);
+}
+
+footer p {
+  margin: 0 0 6px;
+}
