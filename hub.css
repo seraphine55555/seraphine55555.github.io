@@ -484,3 +484,40 @@ footer a {
   font-size: 0.8125rem;
   color: var(--muted);
 }
+
+/* ---------------------------------------------------------------
+   語言切換（2026-10-17）：粵 / 繁 / EN 三語並存。
+   為何三語：香港家長兩種中文都有人偏好 —— 粵語親切、書面語正式。
+   --------------------------------------------------------------- */
+.lang-switch {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.lang-btn {
+  appearance: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.lang-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.lang-btn[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}

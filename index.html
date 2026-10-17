@@ -1,82 +1,107 @@
 <!doctype html>
-<html lang="zh-Hant-HK">
+<html lang="zh-Hant-HK" data-lang="zh">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!--
-      門戶（網站根目錄）。
-
-      ## 設計上嘅一個決定：只講可以自己驗證嘅事
-
-      一般 app 介紹頁會寫「安全」「私隱優先」「免費」—— 呢啲字冇成本，讀者冇得查。
-      呢頁唔講呢啲，改為每一項承諾都附一個**用戶可以自己動手驗證**嘅方法
-      （飛行模式、睇 Android 權限、開 F12 睇 Network）。
-      理由：呢個 app 家族嘅實際差異就係「真係做得到」，而唔係「講得好聽」。
-
-      ## 硬性限制
-
-      * 唔可以有任何第三方資源（字型、CDN、分析、圖示庫）—— 呢頁要同 app 一樣
-        零第三方請求。`scripts/verify-hub.py` 會用真瀏覽器斷言呢件事。
-      * 品牌名（下面 h1）係暫定、描述性嘅。用戶未揀品牌，所以唔憑空作一個出嚟；
-        將來改名只改 h1 同 <title> 就可以。
-      * 連結用相對路徑（`dictalab/`），令本機驗證同正式站（根目錄）都通。
-    -->
-    <title>香港小學練習 App — 離線都用得</title>
+    <title>香港小學練習 App — 讀默 · 數練</title>
     <meta
       name="description"
-      content="香港小學練習 app：讀默（中英文默書）、數練（數學）。離線都用得，冇帳號、冇廣告、唔會上傳你嘅資料。"
+      content="讀默（中英文默書）同數練（小學數學）—— 離線都用得，毋須帳號、沒有廣告、不會上傳你的資料。"
     />
-    <!-- 社交分享卡（2026-10-17 加）。之前三個站都冇 og:* ⇒ 貼落家長 WhatsApp
-         群組只顯示裸網址。og:image 要絕對 URL、<300 KB。 -->
-    <meta name="theme-color" content="#0f1b30" />
+    <link rel="icon" href="icons/dictalab.png" />
+    <link rel="apple-touch-icon" href="icons/dictalab.png" />
+    <link rel="stylesheet" href="hub.css" />
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="香港小學練習 App" />
-    <meta property="og:title" content="香港小學練習 App — 離線都用得" />
+    <meta property="og:title" content="香港小學練習 App — 讀默 · 數練" />
     <meta
       property="og:description"
-      content="讀默、數練 —— 兩個離線都用得嘅練習 app。冇帳號、冇廣告、唔會上傳你嘅資料。"
+      content="讀默（中英文默書）同數練（小學數學）—— 離線都用得，毋須帳號、沒有廣告、不會上傳你的資料。"
     />
+    <meta property="og:url" content="https://seraphine55555.github.io/" />
     <meta property="og:image" content="https://seraphine55555.github.io/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:url" content="https://seraphine55555.github.io/" />
     <meta property="og:locale" content="zh_HK" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" href="icons/dictalab.png" />
-    <link rel="stylesheet" href="hub.css" />
+
+    <!--
+      語言：喺首次繪製之前就要決定，否則會見到「閃一下中文再變英文」。
+      預設次序：localStorage → 瀏覽器語言（非中文就英文）→ 書面語。
+
+      三語並存（2026-10-17 用戶決定）：
+        粵 = 粵語（原本嘅文案，親切）
+        繁 = 繁體書面語（正式，適合學校／老師看）
+        en = English
+      粵語保留係因為香港家長兩種都有人偏好，而代價只是字典多一欄。
+    -->
+    <script>
+      (function () {
+        'use strict';
+        var ok = { yue: 1, zh: 1, en: 1 };
+        var saved = null;
+        try {
+          saved = localStorage.getItem('hub/lang');
+        } catch (e) {
+          /* 私密模式可能 throw，唔緊要 */
+        }
+        var lang = ok[saved] ? saved : null;
+        if (!lang) {
+          var nav = (navigator.language || '').toLowerCase();
+          lang = nav.indexOf('zh') === 0 ? 'zh' : nav ? 'en' : 'zh';
+        }
+        document.documentElement.setAttribute('data-lang', lang);
+        document.documentElement.lang = lang === 'en' ? 'en' : lang === 'yue' ? 'zh-HK' : 'zh-Hant-HK';
+      })();
+    </script>
   </head>
+
   <body>
+    <noscript>
+      <div class="wrap" style="padding: 24px 16px">
+        <h1>香港小學練習 App</h1>
+        <p>讀默（中英文默書）、數練（小學數學）—— 離線亦可使用，毋須帳號、沒有廣告。</p>
+        <p><a href="dictalab/">開啟讀默</a>　／　<a href="mathslab/">開啟數練</a></p>
+        <p style="color: #a3b3ce; font-size: 0.875rem">
+          你的瀏覽器停用了 JavaScript，所以只顯示基本內容。
+        </p>
+      </div>
+    </noscript>
+
     <main class="wrap">
       <header class="hero">
-        <h1>香港小學練習 App</h1>
+        <div class="lang-switch" role="group" aria-label="語言 / Language">
+          <button type="button" class="lang-btn" data-lang-btn="yue">粵</button>
+          <button type="button" class="lang-btn" data-lang-btn="zh">繁</button>
+          <button type="button" class="lang-btn" data-lang-btn="en">EN</button>
+        </div>
+
+        <h1 data-i18n="hero.title"></h1>
         <p class="lede">
-          讀默、數練 —— 兩個離線都用得嘅練習 app。<br />
-          冇帳號、冇廣告、唔會上傳你嘅資料。
+          <span data-i18n-html="hero.lede1"></span><br />
+          <span data-i18n-html="hero.lede2"></span>
         </p>
       </header>
 
-      <h2>我嘅 app</h2>
+      <h2 data-i18n="apps.h2"></h2>
       <section class="apps">
         <article class="app">
           <img src="icons/dictalab.png" alt="" width="56" height="56" />
           <div class="body">
             <h3>讀默 DictaLab</h3>
-            <p class="tag">中文 · 英文默書練習</p>
-            <p class="desc">
-              影一次老師派嘅詞語表，app 幫你讀。小朋友可以自己練，唔使家長一直陪住讀。
-            </p>
+            <p class="tag" data-i18n="dl.tag"></p>
+            <p class="desc" data-i18n-html="dl.desc"></p>
             <div class="actions">
-              <a class="btn primary" href="dictalab/">直接開網頁版</a>
-              <a class="btn" href="https://groups.google.com/g/dictalab-testers"
-                >Android 版（測試中）</a
-              >
+              <a class="btn primary" href="dictalab/" data-i18n="dl.cta"></a>
+              <a class="btn" href="https://groups.google.com/g/dictalab-testers" data-i18n="dl.android"></a>
             </div>
             <!-- 截圖：真瀏覽器影（tools/make-hub-shots.py），280 闊 WebP。
                  loading="lazy" 一定要有，唔係 6 張圖會拖慢首屏。 -->
             <div class="shots">
               <img
                 src="shots/dictalab-1-home.webp"
-                alt="讀默主頁：列出默書範圍，一撳就開始"
+                data-i18n-alt="dl.shot1"
                 width="280"
                 height="612"
                 loading="lazy"
@@ -84,7 +109,7 @@
               />
               <img
                 src="shots/dictalab-2-proofread.webp"
-                alt="核對頁：OCR 認出嘅詞語，自動略過頁碼同姓名行"
+                data-i18n-alt="dl.shot2"
                 width="280"
                 height="612"
                 loading="lazy"
@@ -92,7 +117,7 @@
               />
               <img
                 src="shots/dictalab-4-dictate.webp"
-                alt="默書畫面：逐題朗讀，有倒數同進度"
+                data-i18n-alt="dl.shot3"
                 width="280"
                 height="612"
                 loading="lazy"
@@ -106,18 +131,16 @@
           <img src="icons/mathslab.png" alt="" width="56" height="56" />
           <div class="body">
             <h3>數練 MathsLab</h3>
-            <p class="tag">小學 3–6 年級數學練習</p>
-            <p class="desc">
-              跟香港課程編排：即時批改、逐步解法、錯題重練。題目由程式生成，可以無限重做。
-            </p>
+            <p class="tag" data-i18n="ml.tag"></p>
+            <p class="desc" data-i18n-html="ml.desc"></p>
             <div class="actions">
-              <a class="btn primary" href="mathslab/">直接開網頁版</a>
-              <span class="btn" aria-disabled="true">Android 版未上架</span>
+              <a class="btn primary" href="mathslab/" data-i18n="ml.cta"></a>
+              <span class="btn" aria-disabled="true" data-i18n="ml.android"></span>
             </div>
             <div class="shots">
               <img
                 src="shots/mathslab-1-home.webp"
-                alt="數練主頁：每日練習、進度同錯誤率"
+                data-i18n-alt="ml.shot1"
                 width="280"
                 height="612"
                 loading="lazy"
@@ -125,7 +148,7 @@
               />
               <img
                 src="shots/mathslab-2-practice.webp"
-                alt="數練練習畫面：數學題、圖示同四個選項"
+                data-i18n-alt="ml.shot2"
                 width="280"
                 height="612"
                 loading="lazy"
@@ -136,32 +159,27 @@
         </article>
       </section>
 
-      <h2>你可以自己驗證嘅事</h2>
+      <h2 data-i18n="claims.h2"></h2>
       <ul class="claims">
         <li>
-          <span class="claim"><span class="tick">✓</span> 離線都用得</span>
-          <span class="check">開飛行模式，app 照樣開得到、照樣讀得到。</span>
+          <span class="claim"><span class="tick">✓</span> <span data-i18n="claims.1.claim"></span></span>
+          <span class="check" data-i18n-html="claims.1.check"></span>
         </li>
         <li>
-          <span class="claim"><span class="tick">✓</span> 冇能力上傳任何嘢</span>
-          <span class="check">
-            去 Android「設定 → 應用程式 → 讀默 / 數練 → 權限」，你會見到<b>冇任何權限</b>
-            —— 連 INTERNET 都冇申請，即係佢根本冇能力上網。
-          </span>
+          <span class="claim"><span class="tick">✓</span> <span data-i18n="claims.2.claim"></span></span>
+          <span class="check" data-i18n-html="claims.2.check"></span>
         </li>
         <li>
-          <span class="claim"><span class="tick">✓</span> 冇廣告、冇追蹤</span>
-          <span class="check">
-            開網頁版，按 F12 → Network，全程只有本站請求，冇任何第三方。
-          </span>
+          <span class="claim"><span class="tick">✓</span> <span data-i18n="claims.3.claim"></span></span>
+          <span class="check" data-i18n-html="claims.3.check"></span>
         </li>
         <li>
-          <span class="claim"><span class="tick">✓</span> 唔使帳號、唔使畀錢</span>
-          <span class="check">冇註冊、冇登入、冇電郵、冇訂閱。裝完即刻用。</span>
+          <span class="claim"><span class="tick">✓</span> <span data-i18n="claims.4.claim"></span></span>
+          <span class="check" data-i18n-html="claims.4.check"></span>
         </li>
       </ul>
 
-      <h2>裝落手機主畫面</h2>
+      <h2 data-i18n="install.h2"></h2>
       <!--
         為何要呢一節（2026-10-17）：
         用戶唔搞 Google Play，所以 PWA 就係唯一發行渠道。但家長打開呢頁只見到
@@ -172,96 +190,309 @@
         CSS 會收埋步驟、改為顯示「你已經裝咗」。
       -->
       <section class="install" id="install" data-installed="0">
-        <p class="install-lede">
-          唔使 App Store、唔使 Play Store。喺手機瀏覽器打開下面任何一個 app，
-          再「加入主畫面」，就會有個 icon；之後<b>斷網都用得</b>。
-        </p>
+        <p class="install-lede" data-i18n-html="install.lede"></p>
 
         <div class="install-grid">
           <div class="install-card">
-            <h3>Android（Chrome / Edge）</h3>
+            <h3 data-i18n="install.android.h3"></h3>
             <ol class="install-steps">
-              <li>用 Chrome 打開下面其中一個 app</li>
-              <li>撳右上角嘅<b>三點選單</b></li>
-              <li>
-                揀「<b>安裝並建立捷徑</b>」
-                <span class="install-alt">（舊版 Chrome 叫「安裝應用程式」，亦可能寫「加到主畫面」）</span>
-              </li>
-              <li>撳「安裝」</li>
+              <li data-i18n-html="install.android.s1"></li>
+              <li data-i18n-html="install.android.s2"></li>
+              <li data-i18n-html="install.android.s3"></li>
+              <li data-i18n-html="install.android.s4"></li>
             </ol>
-            <p class="install-note">
-              ⚠️ <b>只限 Android</b>：見到「安裝並建立捷徑」或「安裝應用程式」＝真安裝（可離線）；
-              如果<b>只</b>見到「加到主畫面」，咁就係書籤，冇離線快取。
-            </p>
+            <p class="install-note" data-i18n-html="install.android.note"></p>
           </div>
 
           <div class="install-card">
-            <h3>iPhone / iPad（Safari）</h3>
+            <h3 data-i18n="install.ios.h3"></h3>
             <ol class="install-steps">
-              <li>一定要用 <b>Safari</b>（Chrome 開唔到安裝）</li>
-              <li>撳底部 <b>分享</b> 圖示</li>
-              <li>揀「<b>加入主畫面</b>」</li>
-              <li>撳「新增」</li>
+              <li data-i18n-html="install.ios.s1"></li>
+              <li data-i18n-html="install.ios.s2"></li>
+              <li data-i18n-html="install.ios.s3"></li>
+              <li data-i18n-html="install.ios.s4"></li>
             </ol>
-            <p class="install-note">
-              iOS 嘅「加入主畫面」<b>唔係書籤</b> —— 佢會開一個冇網址欄嘅獨立 app
-              （兩個 app 嘅 manifest 都設定了 <code>display: standalone</code>），
-              所以照樣離線用得。iOS 唔會彈「安裝」提示，所以感覺上好似書籤。
-            </p>
-            <p class="install-note install-note--unverified">
-              ⚠️ 我冇 iOS 裝置，呢四個步驟<b>未經真機驗證</b>。
-            </p>
+            <p class="install-note" data-i18n-html="install.ios.note"></p>
+            <p class="install-note install-note--unverified" data-i18n-html="install.ios.unverified"></p>
           </div>
         </div>
 
         <div class="install-actions">
-          <a class="btn primary" href="dictalab/">裝 讀默</a>
-          <a class="btn primary" href="mathslab/">裝 數練</a>
-          <button class="btn" id="share-hub" type="button">分享呢一頁給家長</button>
+          <a class="btn primary" href="dictalab/" data-i18n="install.cta.dictalab"></a>
+          <a class="btn primary" href="mathslab/" data-i18n="install.cta.mathslab"></a>
+          <button class="btn" id="share-hub" type="button" data-i18n="install.share"></button>
         </div>
 
-        <p class="install-done" hidden>
-          ✅ 你已經裝咗 —— 而家用緊主畫面 icon 開呢一頁。
-        </p>
+        <p class="install-done" hidden data-i18n-html="install.done"></p>
       </section>
 
-      <h2>想幫手測試？</h2>
+      <h2 data-i18n="recruit.h2"></h2>
       <div class="recruit">
-        <p>
-          Android 版而家喺<b>封閉測試</b>階段。Google 要求我搵到 12 位測試者連續用 14 日，
-          先可以正式上架。
-        </p>
-        <p>
-          如果你願意幫手：先加入測試群組，再用<b>同一個</b> Google 帳號去 Play 下載 ——
-          兩個步驟唔可以用唔同帳號，否則 Play 會當你唔係測試人員。
-        </p>
+        <p data-i18n-html="recruit.p1"></p>
+        <p data-i18n-html="recruit.p2"></p>
         <div class="actions">
-          <a class="btn primary" href="https://groups.google.com/g/dictalab-testers"
-            >加入測試群組</a
-          >
+          <a class="btn primary" href="https://groups.google.com/g/dictalab-testers" data-i18n="recruit.cta"></a>
         </div>
       </div>
 
       <footer>
         <p>
-          私隱政策：<a href="https://seraphine55555.github.io/dictalab-privacy/">讀默</a> ／
-          <a href="privacy/mathslab/">數練</a>
+          <span data-i18n="footer.privacy"></span
+          ><a href="https://seraphine55555.github.io/dictalab-privacy/" data-i18n="footer.dl"></a> ／
+          <a href="privacy/mathslab/" data-i18n="footer.ml"></a>
         </p>
-        <p>呢一頁同上面所有 app 都唔會追蹤你。</p>
+        <p data-i18n-html="footer.tracking"></p>
       </footer>
     </main>
 
-    <!--
-      「裝落主畫面」嘅兩個行為。刻意寫成 inline、零依賴、零第三方：
-       1. 偵測係唔係由主畫面 icon 開（display-mode: standalone）→ 已裝就收起步驟
-       2. 分享鍵：navigator.share → clipboard → 靜默失敗（用戶取消唔算錯）
-
-      唔用 async/await 以外嘅新語法，因為要跑得舊嘅 Android WebView / Safari。
-    -->
     <script>
       (function () {
         'use strict';
 
+        /* ------------------------------------------------------------------ *
+         * 字典：每個 key 有 [粵語, 書面語, English]
+         *
+         * 為何三語：香港家長兩種中文都有人偏好 —— 粵語親切，書面語正式
+         * （適合學校／老師看）。代價只是字典多一欄。
+         *
+         * ⚠️ 新增字串一定要三欄齊，否則切換語言會漏字。
+         *    有守衛（web-check）會逐個 key 對三語。
+         * ------------------------------------------------------------------ */
+        var DICT = {
+          'hero.title': [
+            '香港小學練習 App',
+            '香港小學練習 App',
+            'Primary School Practice Apps for Hong Kong',
+          ],
+          'hero.lede1': [
+            '讀默、數練 —— 兩個離線都用得嘅練習 app。',
+            '讀默、數練 —— 兩個離線亦可使用的練習應用程式。',
+            '讀默 and 數練 — two practice apps that work fully offline.',
+          ],
+          'hero.lede2': [
+            '冇帳號、冇廣告、唔會上傳你嘅資料。',
+            '毋須帳號、沒有廣告、不會上傳你的資料。',
+            'No account, no ads, and your data is never uploaded.',
+          ],
+
+          'apps.h2': ['我嘅 app', '我的應用程式', 'My apps'],
+
+          'dl.tag': ['中文 · 英文默書練習', '中文 · 英文默書練習', 'Chinese & English dictation practice'],
+          'dl.desc': [
+            '影一次老師派嘅詞語表，app 幫你讀。小朋友可以自己練，唔使家長一直陪住讀。',
+            '拍攝一次老師派發的詞語表，應用程式會代為朗讀。小朋友可自行練習，毋須家長一直陪伴朗讀。',
+            'Photograph the word list from school once and the app reads it aloud. Children can practise on their own, without a parent reading alongside.',
+          ],
+          'dl.cta': ['直接開網頁版', '直接開啟網頁版', 'Open the web version'],
+          'dl.android': ['Android 版（測試中）', 'Android 版本（測試中）', 'Android (in testing)'],
+          'dl.shot1': [
+            '讀默主頁：列出默書範圍，一撳就開始',
+            '讀默主頁：列出默書範圍，一點即開始',
+            '讀默 home screen: your dictation lists, one tap to start',
+          ],
+          'dl.shot2': [
+            '核對頁：OCR 認出嘅詞語，自動略過頁碼同姓名行',
+            '核對頁：OCR 辨識出的詞語，自動略過頁碼與姓名行',
+            'Proofread screen: recognised words, with page numbers and name lines skipped automatically',
+          ],
+          'dl.shot3': [
+            '默書畫面：逐題朗讀，有倒數同進度',
+            '默書畫面：逐題朗讀，有倒數與進度',
+            'Dictation screen: word-by-word reading with countdown and progress',
+          ],
+
+          'ml.tag': [
+            '小學 3–6 年級數學練習',
+            '小學 3–6 年級數學練習',
+            'Primary 3–6 maths practice',
+          ],
+          'ml.desc': [
+            '跟香港課程編排：即時批改、逐步解法、錯題重練。題目由程式生成，可以無限重做。',
+            '依據香港課程編排：即時批改、逐步解法、錯題重練。題目由程式生成，可無限次重做。',
+            'Aligned with the Hong Kong curriculum: instant marking, step-by-step solutions, mistake drills. Questions are generated by code, so they can be redone endlessly.',
+          ],
+          'ml.cta': ['直接開網頁版', '直接開啟網頁版', 'Open the web version'],
+          'ml.android': ['Android 版未上架', 'Android 版本尚未上架', 'Android (coming soon)'],
+          'ml.shot1': [
+            '數練主頁：每日練習、進度同錯誤率',
+            '數練主頁：每日練習、進度與錯誤率',
+            '數練 home screen: daily practice, progress and error rate',
+          ],
+          'ml.shot2': [
+            '數練練習畫面：數學題、圖示同四個選項',
+            '數練練習畫面：數學題、圖示與四個選項',
+            '數練 practice screen: a maths question, a diagram and four options',
+          ],
+
+          'claims.h2': ['你可以自己驗證嘅事', '你可以自行驗證的事', 'What you can check yourself'],
+          'claims.1.claim': ['離線都用得', '離線亦可使用', 'Works offline'],
+          'claims.1.check': [
+            '開飛行模式，app 照樣開得到、照樣讀得到。',
+            '開啟飛行模式，應用程式仍可開啟、仍可朗讀。',
+            'Turn on flight mode — the app still opens and still reads aloud.',
+          ],
+          'claims.2.claim': [
+            '冇能力上傳任何嘢',
+            '沒有上傳任何資料的能力',
+            'It cannot upload anything',
+          ],
+          'claims.2.check': [
+            '去 Android「設定 → 應用程式 → 讀默 / 數練 → 權限」，你會見到<b>冇任何權限</b> —— 連 INTERNET 都冇申請，即係佢根本冇能力上網。',
+            '前往 Android「設定 → 應用程式 → 讀默 / 數練 → 權限」，你會見到<b>沒有任何權限</b> —— 連 INTERNET 也沒有申請，即代表它根本沒有上網能力。',
+            'Open Android Settings → Apps → 讀默 / 數練 → Permissions. You will see <b>no permissions at all</b> — not even INTERNET, so it has no ability to go online.',
+          ],
+          'claims.3.claim': ['冇廣告、冇追蹤', '沒有廣告、沒有追蹤', 'No ads, no tracking'],
+          'claims.3.check': [
+            '開網頁版，按 F12 → Network，全程只有本站請求，冇任何第三方。',
+            '開啟網頁版，按 F12 → Network，全程只有本站請求，沒有任何第三方。',
+            'Open the web version, press F12 → Network. Every request is to this site only — no third parties at all.',
+          ],
+          'claims.4.claim': ['唔使帳號、唔使畀錢', '毋須帳號、毋須付費', 'No account, no payment'],
+          'claims.4.check': [
+            '冇註冊、冇登入、冇電郵、冇訂閱。裝完即刻用。',
+            '沒有註冊、沒有登入、沒有電郵、沒有訂閱。安裝後即可使用。',
+            'No sign-up, no login, no email, no subscription. Install and use immediately.',
+          ],
+
+          'install.h2': ['裝落手機主畫面', '安裝至手機主畫面', 'Add to your home screen'],
+          'install.lede': [
+            '唔使 App Store、唔使 Play Store。喺手機瀏覽器打開下面任何一個 app，再「加入主畫面」，就會有個 icon；之後<b>斷網都用得</b>。',
+            '毋須 App Store、毋須 Play Store。在手機瀏覽器開啟下方任何一個應用程式，再選擇「加入主畫面」，便會產生圖示；之後<b>斷網亦可使用</b>。',
+            'No App Store, no Play Store. Open either app in your phone browser and choose “Add to Home Screen” to get an icon — after that it <b>works even offline</b>.',
+          ],
+          'install.android.h3': ['Android（Chrome / Edge）', 'Android（Chrome / Edge）', 'Android (Chrome / Edge)'],
+          'install.android.s1': [
+            '用 Chrome 打開下面其中一個 app',
+            '使用 Chrome 開啟下方任何一個應用程式',
+            'Open either app in Chrome',
+          ],
+          'install.android.s2': ['撳右上角嘅<b>三點選單</b>', '點選右上角的<b>三點選單</b>', 'Tap the <b>three-dot menu</b> at the top right'],
+          'install.android.s3': [
+            '揀「<b>安裝並建立捷徑</b>」<span class="install-alt">（舊版 Chrome 叫「安裝應用程式」，亦可能寫「加到主畫面」）</span>',
+            '選擇「<b>安裝並建立捷徑</b>」<span class="install-alt">（舊版 Chrome 稱為「安裝應用程式」，亦可能顯示「加到主畫面」）</span>',
+            'Choose “<b>Install and create shortcut</b>”<span class="install-alt"> (older Chrome versions say “Install app”, or possibly “Add to Home screen”)</span>',
+          ],
+          'install.android.s4': ['撳「安裝」', '點選「安裝」', 'Tap “Install”'],
+          'install.android.note': [
+            '⚠️ <b>只限 Android</b>：見到「安裝並建立捷徑」或「安裝應用程式」＝真安裝（可離線）；如果<b>只</b>見到「加到主畫面」，咁就係書籤，冇離線快取。',
+            '⚠️ <b>只限 Android</b>：見到「安裝並建立捷徑」或「安裝應用程式」即代表真正安裝（可離線）；如果<b>只</b>見到「加到主畫面」，那便只是書籤，沒有離線快取。',
+            '⚠️ <b>Android only</b>: “Install and create shortcut” or “Install app” means a real install (offline-capable). If you <b>only</b> see “Add to Home screen”, it is just a bookmark with no offline cache.',
+          ],
+          'install.ios.h3': ['iPhone / iPad（Safari）', 'iPhone / iPad（Safari）', 'iPhone / iPad (Safari)'],
+          'install.ios.s1': [
+            '一定要用 <b>Safari</b>（Chrome 開唔到安裝）',
+            '必須使用 <b>Safari</b>（Chrome 無法進行安裝）',
+            'You must use <b>Safari</b> (Chrome cannot install it)',
+          ],
+          'install.ios.s2': ['撳底部<b>分享</b>圖示', '點選底部的<b>分享</b>圖示', 'Tap the <b>Share</b> icon at the bottom'],
+          'install.ios.s3': ['揀「<b>加入主畫面</b>」', '選擇「<b>加入主畫面</b>」', 'Choose “<b>Add to Home Screen</b>”'],
+          'install.ios.s4': ['撳「新增」', '點選「新增」', 'Tap “Add”'],
+          'install.ios.note': [
+            'iOS 嘅「加入主畫面」<b>唔係書籤</b> —— 佢會開一個冇網址欄嘅獨立 app（兩個 app 嘅 manifest 都設定了 <code>display: standalone</code>），所以照樣離線用得。iOS 唔會彈「安裝」提示，所以感覺上好似書籤。',
+            'iOS 的「加入主畫面」<b>並非書籤</b> —— 它會開啟一個沒有網址欄的獨立應用程式（兩個應用程式的 manifest 都設定了 <code>display: standalone</code>），因此同樣可以離線使用。iOS 不會彈出「安裝」提示，所以感覺上像書籤。',
+            'On iOS, “Add to Home Screen” is <b>not a bookmark</b> — it opens a standalone app with no address bar (both apps set <code>display: standalone</code> in their manifest), so it still works offline. iOS never shows an “Install” prompt, which is why it feels like a bookmark.',
+          ],
+          'install.ios.unverified': [
+            '⚠️ 我冇 iOS 裝置，呢四個步驟<b>未經真機驗證</b>。',
+            '⚠️ 本人沒有 iOS 裝置，這四個步驟<b>未經真機驗證</b>。',
+            '⚠️ I do not have an iOS device, so these four steps are <b>not verified on a real device</b>.',
+          ],
+          'install.cta.dictalab': ['裝 讀默', '安裝 讀默', 'Install 讀默'],
+          'install.cta.mathslab': ['裝 數練', '安裝 數練', 'Install 數練'],
+          'install.share': ['分享呢一頁給家長', '分享此頁給家長', 'Share this page with parents'],
+          'install.done': [
+            '✅ 你已經裝咗 —— 而家用緊主畫面 icon 開呢一頁。',
+            '✅ 你已經安裝 —— 現時正透過主畫面圖示開啟此頁。',
+            '✅ Already installed — you are opening this page from the home screen icon.',
+          ],
+
+          'recruit.h2': ['想幫手測試？', '想協助測試？', 'Want to help test?'],
+          'recruit.p1': [
+            'Android 版而家喺<b>封閉測試</b>階段。Google 要求我搵到 12 位測試者連續用 14 日，先可以正式上架。',
+            'Android 版本現時處於<b>封閉測試</b>階段。Google 要求找到 12 位測試者連續使用 14 日，才可正式上架。',
+            'The Android version is in <b>closed testing</b>. Google requires 12 testers to stay opted in for 14 consecutive days before it can be released publicly.',
+          ],
+          'recruit.p2': [
+            '如果你願意幫手：先加入測試群組，再用<b>同一個</b> Google 帳號去 Play 下載 —— 兩個步驟唔可以用唔同帳號，否則 Play 會當你唔係測試人員。',
+            '如你願意協助：請先加入測試群組，再以<b>同一個</b> Google 帳號於 Play 下載 —— 兩個步驟不可使用不同帳號，否則 Play 會視你為非測試人員。',
+            'If you would like to help: join the tester group first, then download from Play with the <b>same</b> Google account. Using different accounts makes Play treat you as a non-tester.',
+          ],
+          'recruit.cta': ['加入測試群組', '加入測試群組', 'Join the tester group'],
+
+          'footer.privacy': ['私隱政策：', '私隱政策：', 'Privacy policy: '],
+          'footer.dl': ['讀默', '讀默', '讀默'],
+          'footer.ml': ['數練', '數練', '數練'],
+          'footer.tracking': [
+            '呢一頁同上面所有 app 都唔會追蹤你。',
+            '此頁與上方所有應用程式都不會追蹤你。',
+            'Neither this page nor any of the apps above track you.',
+          ],
+        };
+
+        var LANGS = ['yue', 'zh', 'en'];
+        var COPY = {
+          copied: ['已複製連結 ✓　貼去 WhatsApp 就得', '已複製連結 ✓　可貼到 WhatsApp', 'Link copied ✓ — paste it into WhatsApp'],
+          copyFail: ['複製失敗，請長按網址', '複製失敗，請長按網址', 'Copy failed — please long-press the address'],
+        };
+
+        function pick(key, lang) {
+          var v = DICT[key];
+          if (!v) return null;
+          var i = LANGS.indexOf(lang);
+          return v[i < 0 ? 1 : i];
+        }
+
+        function applyLang(lang) {
+          if (LANGS.indexOf(lang) < 0) lang = 'zh';
+          document.documentElement.setAttribute('data-lang', lang);
+          document.documentElement.lang = lang === 'en' ? 'en' : lang === 'yue' ? 'zh-HK' : 'zh-Hant-HK';
+
+          var nodes = document.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-alt]');
+          for (var i = 0; i < nodes.length; i++) {
+            var el = nodes[i];
+            var kText = el.getAttribute('data-i18n');
+            var kHtml = el.getAttribute('data-i18n-html');
+            var kAlt = el.getAttribute('data-i18n-alt');
+            if (kText) {
+              var t = pick(kText, lang);
+              if (t !== null) el.textContent = t;
+            }
+            if (kHtml) {
+              var h = pick(kHtml, lang);
+              /* 只插入本地字典嘅值（唔涉任何用戶輸入），所以 innerHTML 安全 */
+              if (h !== null) el.innerHTML = h;
+            }
+            if (kAlt) {
+              var a = pick(kAlt, lang);
+              if (a !== null) el.setAttribute('alt', a);
+            }
+          }
+
+          var btns = document.querySelectorAll('[data-lang-btn]');
+          for (var j = 0; j < btns.length; j++) {
+            btns[j].setAttribute('aria-pressed', btns[j].getAttribute('data-lang-btn') === lang ? 'true' : 'false');
+          }
+
+          try {
+            localStorage.setItem('hub/lang', lang);
+          } catch (e) {
+            /* 私密模式：語言選擇唔會記住，唔緊要 */
+          }
+        }
+
+        var current = document.documentElement.getAttribute('data-lang') || 'zh';
+        applyLang(current);
+
+        var switcher = document.querySelector('.lang-switch');
+        if (switcher) {
+          switcher.addEventListener('click', function (ev) {
+            var btn = ev.target.closest('[data-lang-btn]');
+            if (!btn) return;
+            applyLang(btn.getAttribute('data-lang-btn'));
+          });
+        }
+
+        /* ---- 已安裝偵測（主畫面 icon 開）---- */
         var section = document.getElementById('install');
         if (section) {
           var standalone =
@@ -275,47 +506,55 @@
           }
         }
 
+        /* ---- 分享鍵 ---- */
         var btn = document.getElementById('share-hub');
-        if (!btn) return;
+        if (btn) {
+          var LABEL = btn.textContent;
+          var HUB_URL = 'https://seraphine55555.github.io/';
 
-        var LABEL = '分享呢一頁給家長';
-        var HUB_URL = 'https://seraphine55555.github.io/';
-
-        function flash(text) {
-          btn.textContent = text;
-          window.setTimeout(function () {
-            btn.textContent = LABEL;
-          }, 2200);
-        }
-
-        btn.addEventListener('click', function () {
-          var data = {
-            title: '香港小學練習 App',
-            text: '讀默、數練 —— 離線都用得，冇帳號、冇廣告、唔會上傳你嘅資料。',
-            url: HUB_URL,
+          var flash = function (pair) {
+            /* COPY 同 DICT 係兩個字典，所以唔可以用 pick()（佢只搵 DICT）——
+               用錯就會 set 到 null，按鈕變空白。2026-10-17 守衛捉到。 */
+            var lang = document.documentElement.getAttribute('data-lang') || 'zh';
+            var idx = LANGS.indexOf(lang);
+            btn.textContent = COPY[pair][idx < 0 ? 1 : idx];
+            window.setTimeout(function () {
+              btn.textContent = pick('install.share', lang);
+            }, 2200);
           };
 
-          if (navigator.share) {
-            navigator.share(data).catch(function () {
-              /* 用戶取消分享：唔算錯，唔好彈任何嘢 */
-            });
-            return;
-          }
+          btn.addEventListener('click', function () {
+            var data = {
+              title: '香港小學練習 App',
+              text: '讀默、數練 —— 離線都用得，毋須帳號、沒有廣告、不會上傳你的資料。',
+              url: HUB_URL,
+            };
 
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(HUB_URL).then(
-              function () {
-                flash('已複製連結 ✓');
-              },
-              function () {
-                flash('複製失敗，請長按網址');
-              }
-            );
-            return;
-          }
+            if (navigator.share) {
+              navigator.share(data).catch(function () {
+                /* 用戶取消分享：唔算錯，唔好彈任何嘢 */
+              });
+              return;
+            }
 
-          flash('複製失敗，請長按網址');
-        });
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(HUB_URL).then(
+                function () {
+                  flash('copied');
+                },
+                function () {
+                  flash('copyFail');
+                }
+              );
+              return;
+            }
+
+            flash('copyFail');
+          });
+
+          /* 切換語言時，分享鍵標籤由 applyLang 更新，所以呢個變數只為 setTimeout 用 */
+          void LABEL;
+        }
       })();
     </script>
   </body>
