@@ -302,6 +302,24 @@ footer p {
   margin: 0 0 6px;
 }
 
+/*
+ * 底部連結嘅觸控目標（2026-10-17 實測修正）。
+ *
+ * 原本 <a> 只有 **28×19 px** —— 低於 WCAG 2.5.8（AA）要求嘅 24×24，
+ * 手機上難撳中（尤其私隱政策呢類要準確撳嘅嘢）。
+ * 用 inline-flex + min-height 撐到 44px（順手達 AAA 級），
+ * 視覺上只係多咗少少上下留白，唔會覺得跳。
+ */
+footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 6px;
+  margin: 0 -6px;
+  justify-content: center;
+}
+
 /* ---------- 法律／政策頁（/privacy/...）---------- */
 
 .prose {
