@@ -18,6 +18,24 @@
       content="影低默書範圍，用粵語讀出，小朋友自己練。完全離線，唔收集任何資料。"
     />
     <title>讀默 DictaLab</title>
+    <!--
+      社交分享卡（2026-10-17 加）。實測：加之前三個站都冇 og:*，
+      貼條 link 落家長 WhatsApp 群組只會顯示一條裸網址，冇標題同圖。
+      ⚠️ og:image 一定要**絕對 URL**（WhatsApp 唔接受相對路徑），
+         而且 <300 KB、≥300×200。圖由 tools/make-og.py 生成。
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="讀默 DictaLab — 粵語默書練習" />
+    <meta
+      property="og:description"
+      content="影低默書範圍，app 用粵語讀出，小朋友自己練。完全離線、零收集。"
+    />
+    <meta property="og:image" content="https://seraphine55555.github.io/dictalab/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="https://seraphine55555.github.io/dictalab/" />
+    <meta property="og:locale" content="zh_HK" />
+    <meta name="twitter:card" content="summary_large_image" />
     <script type="module" crossorigin src="./assets/index-DKSg7f1i.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-DPkGTCaS.css">
   </head>
