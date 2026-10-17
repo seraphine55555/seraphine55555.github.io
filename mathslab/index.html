@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1b2a4a" />
+    <meta
+      name="description"
+      content="數練 MathsLab — 香港小學小三至小六數學練習，即時批改、錯題重練、進度追蹤。"
+    />
+
+    <!--
+      PWA。用相對路徑（./）而唔係絕對路徑，因為 base 係 './'，個 build 要可以由
+      子目錄、USB 手指或者本機檔案系統直接跑。
+
+      注意：Service Worker 只在安全來源（https / localhost）註冊得到，所以用
+      http://192.168.x.x 開的話，下面 sw.js 唔會生效。但呢幾個標籤照樣有效 ——
+      iPad／Android 都可以「加到主畫面」，用全螢幕、自訂圖示同名稱開啟。
+    -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="數練" />
+
+    <title>數練 MathsLab · 香港小學數學練習</title>
+    <!--
+      ⚠️ 刻意**唔載入** Google Fonts（2026-10-17 移除）。
+
+      原本呢度有三個 tag：兩個 preconnect ＋ 一條
+      `fonts.googleapis.com/css2?family=Noto+Sans+TC...&family=Noto+Serif+TC...`。
+      佢哋會令**每個訪客**都向 Google 發出請求（送 IP、Referer），
+      而門戶（seraphine55555.github.io）同 app 對外宣稱嘅係「零第三方請求」。
+
+      移除係安全嘅：`src/styles/tokens.css` 嘅 `--font-ui` / `--font-display`
+      本身已帶完整系統 CJK fallback（PingFang TC / Microsoft JhengHei /
+      Songti TC / SimSun），所以外觀唔會塌。
+
+      要還原嘅話，就係把上面三行 tag 加返嚟 —— 但同時要改門戶嘅
+      「零第三方請求」講法，否則就係假話。
+    -->
+    <script type="module" crossorigin src="./assets/index-Bl5h8PuB.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BhmO_9be.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
