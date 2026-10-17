@@ -176,6 +176,41 @@ h2 {
   pointer-events: none;
 }
 
+/*
+ * app 截圖條（2026-10-17 加）。
+ *
+ * 用途：門戶之前只有文字 + icon，家長睇唔到 app 實際係咩樣，要靠想像。
+ * 截圖由 `tools/make-hub-shots.py` 用真瀏覽器影（手機 viewport、2x），
+ * 再壓成 280 闊 WebP（6 張合共 ~63 KB；直接放 PNG 會係 840 KB）。
+ *
+ * ⚠️ HTML 那邊一定要 `loading="lazy"`，否則 6 張圖會拖慢首屏。
+ * ⚠️ 用橫向 scroll 而唔係 grid：手機上 3 張 130px 排得落但太細；
+ *    可以掃嘅條令每張夠大，同時唔會令頁面爆高。
+ */
+.shots {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.shots::-webkit-scrollbar {
+  display: none;
+}
+
+.shots img {
+  width: 130px;
+  height: auto;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  background: var(--card-soft);
+  scroll-snap-align: start;
+}
+
 /* 「即將推出」等狀態徽章 */
 .badge {
   display: inline-block;
