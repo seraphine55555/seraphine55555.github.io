@@ -187,7 +187,8 @@
               <li>撳「安裝」</li>
             </ol>
             <p class="install-note">
-              見到「安裝應用程式」＝真安裝（可離線）；只見到「加到主畫面」就只係書籤。
+              ⚠️ <b>只限 Android</b>：見到「安裝應用程式」＝真安裝（可離線）；
+              如果**只**見到「加到主畫面」，咁就係書籤，冇離線快取。
             </p>
           </div>
 
@@ -199,6 +200,11 @@
               <li>揀「<b>加入主畫面</b>」</li>
               <li>撳「新增」</li>
             </ol>
+            <p class="install-note">
+              iOS 嘅「加入主畫面」<b>唔係書籤</b> —— 佢會開一個冇網址欄嘅獨立 app
+              （兩個 app 嘅 manifest 都設定了 <code>display: standalone</code>），
+              所以照樣離線用得。iOS 唔會彈「安裝」提示，所以感覺上好似書籤。
+            </p>
             <p class="install-note install-note--unverified">
               ⚠️ 我冇 iOS 裝置，呢四個步驟<b>未經真機驗證</b>。
             </p>
