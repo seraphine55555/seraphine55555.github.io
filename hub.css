@@ -476,3 +476,11 @@ footer a {
 .install[data-installed='1'] .install-actions {
   display: none;
 }
+
+/* 安裝選單字面嘅補充說明（例：舊版 Chrome 叫「安裝應用程式」） */
+.install-alt {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
