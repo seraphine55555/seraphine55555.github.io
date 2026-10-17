@@ -222,6 +222,18 @@ h2 {
   scroll-snap-align: start;
 }
 
+/*
+ * 平板（2026-10-17 實測 768／1024px）：內容欄仍然 720px，所以截圖條
+ * 原本 130px × 3 = 390px，右邊剩低一大截空白 —— 睇落好細。
+ * 加寬到 180px 令佢填得比較滿（180×3 + 間距 = 560 < 720）。
+ * 手機（430px）維持 130px 唔變。
+ */
+@media (min-width: 640px) {
+  .shots img {
+    width: 180px;
+  }
+}
+
 /* 「即將推出」等狀態徽章 */
 .badge {
   display: inline-block;
