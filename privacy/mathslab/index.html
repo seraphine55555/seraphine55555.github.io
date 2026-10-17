@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      數練 MathsLab 私隱政策。
+
+      ## 寫法原則：每一句都要對得住程式碼
+
+      2026-10-17 寫之前逐項實測過（證據記錄：`mathslab/docs/privacy-audit.md`）：
+        * `src/**` 冇任何 fetch / XHR / sendBeacon / WebSocket（零網絡 API）
+        * `src/**` 冇 mediaDevices / geolocation / clipboard / Notification（零裝置 API）
+        * 冇 `document.cookie`
+        * 儲存只用 localStorage（exam.ts 嘅 DRAFT_KEY、scratch.ts 嘅 KEY）
+        * dependencies 只有 react + react-dom（冇分析／廣告 SDK）
+        * release APK `aapt2 dump permissions` 只回 package 名 ⇒ **零權限**
+        * 網頁版真瀏覽器實測 ⇒ **零第三方請求**（原本有 Google Fonts，已移除）
+
+      所以唔寫「我哋重視你嘅私隱」呢類空話，改為寫可以自己驗嘅事實。
+
+      ⚠️ 呢一頁唔載入任何外部資源（連 hub.css 都係同源）。
+      ⚠️ 改任何一項行為（加同步、加分析、加字型）就要同時改呢一頁，
+         否則 Play 嘅 Data safety 同呢頁唔一致，會被下架。
+    -->
+    <title>數練 MathsLab — 私隱政策 / Privacy Policy</title>
+    <meta
+      name="description"
+      content="數練 MathsLab 私隱政策：唔收集、唔上傳、唔分享任何個人資料。全部計算喺你部機上面完成。"
+    />
+    <link rel="icon" href="../../icons/mathslab.png" />
+    <link rel="stylesheet" href="../../hub.css" />
+  </head>
+  <body>
+    <main class="wrap prose">
+      <a class="back" href="../../">← 返回</a>
+
+      <h1>數練 MathsLab — 私隱政策</h1>
+      <p class="meta">
+        應用程式 ID：<code>hk.mathslab.app</code>　|　最後更新：2026 年 10 月 17 日
+      </p>
+
+      <p class="lede">
+        一句話：<strong>數練唔會收集、唔會上傳、唔會分享你任何個人資料。</strong>
+        下面每一項後面都寫住你可以自己點驗證。
+      </p>
+
+      <h2>1. 我哋收集乜嘢資料？</h2>
+      <p>
+        <strong>乜都唔收集。</strong>冇帳號、冇登入、冇註冊、冇統計、冇廣告、冇當機回報、
+        冇使用分析。數練冇任何伺服器去接收你嘅資料 —— 連一個都冇。
+      </p>
+
+      <h2>2. 你部裝置上面嘅資料</h2>
+      <p>
+        數練會喺你部機嘅 <code>localStorage</code> 存幾樣嘢，全部只用嚟令下次開啟時接得返：
+      </p>
+      <ul>
+        <li>未完成嘅練習草稿（做到一半停低，下次可以繼續）</li>
+        <li>草稿紙上面你寫低嘅算式</li>
+        <li>你嘅設定（年級、模式等）</li>
+      </ul>
+      <p>
+        呢啲資料<strong>由頭到尾冇離開過你部裝置</strong>，我哋（同其他任何人）都睇唔到。
+        想清走：瀏覽器設定入面清除呢個網站嘅資料，或者喺 app 入面清除資料即可。
+      </p>
+
+      <h2>3. 數學題目</h2>
+      <p>
+        所有題目、答案同逐步解法都係<strong>喺你部機即時由程式生成</strong>，
+        唔需要連線，亦冇題庫上傳呢回事。所以就算開住飛行模式都用得。
+      </p>
+
+      <h2>4. 權限</h2>
+      <p>
+        <strong>Android 版冇申請任何權限</strong> —— 連 <code>INTERNET</code> 都冇。
+        即係佢喺技術上根本冇能力連上網，唔係「我哋答應你唔會」。
+      </p>
+      <p>
+        自己驗：Android「設定 → 應用程式 → 數練 → 權限」，你會見到<strong>一個權限都冇</strong>。
+      </p>
+      <p>
+        網頁版亦冇用相機、麥克風、定位、通知或剪貼簿。
+      </p>
+
+      <h2>5. 第三方服務</h2>
+      <p>
+        <strong>冇。</strong>數練唔載入任何第三方資源 —— 冇分析工具、冇廣告網絡、
+        冇 CDN、冇第三方字型。
+      </p>
+      <p>
+        自己驗（網頁版）：按 F12 → Network，重新載入，你會見到<strong>全部請求都係同一個網站</strong>。
+      </p>
+      <p class="meta">
+        （記錄：2026 年 10 月 17 日之前嘅版本曾經由 Google Fonts 載入字型；
+        已經移除，并且有自動化測試守住，唔會再加返。）
+      </p>
+
+      <h2>6. 兒童私隱</h2>
+      <p>
+        數練係畀香港小學生用嘅練習工具。因為我哋<strong>完全冇收集任何資料</strong>，
+        所以亦冇「兒童個人資料」需要特別處理。冇帳號，即係冇任何嘢可以外洩。
+      </p>
+
+      <h2>7. 資料保留同刪除</h2>
+      <p>
+        資料只喺你部機。你隨時可以刪：清除 app 資料（Android）或者清除網站資料（瀏覽器）。
+        我哋手上冇任何備份，所以冇「要求刪除資料」呢個程序需要走。
+      </p>
+
+      <h2>8. 政策變更</h2>
+      <p>
+        如果將來數練新增任何會接觸到資料嘅功能（例如雲端同步），我哋會先更新呢一頁，
+        改埋上面「最後更新」日期，並且喺 Play Console 嘅 Data safety 申報同步更新。
+      </p>
+
+      <h2>9. 聯絡方法</h2>
+      <p>
+        對私隱有任何疑問，請電郵：
+        <a href="mailto:seraphine55555@gmail.com">seraphine55555@gmail.com</a>
+      </p>
+
+      <h2 id="english">Privacy Policy (English summary)</h2>
+      <p>
+        <strong>MathsLab collects nothing.</strong> No accounts, no analytics,
+        no ads, no crash reporting, and no servers that receive your data.
+      </p>
+      <p>
+        Everything you create is stored only in your device's
+        <code>localStorage</code> (unfinished practice draft, rough-work notes,
+        settings) and never leaves the device. All questions and worked
+        solutions are generated on-device; the app works fully offline.
+      </p>
+      <p>
+        The Android build requests <strong>no permissions at all</strong> —
+        not even <code>INTERNET</code> — so it is technically incapable of
+        sending anything over the network. The web build loads
+        <strong>no third-party resources</strong> (no fonts, no CDN, no
+        analytics); you can confirm this in DevTools → Network.
+      </p>
+      <p>
+        Because nothing is collected, there is nothing to retain, export, or
+        delete on our side. Questions:
+        <a href="mailto:seraphine55555@gmail.com">seraphine55555@gmail.com</a>
+      </p>
+      <p class="meta">App ID: <code>hk.mathslab.app</code> — Last updated: 17 October 2026</p>
+    </main>
+  </body>
+</html>
