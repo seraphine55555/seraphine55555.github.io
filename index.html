@@ -161,6 +161,61 @@
         </li>
       </ul>
 
+      <h2>裝落手機主畫面</h2>
+      <!--
+        為何要呢一節（2026-10-17）：
+        用戶唔搞 Google Play，所以 PWA 就係唯一發行渠道。但家長打開呢頁只見到
+        一個網頁，唔知可以「安裝」，更加唔知裝完之後**離線都用得** —— 而離線
+        正正係最大賣點。冇人教，就等於冇呢個功能。
+
+        已安裝（display-mode: standalone）時，由下面 script 把 data-installed 設成 1，
+        CSS 會收埋步驟、改為顯示「你已經裝咗」。
+      -->
+      <section class="install" id="install" data-installed="0">
+        <p class="install-lede">
+          唔使 App Store、唔使 Play Store。喺手機瀏覽器打開下面任何一個 app，
+          再「加入主畫面」，就會有個 icon；之後<b>斷網都用得</b>。
+        </p>
+
+        <div class="install-grid">
+          <div class="install-card">
+            <h3>Android（Chrome / Edge）</h3>
+            <ol class="install-steps">
+              <li>用 Chrome 打開下面其中一個 app</li>
+              <li>撳右上角 <b>⋮</b></li>
+              <li>揀「<b>安裝應用程式</b>」（有時叫「加到主畫面」）</li>
+              <li>撳「安裝」</li>
+            </ol>
+            <p class="install-note">
+              見到「安裝應用程式」＝真安裝（可離線）；只見到「加到主畫面」就只係書籤。
+            </p>
+          </div>
+
+          <div class="install-card">
+            <h3>iPhone / iPad（Safari）</h3>
+            <ol class="install-steps">
+              <li>一定要用 <b>Safari</b>（Chrome 開唔到安裝）</li>
+              <li>撳底部 <b>分享</b> 圖示</li>
+              <li>揀「<b>加入主畫面</b>」</li>
+              <li>撳「新增」</li>
+            </ol>
+            <p class="install-note install-note--unverified">
+              ⚠️ 我冇 iOS 裝置，呢四個步驟<b>未經真機驗證</b>。
+            </p>
+          </div>
+        </div>
+
+        <div class="install-actions">
+          <a class="btn primary" href="dictalab/">裝 讀默</a>
+          <a class="btn primary" href="mathslab/">裝 數練</a>
+          <button class="btn" id="share-hub" type="button">分享呢一頁給家長</button>
+        </div>
+
+        <p class="install-done" hidden>
+          ✅ 你已經裝咗 —— 而家用緊主畫面 icon 開呢一頁。
+        </p>
+      </section>
+
       <h2>想幫手測試？</h2>
       <div class="recruit">
         <p>
@@ -186,5 +241,73 @@
         <p>呢一頁同上面所有 app 都唔會追蹤你。</p>
       </footer>
     </main>
+
+    <!--
+      「裝落主畫面」嘅兩個行為。刻意寫成 inline、零依賴、零第三方：
+       1. 偵測係唔係由主畫面 icon 開（display-mode: standalone）→ 已裝就收起步驟
+       2. 分享鍵：navigator.share → clipboard → 靜默失敗（用戶取消唔算錯）
+
+      唔用 async/await 以外嘅新語法，因為要跑得舊嘅 Android WebView / Safari。
+    -->
+    <script>
+      (function () {
+        'use strict';
+
+        var section = document.getElementById('install');
+        if (section) {
+          var standalone =
+            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+            (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) ||
+            window.navigator.standalone === true;
+          section.setAttribute('data-installed', standalone ? '1' : '0');
+          if (standalone) {
+            var done = section.querySelector('.install-done');
+            if (done) done.hidden = false;
+          }
+        }
+
+        var btn = document.getElementById('share-hub');
+        if (!btn) return;
+
+        var LABEL = '分享呢一頁給家長';
+        var HUB_URL = 'https://seraphine55555.github.io/';
+
+        function flash(text) {
+          btn.textContent = text;
+          window.setTimeout(function () {
+            btn.textContent = LABEL;
+          }, 2200);
+        }
+
+        btn.addEventListener('click', function () {
+          var data = {
+            title: '香港小學練習 App',
+            text: '讀默、數練 —— 離線都用得，冇帳號、冇廣告、唔會上傳你嘅資料。',
+            url: HUB_URL,
+          };
+
+          if (navigator.share) {
+            navigator.share(data).catch(function () {
+              /* 用戶取消分享：唔算錯，唔好彈任何嘢 */
+            });
+            return;
+          }
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(HUB_URL).then(
+              function () {
+                flash('已複製連結 ✓');
+              },
+              function () {
+                flash('複製失敗，請長按網址');
+              }
+            );
+            return;
+          }
+
+          flash('複製失敗，請長按網址');
+        });
+      })();
+    </script>
   </body>
 </html>
