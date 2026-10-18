@@ -642,3 +642,106 @@ footer a {
   border: 0;
 }
 
+/* ---------------------------------------------------------------
+   響應式版面（2026-10-18）
+
+   目標：同一頁喺 desktop／laptop／tablet／手機都係「設計過」而唔係
+   一條 720px 窄欄擺中間。寬度分層：
+
+     手機   ≤ 599   單欄，容器 720 以內（現狀不變）
+     平板   600–899 單欄，容器 720（現狀不變；iPad 768 實測 OK）
+     筆記簿 900–1119 單欄但容器加闊到 960（截圖 3×180 剛好填滿）
+     桌面   ≥ 1120  容器 1080，**兩張 app 卡並排**，截圖 3-up 自適應
+     大桌面 ≥ 1400  容器 1200，字級／卡片留白再放大
+
+   ⚠️ 兩個唔可以少嘅防爆措施（2026-10-17 同一教訓）：
+     1. 所有 grid 子項用 `minmax(0, 1fr)`，唔可以寫 `1fr`；
+     2. 並排之後卡片內容（尤其截圖）一定要可以縮 —— 所以截圖由
+        「固定 180px + 橫向 scroll」改成「calc() 三等分 + wrap」。
+        唔改就會再次橫向爆出 viewport。
+
+   守衛：verify-hub.py 逐個寬度（320/360/430/768/900/1024/1120/1280/
+   1440/1920）量 documentElement.scrollWidth，並且斷言 ≥1120 時兩張
+   app 卡真係同一個 top（唔係只信 CSS 寫咗）。
+   --------------------------------------------------------------- */
+
+@media (min-width: 900px) {
+  .wrap {
+    max-width: 960px;
+    padding: 0 28px;
+  }
+
+  .hero {
+    padding-top: 68px;
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 3.8vw, 46px);
+  }
+
+  .hero .lede {
+    max-width: 46em;
+    font-size: 19px;
+  }
+
+  .shots img {
+    width: 180px;
+  }
+}
+
+@media (min-width: 1120px) {
+  .wrap {
+    max-width: 1080px;
+  }
+
+  .apps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* 兩張卡並排之後，每張只剩 ~520px：固定 180×3 會橫向 scroll，
+     改成三等分 + wrap，三張圖一次過睇齊。 */
+  .shots {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .shots img {
+    width: calc((100% - 20px) / 3);
+  }
+
+  .claims {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1400px) {
+  .wrap {
+    max-width: 1200px;
+  }
+
+  body {
+    font-size: 18px;
+  }
+
+  .hero {
+    padding-top: 84px;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 3.2vw, 52px);
+  }
+
+  .app {
+    padding: 20px;
+    gap: 18px;
+  }
+
+  .app img {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+
