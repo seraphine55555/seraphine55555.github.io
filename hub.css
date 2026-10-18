@@ -521,3 +521,124 @@ footer a {
   color: var(--accent-ink);
   font-weight: 700;
 }
+
+/* ---------------------------------------------------------------
+   讚好／留言／分享（2026-10-18）
+   只喺門戶頁；留言傳去 Supabase（見 social.config.js / docs/social-setup.md）。
+   `[hidden]` 一定要自己寫 `display:none`：下面 .social 有設 display，
+   否則 hidden 屬性會被蓋過（預設 UA 規則優先級較低）。
+   --------------------------------------------------------------- */
+.social {
+  display: block;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+}
+
+.social[hidden] {
+  display: none;
+}
+
+.social-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.social .like .heart {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.social .like[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.social .like[aria-pressed='true'] .heart {
+  color: var(--accent);
+}
+
+.social .btn.slim {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 0.9375rem;
+}
+
+.comment-count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.comment-count[hidden] {
+  display: none;
+}
+
+.comments {
+  margin-top: 10px;
+}
+
+.comments[hidden] {
+  display: none;
+}
+
+.comment-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.comment-list li {
+  background: var(--card-soft);
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-size: 0.9375rem;
+}
+
+.comment-list .comment-text {
+  display: block;
+  white-space: pre-wrap;      /* 保留用戶換行 */
+  overflow-wrap: anywhere;    /* 長 URL／無空格字串唔好爆出卡 */
+}
+
+.comment-list .comment-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.social textarea {
+  width: 100%;
+  min-height: 64px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--hairline);
+  background: var(--card-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9375rem;
+  resize: vertical;
+}
+
+.social textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+

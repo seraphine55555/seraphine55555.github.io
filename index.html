@@ -96,6 +96,48 @@
               <a class="btn primary" href="dictalab/" data-i18n="dl.cta"></a>
               <a class="btn" href="https://groups.google.com/g/dictalab-testers" data-i18n="dl.android"></a>
             </div>
+            <!-- 讚好／留言／分享（2026-10-18）。social.js 會按 social.config.js 決定顯示；
+                 未配置（預設）⇒ 成塊 hidden，唔會出現壞掣。 -->
+            <div class="social" data-app="dictalab" hidden>
+              <div class="social-row">
+                <button class="btn slim like" type="button" data-like aria-pressed="false">
+                  <span class="heart" aria-hidden="true">♡</span>
+                  <span class="like-count" data-like-count>0</span>
+                  <span class="sr-only" data-i18n="social.like"></span>
+                </button>
+                <button class="btn slim" type="button" data-share data-i18n="social.share"></button>
+                <button
+                  class="btn slim"
+                  type="button"
+                  data-comments-toggle
+                  aria-expanded="false"
+                  aria-controls="comments-dictalab"
+                >
+                  <span data-i18n="social.comments"></span>
+                  <span class="comment-count" data-comment-count hidden></span>
+                </button>
+              </div>
+              <div class="comments" id="comments-dictalab" data-comments hidden>
+                <ul class="comment-list" data-comment-list></ul>
+                <p class="tiny muted" data-comments-empty data-i18n="social.empty" hidden></p>
+                <form data-comment-form>
+                  <label class="sr-only" for="comment-input-dictalab" data-i18n="social.formLabel"></label>
+                  <textarea
+                    id="comment-input-dictalab"
+                    data-comment-input
+                    maxlength="300"
+                    rows="2"
+                    data-i18n-placeholder="social.placeholder"
+                    data-i18n-aria="social.formLabel"
+                  ></textarea>
+                  <div class="social-row">
+                    <button class="btn primary" type="submit" data-comment-send data-i18n="social.send"></button>
+                    <span class="tiny" role="status" data-comment-status></span>
+                  </div>
+                </form>
+                <p class="tiny muted" data-i18n-html="social.privacy"></p>
+              </div>
+            </div>
             <!-- 截圖：真瀏覽器影（tools/make-hub-shots.py），280 闊 WebP。
                  loading="lazy" 一定要有，唔係 6 張圖會拖慢首屏。 -->
             <div class="shots">
@@ -136,6 +178,46 @@
             <div class="actions">
               <a class="btn primary" href="mathslab/" data-i18n="ml.cta"></a>
               <span class="btn" aria-disabled="true" data-i18n="ml.android"></span>
+            </div>
+            <div class="social" data-app="mathslab" hidden>
+              <div class="social-row">
+                <button class="btn slim like" type="button" data-like aria-pressed="false">
+                  <span class="heart" aria-hidden="true">♡</span>
+                  <span class="like-count" data-like-count>0</span>
+                  <span class="sr-only" data-i18n="social.like"></span>
+                </button>
+                <button class="btn slim" type="button" data-share data-i18n="social.share"></button>
+                <button
+                  class="btn slim"
+                  type="button"
+                  data-comments-toggle
+                  aria-expanded="false"
+                  aria-controls="comments-mathslab"
+                >
+                  <span data-i18n="social.comments"></span>
+                  <span class="comment-count" data-comment-count hidden></span>
+                </button>
+              </div>
+              <div class="comments" id="comments-mathslab" data-comments hidden>
+                <ul class="comment-list" data-comment-list></ul>
+                <p class="tiny muted" data-comments-empty data-i18n="social.empty" hidden></p>
+                <form data-comment-form>
+                  <label class="sr-only" for="comment-input-mathslab" data-i18n="social.formLabel"></label>
+                  <textarea
+                    id="comment-input-mathslab"
+                    data-comment-input
+                    maxlength="300"
+                    rows="2"
+                    data-i18n-placeholder="social.placeholder"
+                    data-i18n-aria="social.formLabel"
+                  ></textarea>
+                  <div class="social-row">
+                    <button class="btn primary" type="submit" data-comment-send data-i18n="social.send"></button>
+                    <span class="tiny" role="status" data-comment-status></span>
+                  </div>
+                </form>
+                <p class="tiny muted" data-i18n-html="social.privacy"></p>
+              </div>
             </div>
             <div class="shots">
               <img
@@ -245,6 +327,11 @@
       </footer>
     </main>
 
+    <!-- 讚好／留言：Supabase 公開 anon key（RLS 保護）放喺 social.config.js。
+         留空 = 功能關閉（social 區塊 hidden）。設定步驟：docs/social-setup.md -->
+    <script src="social.config.js"></script>
+    <script src="social.js"></script>
+
     <script>
       (function () {
         'use strict';
@@ -270,12 +357,48 @@
             '讀默 and 數練 — two practice apps that work fully offline.',
           ],
           'hero.lede2': [
-            '冇帳號、冇廣告、唔會上傳你嘅資料。',
-            '毋須帳號、沒有廣告、不會上傳你的資料。',
-            'No account, no ads, and your data is never uploaded.',
+            '冇帳號、冇廣告；除咗你自願寫嘅留言，唔會上傳任何資料。',
+            '毋須帳號、沒有廣告；除了你自願留下的留言，不會上傳任何資料。',
+            'No account, no ads; nothing is uploaded except the comments you choose to post.',
           ],
 
           'apps.h2': ['我嘅 app', '我的應用程式', 'My apps'],
+
+          /* ---- 讚好／留言（2026-10-18）：只喺門戶頁，資料存 Supabase ---- */
+          'social.like': ['讚好', '讚好', 'Like'],
+          'social.liked': ['已讚好', '已讚好', 'Liked'],
+          'social.share': ['分享', '分享', 'Share'],
+          'social.comments': ['留言', '留言', 'Comments'],
+          'social.empty': [
+            '仲未有留言，可以寫第一句。',
+            '暫無留言，歡迎寫下第一句。',
+            'No comments yet — be the first.',
+          ],
+          'social.placeholder': [
+            '寫低你嘅想法（最多 300 字，唔使登入）',
+            '寫下你的想法（最多 300 字，毋須登入）',
+            'Share your thoughts (up to 300 characters, no login needed)',
+          ],
+          'social.formLabel': ['留言內容', '留言內容', 'Comment'],
+          'social.send': ['送出', '送出', 'Send'],
+          'social.privacy': [
+            '留言會<b>匿名</b>傳去 Supabase，其他人看到；唔需要帳號。呢個係門戶網站，兩個 app 本身仍然完全離線。',
+            '留言會<b>匿名</b>傳送至 Supabase，其他人可見；毋須帳號。此為門戶網站，兩個應用程式本身仍然完全離線。',
+            'Comments are posted <b>anonymously</b> to Supabase and visible to others; no account needed. This is the portal site — the two apps themselves stay fully offline.',
+          ],
+          'social.anonymous': ['匿名', '匿名', 'Anonymous'],
+          'social.loading': ['載入中…', '載入中…', 'Loading…'],
+          'social.sent': ['已送出，多謝！', '已送出，謝謝！', 'Sent — thank you!'],
+          'social.fail': [
+            '送唔出，請遲啲再試。',
+            '送出失敗，請稍後再試。',
+            'Could not send — please try again later.',
+          ],
+          'social.likeFail': ['讚好失敗，請遲啲再試。', '讚好失敗，請稍後再試。', 'Could not like — please try again later.'],
+          'social.shareCopied': ['已複製連結', '已複製連結', 'Link copied'],
+          'social.shareFail': ['分享唔到', '分享失敗', 'Could not share'],
+          'social.disabled': ['留言功能未啟用', '留言功能未啟用', 'Comments are not enabled yet'],
+          'social.likeAria': ['讚好（{n} 個）', '讚好（{n} 個）', 'Like ({n})'],
 
           'dl.tag': ['中文 · 英文默書練習', '中文 · 英文默書練習', 'Chinese & English dictation practice'],
           'dl.desc': [
@@ -332,9 +455,9 @@
             'Turn on flight mode — the app still opens and still reads aloud.',
           ],
           'claims.2.claim': [
-            '冇能力上傳任何嘢',
-            '沒有上傳任何資料的能力',
-            'It cannot upload anything',
+            '兩個 app 都冇能力上傳任何嘢',
+            '兩個應用程式都沒有上傳任何資料的能力',
+            'The apps cannot upload anything',
           ],
           'claims.2.check': [
             '去 Android「設定 → 應用程式 → 讀默 / 數練 → 權限」，你會見到<b>冇任何權限</b> —— 連 INTERNET 都冇申請，即係佢根本冇能力上網。',
@@ -343,9 +466,9 @@
           ],
           'claims.3.claim': ['冇廣告、冇追蹤', '沒有廣告、沒有追蹤', 'No ads, no tracking'],
           'claims.3.check': [
-            '開網頁版，按 F12 → Network，全程只有本站請求，冇任何第三方。',
-            '開啟網頁版，按 F12 → Network，全程只有本站請求，沒有任何第三方。',
-            'Open the web version, press F12 → Network. Every request is to this site only — no third parties at all.',
+            '開任何一個 app，按 F12 → Network，全程只有本站請求，冇任何第三方。（門戶頁嘅留言功能除外：留言會傳去 Supabase，見下方留言區。）',
+            '開啟任何一個應用程式，按 F12 → Network，全程只有本站請求，沒有任何第三方。（門戶頁的留言功能除外：留言會傳送至 Supabase，見下方留言區。）',
+            'Open either app, press F12 → Network. Every request is to this site only — no third parties at all. (Exception: comments on this portal page go to Supabase — see the comment box below.)',
           ],
           'claims.4.claim': ['唔使帳號、唔使畀錢', '毋須帳號、毋須付費', 'No account, no payment'],
           'claims.4.check': [
@@ -447,12 +570,17 @@
           document.documentElement.setAttribute('data-lang', lang);
           document.documentElement.lang = lang === 'en' ? 'en' : lang === 'yue' ? 'zh-HK' : 'zh-Hant-HK';
 
-          var nodes = document.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-alt]');
+          var nodes = document.querySelectorAll(
+            '[data-i18n], [data-i18n-html], [data-i18n-alt], [data-i18n-placeholder], [data-i18n-aria]'
+          );
           for (var i = 0; i < nodes.length; i++) {
             var el = nodes[i];
             var kText = el.getAttribute('data-i18n');
             var kHtml = el.getAttribute('data-i18n-html');
             var kAlt = el.getAttribute('data-i18n-alt');
+            /* 2026-10-18：留言輸入框需要 placeholder／aria-label 都跟語言 */
+            var kPh = el.getAttribute('data-i18n-placeholder');
+            var kAria = el.getAttribute('data-i18n-aria');
             if (kText) {
               var t = pick(kText, lang);
               if (t !== null) el.textContent = t;
@@ -466,6 +594,14 @@
               var a = pick(kAlt, lang);
               if (a !== null) el.setAttribute('alt', a);
             }
+            if (kPh) {
+              var ph = pick(kPh, lang);
+              if (ph !== null) el.setAttribute('placeholder', ph);
+            }
+            if (kAria) {
+              var aria = pick(kAria, lang);
+              if (aria !== null) el.setAttribute('aria-label', aria);
+            }
           }
 
           var btns = document.querySelectorAll('[data-lang-btn]');
@@ -477,6 +613,14 @@
             localStorage.setItem('hub/lang', lang);
           } catch (e) {
             /* 私密模式：語言選擇唔會記住，唔緊要 */
+          }
+
+          /* 2026-10-18：留言／讚好由 social.js 負責，佢需要知道語言轉咗
+             （日期格式、「匿名」等由 JS 砌出嚟，唔係 data-i18n 節點）。 */
+          try {
+            document.dispatchEvent(new CustomEvent('hub-lang', { detail: { lang: lang } }));
+          } catch (e) {
+            /* 舊瀏覽器冇 CustomEvent 都唔影響其他功能 */
           }
         }
 
@@ -526,7 +670,7 @@
           btn.addEventListener('click', function () {
             var data = {
               title: '香港小學練習 App',
-              text: '讀默、數練 —— 離線都用得，毋須帳號、沒有廣告、不會上傳你的資料。',
+              text: '讀默、數練 —— 離線都用得，毋須帳號、沒有廣告；除咗自願留言，不會上傳任何資料。',
               url: HUB_URL,
             };
 
@@ -555,6 +699,25 @@
           /* 切換語言時，分享鍵標籤由 applyLang 更新，所以呢個變數只為 setTimeout 用 */
           void LABEL;
         }
+
+        /* 2026-10-18：social.js（讚好／留言）需要翻譯同語言資訊，
+           DICT 喺呢個 IIFE 內，所以要開一個細 API 出去。 */
+        window.HUB_I18N = {
+          locales: { yue: 'zh-HK', zh: 'zh-Hant-HK', en: 'en-GB' },
+          lang: function () {
+            return document.documentElement.getAttribute('data-lang') || 'zh';
+          },
+          t: function (key, vars) {
+            var s = pick(key, document.documentElement.getAttribute('data-lang') || 'zh');
+            if (s === null || s === undefined) return key;
+            if (vars) {
+              Object.keys(vars).forEach(function (k) {
+                s = s.split('{' + k + '}').join(String(vars[k]));
+              });
+            }
+            return s;
+          },
+        };
       })();
     </script>
   </body>
