@@ -640,6 +640,49 @@ body {
   align-items: center;
 }
 
+.print-tools {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 14px;
+}
+
+.chk {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 11px;
+  border: 1px solid var(--hairline);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chk input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.ws-block {
+  break-after: page;
+  page-break-after: always;
+}
+
+.ws-block--last {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.ws-keytitle {
+  font-size: 15px;
+  margin: 16px 0 4px;
+}
+
 #print-sheet {
   display: none;
   font-family: var(--serif);

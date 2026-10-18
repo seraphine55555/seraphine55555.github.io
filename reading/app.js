@@ -84,6 +84,9 @@
     'app.print': ['列印工作紙', '列印工作紙', 'Print worksheet'],
     'app.printTitle': ['閱讀理解工作紙', '閱讀理解工作紙', 'Reading worksheet'],
     'app.answerKey': ['答案（家長用）', '答案（家長用）', 'Answer key (for parents)'],
+    'app.includeAnswers': ['包含答案', '包含答案', 'Include answers'],
+    'app.printAll': ['列印全部（{n} 篇）', '列印全部（{n} 篇）', 'Print all ({n})'],
+    'app.printGrade': ['列印本級（{grade} · {n} 篇）', '列印本級（{grade} · {n} 篇）', 'Print {grade} ({n})'],
     'app.printHint': [
       '先自己作答，再對答案。答案喺最後一頁。',
       '先自己作答，再對答案。答案在最後一頁。',
@@ -414,6 +417,35 @@
       gradeRow.appendChild(b);
     });
     wrap.appendChild(gradeRow);
+
+    /* 列印工具列（2026-10-18）：本級／全部，可選含答案。 */
+    var shownEarly = filteredPassages();
+    if (shownEarly.length > 0) {
+      var tools = el('div', 'print-tools');
+      var chk = el('label', 'chk');
+      var box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = true;
+      box.setAttribute('data-print-answers', '');
+      chk.appendChild(box);
+      chk.appendChild(document.createTextNode(' ' + t('app.includeAnswers')));
+      tools.appendChild(chk);
+      var pbtn = el(
+        'button',
+        'btn',
+        '🖨 ' +
+          (grade === 'all'
+            ? t('app.printAll', { n: shownEarly.length })
+            : t('app.printGrade', { grade: grade, n: shownEarly.length }))
+      );
+      pbtn.type = 'button';
+      pbtn.setAttribute('data-print-list', '');
+      pbtn.addEventListener('click', function () {
+        printWorksheet(shownEarly, box.checked);
+      });
+      tools.appendChild(pbtn);
+      wrap.appendChild(tools);
+    }
 
     /* 進度摘要 + 錯題重練 + 弱項（2026-10-18 加）：答過先顯示，唔會一開波就滿屏數字。 */
     var ov = overall();
@@ -853,9 +885,12 @@
   }
 
   /* ---------------- 列印工作紙（2026-10-18）----------------
-     家長習慣印出嚟做；同一頁資料，print CSS 只顯示 #print-sheet，
-     最後一頁係答案（page-break-before）。 */
-  function printWorksheet(p) {
+     可以印一篇（閱讀畫面）或一次印本級／全部（首頁）。
+     print CSS 只顯示 #print-sheet；每篇另起一頁，答案集中喺最後。 */
+  function printWorksheet(passages, includeAnswers) {
+    var list = Array.isArray(passages) ? passages : [passages];
+    if (!list.length) return;
+    var withKey = includeAnswers !== false;
     var sheet = document.getElementById('print-sheet');
     if (!sheet) {
       sheet = document.createElement('div');
@@ -867,41 +902,52 @@
 
     var head = el('header', 'ws-head');
     head.appendChild(el('h1', null, t('app.printTitle')));
-    head.appendChild(
-      el('p', 'ws-meta', p.level + ' · ' + stars(p) + ' · ' + t('kind.' + p.kind) + ' · ' + t('app.printHint'))
-    );
+    head.appendChild(el('p', 'ws-meta', t('app.printHint')));
     sheet.appendChild(head);
 
-    sheet.appendChild(el('h2', 'ws-title', p.title));
-    var text = el('div', 'ws-passage');
-    text.textContent = p.text;
-    sheet.appendChild(text);
-
     var letters = ['A', 'B', 'C', 'D'];
-    var ol = el('ol', 'ws-questions');
-    p.questions.forEach(function (q, i) {
-      var li = el('li', 'ws-q');
-      li.appendChild(el('p', 'ws-qtext', q.q));
-      var ul = el('ul', 'ws-options');
-      q.options.forEach(function (op, oi) {
-        ul.appendChild(el('li', null, letters[oi] + '. ' + op));
-      });
-      li.appendChild(ul);
-      ol.appendChild(li);
-    });
-    sheet.appendChild(ol);
+    list.forEach(function (p, pi) {
+      var isLast = pi === list.length - 1;
+      var block = el('section', 'ws-block' + (isLast ? ' ws-block--last' : ''));
+      block.appendChild(el('h2', 'ws-title', p.title));
+      block.appendChild(
+        el('p', 'ws-meta', p.level + ' · ' + stars(p) + ' · ' + t('kind.' + p.kind) + ' · ' + p.words + ' ' + t('app.words'))
+      );
+      var text = el('div', 'ws-passage');
+      text.textContent = p.text;
+      block.appendChild(text);
 
-    var key = el('section', 'ws-key');
-    key.appendChild(el('h2', null, t('app.answerKey')));
-    var kol = el('ol', 'ws-answers');
-    p.questions.forEach(function (q, i) {
-      var li = el('li', null, '');
-      var why = (q.why && q.why[q.answer] ? q.why[q.answer] : '').replace(/^正確。\s*/, '');
-      li.textContent = letters[q.answer] + ' — ' + why;
-      kol.appendChild(li);
+      var ol = el('ol', 'ws-questions');
+      p.questions.forEach(function (q) {
+        var li = el('li', 'ws-q');
+        li.appendChild(el('p', 'ws-qtext', q.q));
+        var ul = el('ul', 'ws-options');
+        q.options.forEach(function (op, oi) {
+          ul.appendChild(el('li', null, letters[oi] + '. ' + op));
+        });
+        li.appendChild(ul);
+        ol.appendChild(li);
+      });
+      block.appendChild(ol);
+      sheet.appendChild(block);
     });
-    key.appendChild(kol);
-    sheet.appendChild(key);
+
+    if (withKey) {
+      var key = el('section', 'ws-key');
+      key.appendChild(el('h2', null, t('app.answerKey')));
+      list.forEach(function (p) {
+        key.appendChild(el('h3', 'ws-keytitle', p.title));
+        var kol = el('ol', 'ws-answers');
+        p.questions.forEach(function (q) {
+          var li = el('li', null, '');
+          var why = (q.why && q.why[q.answer] ? q.why[q.answer] : '').replace(/^正確。\s*/, '');
+          li.textContent = letters[q.answer] + ' — ' + why;
+          kol.appendChild(li);
+        });
+        key.appendChild(kol);
+      });
+      sheet.appendChild(key);
+    }
 
     document.body.classList.add('print-mode');
     try {
