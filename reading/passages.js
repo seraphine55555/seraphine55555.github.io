@@ -923,4 +923,772 @@ window.READING_PASSAGES = [
       },
     ],
   },
+  {
+    "id": "p1-ball",
+    "level": "P1",
+    "kind": "story",
+    "difficulty": 1,
+    "words": 34,
+    "title": "My Red Ball",
+    "text": "I have a red ball. It is big and round. I play with it in the park. My dog Max runs after it. He cannot catch it. He is happy. I am happy too.",
+    "questions": [
+      {
+        "q": "What is the story mainly about?",
+        "type": "main",
+        "options": [
+          "A boy and his red ball.",
+          "A cat and a fish.",
+          "A trip to school.",
+          "A blue kite."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。全篇講紅波、同狗一齊玩。",
+          "文中冇貓同魚。",
+          "文中冇講返學。",
+          "係紅波，唔係藍風箏。"
+        ]
+      },
+      {
+        "q": "Where does the writer play with the ball?",
+        "type": "detail",
+        "options": [
+          "In the park.",
+          "At school.",
+          "In the house.",
+          "At the beach."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：I play with it in the park.",
+          "文中冇講學校。",
+          "文中冇講屋企。",
+          "文中冇講海灘。"
+        ]
+      },
+      {
+        "q": "Who runs after the ball?",
+        "type": "detail",
+        "options": [
+          "Max the dog.",
+          "Mum.",
+          "A cat.",
+          "A bird."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：My dog Max runs after it.",
+          "文中冇講媽媽。",
+          "文中冇貓。",
+          "文中冇雀。"
+        ]
+      },
+      {
+        "q": "How does Max feel when he cannot catch the ball?",
+        "type": "inference",
+        "options": [
+          "Angry.",
+          "Happy.",
+          "Sleepy.",
+          "Sad."
+        ],
+        "answer": 1,
+        "why": [
+          "文中冇講佢嬲。",
+          "正確。文中：He is happy.",
+          "文中冇講眼瞓。",
+          "文中冇講傷心。"
+        ]
+      },
+      {
+        "q": "The word 'round' tells us the ball is…",
+        "type": "vocab",
+        "options": [
+          "shaped like a circle.",
+          "very small.",
+          "made of wood.",
+          "cold."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。round = 圓的，形狀似圓圈。",
+          "round 唔係講大小。",
+          "round 唔係講材料。",
+          "round 唔係講溫度。"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p1-ants",
+    "level": "P1",
+    "kind": "story",
+    "difficulty": 2,
+    "words": 50,
+    "title": "The Ant and the Bread",
+    "text": "One day, a little ant found a piece of bread. It was too big to carry. The ant called its friends. Ten ants came. They pushed and pulled together. Slowly, the bread moved. At last, it was in their home. The ants shared the bread. Working together made them strong.",
+    "questions": [
+      {
+        "q": "What is the story mainly about?",
+        "type": "main",
+        "options": [
+          "Ants working together.",
+          "A hungry bird.",
+          "A big garden.",
+          "How to make bread."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。全篇講螞蟻合力搬麵包。",
+          "文中冇雀。",
+          "文中冇花園。",
+          "文中冇講整麵包。"
+        ]
+      },
+      {
+        "q": "What did the ant find?",
+        "type": "detail",
+        "options": [
+          "A piece of bread.",
+          "A leaf.",
+          "A stone.",
+          "A cup."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：a little ant found a piece of bread.",
+          "文中冇樹葉。",
+          "文中冇石頭。",
+          "文中冇杯。"
+        ]
+      },
+      {
+        "q": "Why did the ant call its friends?",
+        "type": "inference",
+        "options": [
+          "The bread was too big to carry alone.",
+          "It wanted to play.",
+          "It was hungry.",
+          "It was lost."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：too big to carry，所以叫朋友幫手。",
+          "佢叫朋友係為搬麵包，唔係玩。",
+          "肚餓係原因之一，但叫朋友係因為搬唔動。",
+          "文中冇講佢迷路。"
+        ]
+      },
+      {
+        "q": "In the story, 'At last' means…",
+        "type": "vocab",
+        "options": [
+          "in the end.",
+          "at once.",
+          "every day.",
+          "at night."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。At last = 最後、終於。",
+          "at once = 立刻，唔係 At last。",
+          "every day = 每日。",
+          "at night = 夜晚。"
+        ]
+      },
+      {
+        "q": "Why did the bread move?",
+        "type": "cause",
+        "options": [
+          "The ants pushed and pulled together.",
+          "The wind blew it.",
+          "A boy carried it.",
+          "It was small."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：They pushed and pulled together.",
+          "文中冇講風。",
+          "文中冇男孩。",
+          "麵包唔細，係太大搬唔動。"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p2-rainy",
+    "level": "P2",
+    "kind": "story",
+    "difficulty": 1,
+    "words": 64,
+    "title": "A Rainy Day Plan",
+    "text": "On Saturday, Lily wanted to go to the beach. But it rained all morning. She looked out of the window and felt sad. Her brother said, 'Let's make a tent in the living room.' They used two chairs and a big blanket. They read books and ate sandwiches inside. In the afternoon, the sun came out. Lily said, 'This was better than the beach!'",
+    "questions": [
+      {
+        "q": "What is the story mainly about?",
+        "type": "main",
+        "options": [
+          "How Lily had fun on a rainy day.",
+          "How to swim at the beach.",
+          "Lily's new school.",
+          "A lost dog."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。全篇講落雨天喺屋企搭帳篷玩。",
+          "文中冇游水。",
+          "文中冇講新學校。",
+          "文中冇狗。"
+        ]
+      },
+      {
+        "q": "What did Lily and her brother use to make the tent?",
+        "type": "detail",
+        "options": [
+          "Two chairs and a blanket.",
+          "A table and a box.",
+          "Two beds and a sheet.",
+          "A door and a bag."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：They used two chairs and a big blanket.",
+          "文中冇桌同箱。",
+          "文中冇床同床單。",
+          "文中冇門同袋。"
+        ]
+      },
+      {
+        "q": "Why did Lily feel sad at first?",
+        "type": "inference",
+        "options": [
+          "She wanted to go to the beach but it rained.",
+          "She lost her ball.",
+          "Her brother was angry.",
+          "She was hungry."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。想去海灘但落雨，所以唔開心。",
+          "文中冇波。",
+          "哥哥冇嬲。",
+          "文中冇講肚餓。"
+        ]
+      },
+      {
+        "q": "A blanket is…",
+        "type": "vocab",
+        "options": [
+          "something we use to keep warm.",
+          "a kind of food.",
+          "a small chair.",
+          "a game."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。blanket = 毛毯，用嚟保暖。",
+          "blanket 唔係食物。",
+          "blanket 唔係椅。",
+          "blanket 唔係遊戲。"
+        ]
+      },
+      {
+        "q": "At the end, Lily thought the tent was…",
+        "type": "inference",
+        "options": [
+          "better than the beach.",
+          "boring.",
+          "too small.",
+          "wet."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：This was better than the beach!",
+          "佢覺得好玩，唔係悶。",
+          "文中冇講太細。",
+          "文中冇講濕。"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p2-newstudent",
+    "level": "P2",
+    "kind": "story",
+    "difficulty": 2,
+    "words": 57,
+    "title": "The New Student",
+    "text": "On Monday, a new boy came to Class 2B. His name was Adam. He was from Canada. At first, he sat alone at lunch. Two girls, Kate and Amy, asked him to play football. Adam smiled and said yes. After the game, they showed him the school garden. Adam said, 'Thank you. I feel at home now.'",
+    "questions": [
+      {
+        "q": "What is the story mainly about?",
+        "type": "main",
+        "options": [
+          "A new boy makes friends at school.",
+          "A football match on TV.",
+          "A trip to Canada.",
+          "A school garden."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。全篇講新同學 Adam 點樣識到朋友。",
+          "文中講踢足球，唔係電視比賽。",
+          "Adam 來自加拿大，但唔係講去旅行。",
+          "花園只係其中一幕。"
+        ]
+      },
+      {
+        "q": "Where was Adam from?",
+        "type": "detail",
+        "options": [
+          "Canada.",
+          "China.",
+          "England.",
+          "Japan."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：He was from Canada.",
+          "文中冇中國。",
+          "文中冇英國。",
+          "文中冇日本。"
+        ]
+      },
+      {
+        "q": "How did Adam feel at first?",
+        "type": "inference",
+        "options": [
+          "Lonely.",
+          "Excited.",
+          "Angry.",
+          "Proud."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：he sat alone at lunch，即係起初好孤單。",
+          "文中冇講佢興奮。",
+          "文中冇講佢嬲。",
+          "文中冇講佢自豪。"
+        ]
+      },
+      {
+        "q": "In the story, 'I feel at home' means…",
+        "type": "vocab",
+        "options": [
+          "I feel comfortable here.",
+          "I want to go home.",
+          "I am at my house.",
+          "I am lost."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。feel at home = 覺得自在、好似喺屋企咁。",
+          "唔係想返屋企。",
+          "唔係字面「我喺屋企」。",
+          "唔係迷路。"
+        ]
+      },
+      {
+        "q": "Why did Kate and Amy ask Adam to play?",
+        "type": "cause",
+        "options": [
+          "They wanted to welcome him.",
+          "They needed a ball.",
+          "The teacher told them to.",
+          "Adam asked them first."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。佢哋見 Adam 自己坐，想歡迎佢、同佢做朋友。",
+          "文中冇講佢哋欠一個波。",
+          "文中冇講老師叫。",
+          "係 Kate 同 Amy 先邀請 Adam。"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p5-lighthouse",
+    "level": "P5",
+    "kind": "story",
+    "difficulty": 2,
+    "words": 95,
+    "title": "The Lighthouse Keeper",
+    "text": "Every evening, old Mr Chan climbed the hill to the lighthouse. He cleaned the glass and lit the lamp. Ships far out at sea followed the light home. One stormy night, the lamp went out. Mr Chan hurried up the hill in the rain. He fixed the lamp with shaking hands. When the light returned, a small boat turned towards the harbour. Its captain later said, 'We would have been lost without you.' Mr Chan only smiled. To him, it was just his job.",
+    "questions": [
+      {
+        "q": "What is the story mainly about?",
+        "type": "main",
+        "options": [
+          "A lighthouse keeper does his duty.",
+          "A ship races home.",
+          "How to build a lighthouse.",
+          "A boy learns to swim."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。全篇講 Mr Chan 每夜點燈、風雨中都去修理，盡自己嘅責任。",
+          "船返港只係其中一個情節。",
+          "文中冇講點建燈塔。",
+          "文中冇男孩學游水。"
+        ]
+      },
+      {
+        "q": "What did Mr Chan do every evening?",
+        "type": "detail",
+        "options": [
+          "Climbed the hill and lit the lamp.",
+          "Cooked dinner.",
+          "Cleaned the harbour.",
+          "Read the newspaper."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：climbed the hill… cleaned the glass and lit the lamp.",
+          "文中冇煮飯。",
+          "文中冇清潔海港。",
+          "文中冇睇報紙。"
+        ]
+      },
+      {
+        "q": "Why did the captain thank Mr Chan?",
+        "type": "inference",
+        "options": [
+          "His light guided the boat to safety.",
+          "He gave them food.",
+          "He repaired their boat.",
+          "He called the harbour."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。無燈塔嘅光，船會迷失；所以船長多謝佢。",
+          "文中冇送食物。",
+          "Mr Chan 修燈，唔係修船。",
+          "文中冇講打電話。"
+        ]
+      },
+      {
+        "q": "A harbour is…",
+        "type": "vocab",
+        "options": [
+          "a safe place for boats.",
+          "a kind of lamp.",
+          "a hill.",
+          "a storm."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。harbour = 海港，船停泊嘅安全地方。",
+          "lamp 係燈，唔係 harbour。",
+          "hill 係山。",
+          "storm 係暴風雨。"
+        ]
+      },
+      {
+        "q": "Why did Mr Chan hurry up the hill in the rain?",
+        "type": "cause",
+        "options": [
+          "The lamp had gone out.",
+          "He was late for dinner.",
+          "He wanted to see the storm.",
+          "Someone called him."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：the lamp went out，所以佢冒雨去修理。",
+          "文中冇講晚餐。",
+          "佢係去修燈，唔係睇風暴。",
+          "文中冇人叫佢。"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p5-schoolplay",
+    "level": "P5",
+    "kind": "story",
+    "difficulty": 3,
+    "words": 100,
+    "title": "The Smallest Part",
+    "text": "For the school play, Sara was given the smallest part: a tree. At first, she was disappointed. Her friends had long speeches, while she had only one line. But Sara decided to make her tree the best tree on stage. She practised standing still and moving her branches at the right moment. On the night, the audience laughed and clapped every time the tree moved. After the show, the teacher said, 'There are no small parts, only small actors.' Sara never forgot that.",
+    "questions": [
+      {
+        "q": "What is the story mainly about?",
+        "type": "main",
+        "options": [
+          "Even a small part can be important.",
+          "How to build a stage.",
+          "Sara's long speech.",
+          "A singing competition."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。Sara 由失望到明白：小角色都可以做得好好。",
+          "文中冇講搭舞台。",
+          "Sara 只有一句台詞，冇長演講。",
+          "文中冇唱歌比賽。"
+        ]
+      },
+      {
+        "q": "What part did Sara play?",
+        "type": "detail",
+        "options": [
+          "A tree.",
+          "A princess.",
+          "A teacher.",
+          "A bird."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：a tree。",
+          "文中冇公主。",
+          "文中冇老師角色。",
+          "文中冇雀。"
+        ]
+      },
+      {
+        "q": "Why was Sara disappointed at first?",
+        "type": "inference",
+        "options": [
+          "Her part was small and had only one line.",
+          "She forgot her words.",
+          "She was ill.",
+          "She did not like the teacher."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：the smallest part… only one line，所以失望。",
+          "文中冇講忘記台詞。",
+          "文中冇講病。",
+          "文中冇講唔鍾意老師。"
+        ]
+      },
+      {
+        "q": "The audience is…",
+        "type": "vocab",
+        "options": [
+          "the people watching the play.",
+          "the actors.",
+          "the stage.",
+          "the script."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。audience = 觀眾。",
+          "actors 係演員。",
+          "stage 係舞台。",
+          "script 係劇本。"
+        ]
+      },
+      {
+        "q": "Why did the audience laugh and clap?",
+        "type": "cause",
+        "options": [
+          "The tree moved at funny moments.",
+          "Sara spoke loudly.",
+          "The play was over.",
+          "The teacher asked them."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：every time the tree moved，觀眾就笑同拍手。",
+          "Sara 只有一句台詞，唔係因為大聲。",
+          "劇未做完。",
+          "文中冇講老師叫。"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p6-recycling",
+    "level": "P6",
+    "kind": "letter",
+    "difficulty": 2,
+    "words": 105,
+    "title": "A Letter About Recycling",
+    "text": "Dear Editor, I am writing to ask our school to start a recycling programme. Every day, our classrooms throw away hundreds of paper sheets. Most of them are only used on one side. If we placed a recycling box in each classroom, we could save both paper and money. Some students worry that the boxes will look untidy. However, we can design colourful boxes and empty them every Friday. The Earth Club has prepared a short talk for assembly. We hope the school will consider our idea. Yours faithfully, Chris Lee",
+    "questions": [
+      {
+        "q": "What is the letter mainly about?",
+        "type": "main",
+        "options": [
+          "A student suggests a recycling programme.",
+          "A trip to a recycling centre.",
+          "How paper is made.",
+          "A letter about a football match."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。全篇係學生寫信建議學校推行回收。",
+          "文中冇參觀回收中心。",
+          "文中冇講造紙過程。",
+          "文中冇足球比賽。"
+        ]
+      },
+      {
+        "q": "What do the classrooms throw away every day?",
+        "type": "detail",
+        "options": [
+          "Hundreds of paper sheets.",
+          "Plastic bottles.",
+          "Old chairs.",
+          "Food."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：throw away hundreds of paper sheets。",
+          "文中冇講膠樽。",
+          "文中冇舊椅。",
+          "文中冇食物。"
+        ]
+      },
+      {
+        "q": "Why does Chris say most of the paper is wasted?",
+        "type": "inference",
+        "options": [
+          "It is only used on one side.",
+          "It is too small.",
+          "It is dirty.",
+          "It is old."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：Most of them are only used on one side，另一面未用就丟。",
+          "文中冇講太細。",
+          "文中冇講污糟。",
+          "文中冇講舊。"
+        ]
+      },
+      {
+        "q": "'Consider' means…",
+        "type": "vocab",
+        "options": [
+          "think about.",
+          "throw away.",
+          "design.",
+          "empty."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。consider = 考慮、想一想。",
+          "throw away = 丟棄。",
+          "design = 設計。",
+          "empty = 清空。"
+        ]
+      },
+      {
+        "q": "Why does Chris suggest colourful boxes?",
+        "type": "cause",
+        "options": [
+          "To make them look tidy.",
+          "To sell them.",
+          "To make them heavy.",
+          "To hide them."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。因為有人擔心回收箱唔整齊，彩色箱可以令佢好睇啲。",
+          "文中冇講賣。",
+          "文中冇講重量。",
+          "文中冇講收埋。"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p6-river",
+    "level": "P6",
+    "kind": "report",
+    "difficulty": 3,
+    "words": 110,
+    "title": "The River Report",
+    "text": "Last term, the Science Club studied the river near our school. We tested the water every week for three months. At the beginning, the water was grey and smelt bad. We found rubbish, including plastic bags and old bottles, along the banks. After we reported the problem to the district office, workers came to clean the river. They also put up signs asking people not to litter. By the end of the term, the water was clearer and we saw fish again. Our teacher said that small actions can make a big difference.",
+    "questions": [
+      {
+        "q": "What is the report mainly about?",
+        "type": "main",
+        "options": [
+          "Students helped clean a river.",
+          "A fishing trip.",
+          "How to test water.",
+          "A new school building."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。全篇講科學會調查河流、報告問題、最後河水變清。",
+          "文中冇釣魚旅行。",
+          "驗水只係方法，唔係主旨。",
+          "文中冇新建築。"
+        ]
+      },
+      {
+        "q": "How often did the club test the water?",
+        "type": "detail",
+        "options": [
+          "Every week.",
+          "Every day.",
+          "Every month.",
+          "Once a year."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：tested the water every week。",
+          "文中冇每日。",
+          "文中冇每月。",
+          "文中冇每年一次。"
+        ]
+      },
+      {
+        "q": "Why did the workers put up signs?",
+        "type": "inference",
+        "options": [
+          "To ask people not to litter.",
+          "To sell the river.",
+          "To warn about fish.",
+          "To close the river."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：signs asking people not to litter。",
+          "文中冇賣。",
+          "文中冇警告魚。",
+          "文中冇封河。"
+        ]
+      },
+      {
+        "q": "'Litter' means…",
+        "type": "vocab",
+        "options": [
+          "rubbish left in the wrong place.",
+          "clean water.",
+          "a kind of fish.",
+          "a boat."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。litter = 亂丟嘅垃圾。",
+          "litter 唔係清水。",
+          "litter 唔係魚。",
+          "litter 唔係船。"
+        ]
+      },
+      {
+        "q": "Why did fish return?",
+        "type": "cause",
+        "options": [
+          "The water became clearer.",
+          "The club fed them.",
+          "The river got warmer.",
+          "Workers put fish there."
+        ],
+        "answer": 0,
+        "why": [
+          "正確。文中：the water was clearer and we saw fish again。",
+          "文中冇餵魚。",
+          "文中冇講變暖。",
+          "文中冇放魚。"
+        ]
+      }
+    ]
+  },
 ];

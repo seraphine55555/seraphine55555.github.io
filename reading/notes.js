@@ -487,4 +487,614 @@ window.READING_NOTES = {
       },
     ],
   },
+  "p1-ball": {
+    "translation": [
+      "我有一個紅色的球。它又大又圓。我在公園玩它。",
+      "我的狗 Max 追着它跑。牠接不住它。牠很開心。我也很開心。"
+    ],
+    "vocab": [
+      {
+        "w": "ball",
+        "ipa": "/bɔːl/",
+        "pos": "n.",
+        "zh": "球",
+        "eg": "I have a red ball."
+      },
+      {
+        "w": "round",
+        "ipa": "/raʊnd/",
+        "pos": "adj.",
+        "zh": "圓的",
+        "eg": "It is big and round."
+      },
+      {
+        "w": "park",
+        "ipa": "/pɑːk/",
+        "pos": "n.",
+        "zh": "公園",
+        "eg": "I play with it in the park."
+      },
+      {
+        "w": "catch",
+        "ipa": "/kætʃ/",
+        "pos": "v.",
+        "zh": "接住",
+        "eg": "He cannot catch it."
+      },
+      {
+        "w": "happy",
+        "ipa": "/ˈhæpi/",
+        "pos": "adj.",
+        "zh": "開心",
+        "eg": "He is happy."
+      }
+    ],
+    "grammar": [
+      {
+        "point": "have 表示擁有",
+        "zh": "用 have 講「有」：I have a ball。主語係 he／she／it 時用 has。",
+        "from": "I have a red ball.",
+        "eg": "She has a new bag."
+      },
+      {
+        "point": "形容詞並列",
+        "zh": "兩個形容詞用 and 連接：big and round。",
+        "from": "big and round",
+        "eg": "The box is small and light."
+      },
+      {
+        "point": "can／cannot + 動詞原形",
+        "zh": "can 後面用動詞原形；否定係 cannot（或 can't）。",
+        "from": "He cannot catch it.",
+        "eg": "I cannot swim."
+      },
+      {
+        "point": "現在簡單式講習慣",
+        "zh": "每日或經常做嘅事用現在簡單式：I play…。",
+        "from": "I play with it in the park.",
+        "eg": "I read every night."
+      },
+      {
+        "point": "too 放句尾",
+        "zh": "too = 都／也，放喺句尾。",
+        "from": "I am happy too.",
+        "eg": "She likes milk too."
+      }
+    ]
+  },
+  "p1-ants": {
+    "translation": [
+      "有一天，一隻小螞蟻找到一塊麵包。它太大，搬不動。",
+      "螞蟻叫來朋友。十隻螞蟻來了。牠們一起推、一起拉。麵包慢慢移動。",
+      "最後，它回到牠們的家。螞蟻們分享麵包。齊心合作令牠們變強。"
+    ],
+    "vocab": [
+      {
+        "w": "ant",
+        "ipa": "/ænt/",
+        "pos": "n.",
+        "zh": "螞蟻",
+        "eg": "a little ant found a piece of bread"
+      },
+      {
+        "w": "piece",
+        "ipa": "/piːs/",
+        "pos": "n.",
+        "zh": "一塊；一片",
+        "eg": "a piece of bread"
+      },
+      {
+        "w": "carry",
+        "ipa": "/ˈkæri/",
+        "pos": "v.",
+        "zh": "搬運",
+        "eg": "too big to carry"
+      },
+      {
+        "w": "pushed",
+        "ipa": "/pʊʃt/",
+        "pos": "v.",
+        "zh": "推（push 的過去式）",
+        "eg": "They pushed and pulled together."
+      },
+      {
+        "w": "together",
+        "ipa": "/təˈɡeðə/",
+        "pos": "adv.",
+        "zh": "一起",
+        "eg": "They pushed and pulled together."
+      }
+    ],
+    "grammar": [
+      {
+        "point": "too + 形容詞 + to + 動詞",
+        "zh": "too…to… = 太…以致不能…：too big to carry = 太大搬唔動。",
+        "from": "too big to carry",
+        "eg": "The box is too heavy to lift."
+      },
+      {
+        "point": "過去式講故事",
+        "zh": "講過去發生嘅事用過去式：found、called、came、pushed、moved。",
+        "from": "a little ant found a piece of bread",
+        "eg": "The ant found some food."
+      },
+      {
+        "point": "所有格 its／their",
+        "zh": "its = 牠的（動物）；their = 他們的／牠們的。",
+        "from": "The ant called its friends.",
+        "eg": "The dog moved its tail."
+      },
+      {
+        "point": "At last（終於）",
+        "zh": "At last 表示經過一輪努力之後「最後、終於」。",
+        "from": "At last, it was in their home.",
+        "eg": "At last, we finished the work."
+      },
+      {
+        "point": "make + 受詞 + 形容詞",
+        "zh": "make + 人／物 + 形容詞 = 令…變得…。",
+        "from": "Working together made them strong.",
+        "eg": "The rain made the ground wet."
+      }
+    ]
+  },
+  "p2-rainy": {
+    "translation": [
+      "星期六，Lily 想去海灘。但整個早上都在下雨。她望出窗外，感到傷心。",
+      "哥哥說：「我們在客廳搭帳篷吧。」他們用了兩張椅子和一張大毛毯。",
+      "他們在裏面看書、吃三明治。下午，太陽出來了。Lily 說：「這比海灘更好玩！」"
+    ],
+    "vocab": [
+      {
+        "w": "beach",
+        "ipa": "/biːtʃ/",
+        "pos": "n.",
+        "zh": "海灘",
+        "eg": "wanted to go to the beach"
+      },
+      {
+        "w": "rained",
+        "ipa": "/reɪnd/",
+        "pos": "v.",
+        "zh": "下雨（rain 的過去式）",
+        "eg": "it rained all morning"
+      },
+      {
+        "w": "sad",
+        "ipa": "/sæd/",
+        "pos": "adj.",
+        "zh": "傷心",
+        "eg": "felt sad"
+      },
+      {
+        "w": "blanket",
+        "ipa": "/ˈblæŋkɪt/",
+        "pos": "n.",
+        "zh": "毛毯",
+        "eg": "a big blanket"
+      },
+      {
+        "w": "better",
+        "ipa": "/ˈbetə/",
+        "pos": "adj.",
+        "zh": "更好（good 的比較級）",
+        "eg": "better than the beach"
+      }
+    ],
+    "grammar": [
+      {
+        "point": "want to + 動詞原形",
+        "zh": "want to + 原形 = 想做…：wanted to go = 當時想去。",
+        "from": "Lily wanted to go to the beach.",
+        "eg": "I want to read."
+      },
+      {
+        "point": "but 轉折",
+        "zh": "but 連接相反情況：想去海灘，但落雨。",
+        "from": "But it rained all morning.",
+        "eg": "I was tired, but I was happy."
+      },
+      {
+        "point": "Let's + 動詞原形",
+        "zh": "Let's = 我們…吧，後面用原形。",
+        "from": "Let's make a tent",
+        "eg": "Let's play football."
+      },
+      {
+        "point": "過去式 used／read／ate／came",
+        "zh": "講過去動作：used、read（串法一樣但讀音改變）、ate、came。",
+        "from": "They used two chairs",
+        "eg": "We read a book and ate lunch."
+      },
+      {
+        "point": "比較級 better than",
+        "zh": "good → better；比較兩樣嘢用 than。",
+        "from": "This was better than the beach!",
+        "eg": "This book is better than that one."
+      }
+    ]
+  },
+  "p2-newstudent": {
+    "translation": [
+      "星期一，一個新男孩來到 2B 班。他叫 Adam。他來自加拿大。",
+      "起初，他午餐時獨自坐着。兩個女孩 Kate 和 Amy 邀請他一起踢足球。",
+      "Adam 微笑答應。比賽後，她們帶他去看學校花園。Adam 說：「謝謝。我現在覺得像在家一樣。」"
+    ],
+    "vocab": [
+      {
+        "w": "new",
+        "ipa": "/njuː/",
+        "pos": "adj.",
+        "zh": "新的",
+        "eg": "a new boy came to Class 2B"
+      },
+      {
+        "w": "alone",
+        "ipa": "/əˈləʊn/",
+        "pos": "adv.",
+        "zh": "獨自",
+        "eg": "he sat alone at lunch"
+      },
+      {
+        "w": "asked",
+        "ipa": "/ɑːskt/",
+        "pos": "v.",
+        "zh": "邀請；問（ask 的過去式）",
+        "eg": "asked him to play football"
+      },
+      {
+        "w": "showed",
+        "ipa": "/ʃəʊd/",
+        "pos": "v.",
+        "zh": "帶…看（show 的過去式）",
+        "eg": "they showed him the school garden"
+      },
+      {
+        "w": "garden",
+        "ipa": "/ˈɡɑːdn/",
+        "pos": "n.",
+        "zh": "花園",
+        "eg": "the school garden"
+      }
+    ],
+    "grammar": [
+      {
+        "point": "過去式講故事",
+        "zh": "用過去式順序講：came、was、sat、asked、smiled、showed。",
+        "from": "a new boy came to Class 2B",
+        "eg": "A new girl came to our class."
+      },
+      {
+        "point": "所有格 His",
+        "zh": "His = 他的；後面接名詞。",
+        "from": "His name was Adam.",
+        "eg": "His bag is blue."
+      },
+      {
+        "point": "ask somebody to do",
+        "zh": "ask + 人 + to + 動詞 = 邀請／叫某人做…。",
+        "from": "asked him to play football",
+        "eg": "She asked me to help."
+      },
+      {
+        "point": "feel + 形容詞",
+        "zh": "feel + 形容詞講感受：feel happy／feel at home。",
+        "from": "I feel at home now.",
+        "eg": "I feel happy today."
+      },
+      {
+        "point": "at first（起初）",
+        "zh": "at first = 起初；後面通常講後來嘅改變。",
+        "from": "At first, he sat alone",
+        "eg": "At first, I was nervous."
+      }
+    ]
+  },
+  "p5-lighthouse": {
+    "translation": [
+      "每晚，陳伯都會爬上山，去到燈塔。他清潔玻璃，點亮燈。遠在海上的船隻跟着燈光返航。",
+      "一個暴風雨的晚上，燈熄了。陳伯冒雨趕上山。他用發抖的手修好燈。",
+      "燈光恢復時，一艘小船轉向海港。船長後來講：「冇咗你，我們會迷失。」陳伯只是微笑。對他來說，這只是他的工作。"
+    ],
+    "vocab": [
+      {
+        "w": "lighthouse",
+        "ipa": "/ˈlaɪthaʊs/",
+        "pos": "n.",
+        "zh": "燈塔",
+        "eg": "he climbed the hill to the lighthouse"
+      },
+      {
+        "w": "harbour",
+        "ipa": "/ˈhɑːbə/",
+        "pos": "n.",
+        "zh": "海港",
+        "eg": "turned towards the harbour"
+      },
+      {
+        "w": "stormy",
+        "ipa": "/ˈstɔːmi/",
+        "pos": "adj.",
+        "zh": "暴風雨的",
+        "eg": "One stormy night"
+      },
+      {
+        "w": "shaking",
+        "ipa": "/ˈʃeɪkɪŋ/",
+        "pos": "adj.",
+        "zh": "發抖的",
+        "eg": "with shaking hands"
+      },
+      {
+        "w": "captain",
+        "ipa": "/ˈkæptɪn/",
+        "pos": "n.",
+        "zh": "船長",
+        "eg": "Its captain later said"
+      }
+    ],
+    "grammar": [
+      {
+        "point": "every + 時間配過去式（習慣）",
+        "zh": "講過去經常有嘅習慣，可以用 every evening + 過去式（climbed）。",
+        "from": "Every evening, old Mr Chan climbed",
+        "eg": "Every morning, she walked to school."
+      },
+      {
+        "point": "go out（熄滅）",
+        "zh": "go out 用嚟講燈火熄滅；過去式係 went out。",
+        "from": "the lamp went out",
+        "eg": "The fire went out at midnight."
+      },
+      {
+        "point": "When 子句",
+        "zh": "When + 過去式，表示「當…發生嘅時候」。",
+        "from": "When the light returned",
+        "eg": "When the rain stopped, we went out."
+      },
+      {
+        "point": "would have been（與過去事實相反）",
+        "zh": "would have + 過去分詞，講「如果唔係…就會…」，用嚟假設未發生嘅事。",
+        "from": "We would have been lost without you.",
+        "eg": "We would have missed the bus without you."
+      },
+      {
+        "point": "only + 動詞（只是）",
+        "zh": "only 放動詞前面，表示「只是、不過」。",
+        "from": "Mr Chan only smiled.",
+        "eg": "She only nodded and left."
+      }
+    ]
+  },
+  "p5-schoolplay": {
+    "translation": [
+      "學校話劇裏，Sara 被派到最小的角色：一棵樹。起初她很失望。",
+      "朋友們有長篇台詞，她只有一句。但 Sara 決定要做台上最好的一棵樹。",
+      "她練習站定，在適當時候移動樹枝。演出當晚，每次樹移動，觀眾都笑和拍手。",
+      "表演後，老師說：「冇小角色，只有小演員。」Sara 永遠記得這句話。"
+    ],
+    "vocab": [
+      {
+        "w": "play",
+        "ipa": "/pleɪ/",
+        "pos": "n.",
+        "zh": "話劇",
+        "eg": "For the school play"
+      },
+      {
+        "w": "disappointed",
+        "ipa": "/ˌdɪsəˈpɔɪntɪd/",
+        "pos": "adj.",
+        "zh": "失望的",
+        "eg": "she was disappointed"
+      },
+      {
+        "w": "speeches",
+        "ipa": "/ˈspiːtʃɪz/",
+        "pos": "n.",
+        "zh": "台詞；演講",
+        "eg": "Her friends had long speeches"
+      },
+      {
+        "w": "branches",
+        "ipa": "/ˈbrɑːntʃɪz/",
+        "pos": "n.",
+        "zh": "樹枝",
+        "eg": "moving her branches"
+      },
+      {
+        "w": "audience",
+        "ipa": "/ˈɔːdiəns/",
+        "pos": "n.",
+        "zh": "觀眾",
+        "eg": "the audience laughed and clapped"
+      }
+    ],
+    "grammar": [
+      {
+        "point": "被動語態 was given",
+        "zh": "be + 過去分詞表示被動：Sara was given… = Sara 被派到…。",
+        "from": "Sara was given the smallest part",
+        "eg": "He was given a new book."
+      },
+      {
+        "point": "while 對比",
+        "zh": "while 連接兩邊對比：朋友有長台詞，而她只有一句。",
+        "from": "while she had only one line",
+        "eg": "I like tea, while she likes coffee."
+      },
+      {
+        "point": "At first（起初）",
+        "zh": "At first = 起初；後面通常講後來嘅轉變。",
+        "from": "At first, she was disappointed",
+        "eg": "At first, the game was hard."
+      },
+      {
+        "point": "every time 子句",
+        "zh": "every time + 子句 = 每次…都…。",
+        "from": "every time the tree moved",
+        "eg": "He smiles every time he sees her."
+      },
+      {
+        "point": "There are（存在句型）",
+        "zh": "There is／are 表示「有」；否定 There are no…。",
+        "from": "There are no small parts",
+        "eg": "There are no easy answers."
+      }
+    ]
+  },
+  "p6-recycling": {
+    "translation": [
+      "編輯先生：我寫信是想請學校推行回收計劃。每天，我們的課室丟掉幾百張紙。",
+      "大部分只用了其中一面。如果我們在每間課室放一個回收箱，就可以節省紙張和金錢。",
+      "有些同學擔心回收箱會顯得凌亂。不過，我們可以設計色彩鮮明的箱子，並每星期五清空。",
+      "地球學會已準備好在集會上作短講。我們希望學校會考慮這個建議。此致　Chris Lee"
+    ],
+    "vocab": [
+      {
+        "w": "recycling",
+        "ipa": "/ˌriːˈsaɪklɪŋ/",
+        "pos": "n.",
+        "zh": "回收",
+        "eg": "start a recycling programme"
+      },
+      {
+        "w": "programme",
+        "ipa": "/ˈprəʊɡræm/",
+        "pos": "n.",
+        "zh": "計劃",
+        "eg": "a recycling programme"
+      },
+      {
+        "w": "untidy",
+        "ipa": "/ʌnˈtaɪdi/",
+        "pos": "adj.",
+        "zh": "凌亂的",
+        "eg": "the boxes will look untidy"
+      },
+      {
+        "w": "assembly",
+        "ipa": "/əˈsembli/",
+        "pos": "n.",
+        "zh": "集會",
+        "eg": "a short talk for assembly"
+      },
+      {
+        "w": "consider",
+        "ipa": "/kənˈsɪdə/",
+        "pos": "v.",
+        "zh": "考慮",
+        "eg": "the school will consider our idea"
+      }
+    ],
+    "grammar": [
+      {
+        "point": "不定詞表目的",
+        "zh": "to + 動詞表示目的：I am writing to ask… = 寫信係為了問…。",
+        "from": "I am writing to ask our school",
+        "eg": "I am calling to say thank you."
+      },
+      {
+        "point": "If + 過去式，could + 原形",
+        "zh": "第二條件句：假設現在唔係咁，用 If + 過去式，結果用 could／would + 原形。",
+        "from": "If we placed a recycling box",
+        "eg": "If I had more time, I could read more."
+      },
+      {
+        "point": "被動語態 are used",
+        "zh": "are used = 被使用；be + 過去分詞。",
+        "from": "Most of them are only used on one side.",
+        "eg": "These chairs are used every day."
+      },
+      {
+        "point": "worry that + 子句",
+        "zh": "worry that… = 擔心（某事會發生），後面接完整句子。",
+        "from": "Some students worry that",
+        "eg": "I worry that it will rain."
+      },
+      {
+        "point": "Yours faithfully（書信結尾）",
+        "zh": "正式書信唔知對方姓名時用 Yours faithfully；知道姓名用 Yours sincerely。",
+        "from": "Yours faithfully,",
+        "eg": "Yours faithfully, Chris Lee"
+      }
+    ]
+  },
+  "p6-river": {
+    "translation": [
+      "上學期，科學會研究學校附近的河流。我們連續三個月每星期驗水。",
+      "起初，河水灰色、有臭味。我們在岸邊找到垃圾，包括膠袋和舊樽。",
+      "我們向區辦公室報告後，工人來清理河流，又豎立告示請人不要亂丟垃圾。",
+      "到學期尾，河水清了，我們再次見到魚。老師說，小行動也可以帶來大改變。"
+    ],
+    "vocab": [
+      {
+        "w": "term",
+        "ipa": "/tɜːm/",
+        "pos": "n.",
+        "zh": "學期",
+        "eg": "Last term"
+      },
+      {
+        "w": "tested",
+        "ipa": "/ˈtestɪd/",
+        "pos": "v.",
+        "zh": "測試（test 的過去式）",
+        "eg": "We tested the water every week"
+      },
+      {
+        "w": "rubbish",
+        "ipa": "/ˈrʌbɪʃ/",
+        "pos": "n.",
+        "zh": "垃圾",
+        "eg": "We found rubbish"
+      },
+      {
+        "w": "district",
+        "ipa": "/ˈdɪstrɪkt/",
+        "pos": "n.",
+        "zh": "地區",
+        "eg": "the district office"
+      },
+      {
+        "w": "litter",
+        "ipa": "/ˈlɪtə/",
+        "pos": "v.",
+        "zh": "亂丟垃圾",
+        "eg": "asking people not to litter"
+      }
+    ],
+    "grammar": [
+      {
+        "point": "for + 時間長度",
+        "zh": "for three months = 為期三個月，表示持續多久。",
+        "from": "for three months",
+        "eg": "We waited for two hours."
+      },
+      {
+        "point": "was + 形容詞（描述）",
+        "zh": "過去式 be + 形容詞描述當時狀態：the water was grey。",
+        "from": "the water was grey",
+        "eg": "The room was quiet."
+      },
+      {
+        "point": "After 子句",
+        "zh": "After + 子句，表示「在…之後」。",
+        "from": "After we reported the problem",
+        "eg": "After we finished, we went home."
+      },
+      {
+        "point": "ask somebody not to do",
+        "zh": "ask + 人 + not to + 動詞 = 請某人不要做…。",
+        "from": "asking people not to litter",
+        "eg": "She asked me not to shout."
+      },
+      {
+        "point": "make a difference（帶來改變）",
+        "zh": "make a difference = 帶來改變／有影響。",
+        "from": "can make a big difference",
+        "eg": "Small steps can make a difference."
+      }
+    ]
+  },
 };
