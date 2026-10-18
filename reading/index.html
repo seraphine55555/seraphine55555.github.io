@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>閱讀理解 · 試用版</title>
+    <meta name="description" content="英文閱讀理解試用版：3 篇樣本，每題逐個選項解釋。完全離線、毋須帳號。" />
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="reading.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">讀</span>
+          <span class="brand-text">Reading Lab</span>
+        </div>
+        <div class="lang-switch" role="group" aria-label="語言 / Language">
+          <button type="button" class="lang-btn" data-lang-btn="yue">粵</button>
+          <button type="button" class="lang-btn" data-lang-btn="zh">繁</button>
+          <button type="button" class="lang-btn" data-lang-btn="en">EN</button>
+        </div>
+      </header>
+
+      <h1 class="page-title" id="page-title"></h1>
+      <p class="page-sub" id="page-sub"></p>
+
+      <div id="app"></div>
+
+      <footer>
+        <p>100% offline · no account · no tracking</p>
+      </footer>
+    </main>
+
+    <script src="passages.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
