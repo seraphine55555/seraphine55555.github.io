@@ -297,4 +297,349 @@ window.READING_PASSAGES = [
       },
     ],
   },
+  {
+    id: 'p1-mycat',
+    level: 'P1',
+    kind: 'story',
+    words: 46,
+    title: 'My Cat Mimi',
+    text:
+      'This is my cat, Mimi. She is white and grey. ' +
+      'She likes to sleep on my bed. Every morning, she waits for me at the door. ' +
+      'I give her milk and she says, "Meow!" Mimi is my best friend.',
+    questions: [
+      {
+        type: 'detail',
+        q: 'What colour is Mimi?',
+        options: ['White and grey.', 'Black and white.', 'Brown.', 'Yellow.'],
+        answer: 0,
+        why: [
+          '正確。文中第一句話 "She is white and grey."',
+          '文中冇講黑色。',
+          '文中冇講棕色。',
+          '文中冇講黃色。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'Where does Mimi like to sleep?',
+        options: ['On the sofa.', 'On my bed.', 'In the garden.', 'At the door.'],
+        answer: 1,
+        why: [
+          '文中冇講沙發。',
+          '正確。文中話 "She likes to sleep on my bed."',
+          '文中冇講花園。',
+          '門口係佢等「我」嘅地方，唔係睡覺地方。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'When does Mimi wait for me?',
+        options: ['Every morning.', 'Every night.', 'At noon.', 'On Sunday.'],
+        answer: 0,
+        why: [
+          '正確。文中話 "Every morning, she waits for me at the door."',
+          '文中冇講夜晚。',
+          '文中冇講中午。',
+          '文中冇講星期日。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'What do I give Mimi?',
+        options: ['Bread.', 'Milk.', 'Fish.', 'Water.'],
+        answer: 1,
+        why: [
+          '文中冇講麵包。',
+          '正確。文中話 "I give her milk"。',
+          '文中冇講魚。',
+          '文中冇講水。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'What does Mimi say?',
+        options: ['Woof!', 'Meow!', 'Tweet!', 'Moo!'],
+        answer: 1,
+        why: [
+          'Woof 係狗叫。',
+          '正確。文中話 she says, "Meow!"',
+          'Tweet 係雀仔聲。',
+          'Moo 係牛叫。',
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'p2-schoolbus',
+    level: 'P2',
+    kind: 'story',
+    words: 73,
+    title: 'The School Bus',
+    text:
+      'Tom takes the school bus every day. The bus comes at seven thirty. ' +
+      'Tom sits with his friend Ben. They talk about football. ' +
+      'One day, the bus was late. Tom waited for ten minutes. ' +
+      'When the bus came, the driver said sorry. Tom and Ben still got to school on time.',
+    questions: [
+      {
+        type: 'detail',
+        q: 'How does Tom go to school?',
+        options: ['By car.', 'By bus.', 'By train.', 'On foot.'],
+        answer: 1,
+        why: [
+          '文中冇講私家車。',
+          '正確。文中第一句話 "Tom takes the school bus every day."',
+          '文中冇講火車。',
+          '文中冇講行路。',
+        ],
+      },
+      {
+        type: 'scan',
+        q: 'What time does the bus come?',
+        options: ['Seven o\'clock.', 'Seven thirty.', 'Eight o\'clock.', 'Eight thirty.'],
+        answer: 1,
+        why: [
+          '文中話 seven thirty，唔係七點正。',
+          '正確。文中話 "The bus comes at seven thirty."',
+          '文中冇講八點。',
+          '文中冇講八點半。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'Who does Tom sit with?',
+        options: ['His sister.', 'His friend Ben.', 'The driver.', 'His teacher.'],
+        answer: 1,
+        why: [
+          '文中冇講妹妹。',
+          '正確。文中話 "Tom sits with his friend Ben."',
+          '司機揸車，唔係坐喺 Tom 隔籬。',
+          '老師唔喺校車度。',
+        ],
+      },
+      {
+        type: 'cause',
+        q: 'Why did Tom wait for ten minutes?',
+        options: [
+          'He was too early.',
+          'The bus was late.',
+          'He missed the bus.',
+          'He forgot his school bag.',
+        ],
+        answer: 1,
+        why: [
+          '文中話佢等咗十分鐘係因為巴士遲，唔係佢早到。',
+          '正確。文中話 "the bus was late. Tom waited for ten minutes."',
+          '佢冇錯過巴士，最後仲上到車。',
+          '文中冇講佢漏咗書包。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'What did the driver say?',
+        options: ['Thank you.', 'Sorry.', 'Good morning.', 'Goodbye.'],
+        answer: 1,
+        why: [
+          '司機冇講多謝。',
+          '正確。文中話 "the driver said sorry"。',
+          '文中冇講早晨。',
+          '文中冇講再見。',
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'p5-oldbicycle',
+    level: 'P5',
+    kind: 'story',
+    words: 138,
+    title: 'The Old Bicycle',
+    text:
+      'When Mr Lee was a boy, he rode an old bicycle to school every day. ' +
+      'It was heavy and rusty, and the chain often came off. ' +
+      'His friends laughed at it, but Mr Lee did not mind. ' +
+      'He repaired it himself and learned how machines work. ' +
+      'Many years later, Mr Lee became an engineer. ' +
+      'Last week, he found the same bicycle in his parents\' store room. ' +
+      'He cleaned it, put on new tyres, and rode it to the park. ' +
+      '"It is slow," he said, "but it still works." ' +
+      'His grandchildren laughed, and this time Mr Lee laughed with them.',
+    questions: [
+      {
+        type: 'detail',
+        q: 'How did Mr Lee go to school when he was a boy?',
+        options: ['By bus.', 'By bicycle.', 'On foot.', 'By car.'],
+        answer: 1,
+        why: [
+          '文中冇講巴士。',
+          '正確。文中話 "he rode an old bicycle to school every day"。',
+          '文中冇講行路。',
+          '文中冇講私家車。',
+        ],
+      },
+      {
+        type: 'cause',
+        q: 'Why did his friends laugh at the bicycle?',
+        options: [
+          'It was too new.',
+          'It was heavy and rusty.',
+          'It was too small.',
+          'It had no wheels.',
+        ],
+        answer: 1,
+        why: [
+          '架車係舊車，唔係新。',
+          '正確。文中話 "It was heavy and rusty, and the chain often came off."',
+          '文中冇講太細。',
+          '架車有轆，只係鏈條成日甩。',
+        ],
+      },
+      {
+        type: 'vocab',
+        q: 'The word "rusty" in the passage means ...',
+        options: [
+          'very new and shiny',
+          'covered with rust and old',
+          'very fast',
+          'broken in half',
+        ],
+        answer: 1,
+        why: [
+          'rusty 係舊同生鏽，唔係新淨。',
+          '正確。rusty 指「生鏽」，配合 "heavy and rusty" 同 "the chain often came off"，即係又舊又生鏽。',
+          'rusty 同速度無關。',
+          '文中冇講斷開兩截。',
+        ],
+      },
+      {
+        type: 'inference',
+        q: 'Why did Mr Lee laugh with his grandchildren?',
+        options: [
+          'He was angry with them.',
+          'He enjoyed riding the old bicycle again.',
+          'They bought him a new bicycle.',
+          'He fell off the bicycle.',
+        ],
+        answer: 1,
+        why: [
+          '文中冇話佢嬲。',
+          '正確。佢特意翻新架舊車再踩去公園，仲話 "it still works"，笑係因為開心。',
+          '文中冇講買新車。',
+          '文中冇講佢跌低。',
+        ],
+      },
+      {
+        type: 'main',
+        q: 'What is the story mainly about?',
+        options: [
+          'How to repair a bicycle.',
+          'A boy who became an engineer and kept his old bicycle.',
+          'Why bicycles are slow.',
+          'A trip to the park.',
+        ],
+        answer: 1,
+        why: [
+          '修理只係中間嘅事，唔係全文主旨。',
+          '正確。全篇由童年舊單車講到佢做工程師、再翻新同一架車。',
+          '「慢」只係一句對白，唔係主旨。',
+          '去公園只係結尾片段。',
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'p6-letter',
+    level: 'P6',
+    kind: 'letter',
+    words: 126,
+    title: 'A Letter to the Principal',
+    text:
+      'Dear Principal Chan,\n\n' +
+      'I am writing on behalf of the Student Council. Every day, students wait a long time ' +
+      'for the lift because only one lift works. Some students with heavy bags cannot use the stairs. ' +
+      'We would like to ask the school to repair the second lift before the exams. ' +
+      'We have collected 120 signatures from students in P5 and P6. ' +
+      'We understand that repairs cost money. However, we think a working lift is important for ' +
+      'everyone\'s safety. If the repair cannot start now, could the school at least open the staff ' +
+      'lift during break time?\n\n' +
+      'Thank you for your time.\n\n' +
+      'Yours sincerely,\n' +
+      'Amy Wong',
+    questions: [
+      {
+        type: 'scan',
+        q: 'Who is Amy writing to?',
+        options: ['Her class teacher.', 'The principal.', 'Her parents.', 'The lift repair company.'],
+        answer: 1,
+        why: [
+          '信中稱呼 "Principal Chan"，唔係班主任。',
+          '正確。開頭寫 "Dear Principal Chan" 就係校長。',
+          '唔係寫俾家長。',
+          '信中係請求學校安排維修，唔係直接寫俾維修公司。',
+        ],
+      },
+      {
+        type: 'main',
+        q: 'Why does the Student Council write the letter?',
+        options: [
+          'To ask for a new school bus.',
+          'To ask the school to repair the second lift.',
+          'To invite the principal to a party.',
+          'To complain about homework.',
+        ],
+        answer: 1,
+        why: [
+          '信中冇提校車。',
+          '正確。信中明確話 "ask the school to repair the second lift before the exams"。',
+          '信中冇提派對。',
+          '信中冇投訴功課。',
+        ],
+      },
+      {
+        type: 'vocab',
+        q: 'What does "on behalf of" mean in the letter?',
+        options: ['Instead of.', 'For or representing.', 'Against.', 'Without.'],
+        answer: 1,
+        why: [
+          '"Instead of" 係「代替某人做佢嘅事」，但呢度係代表學生會發言。',
+          '正確。on behalf of = 代表（for / representing）學生會寫信。',
+          '"Against" 係反對，同意思相反。',
+          '"Without" 係冇，唔係代表。',
+        ],
+      },
+      {
+        type: 'inference',
+        q: 'What does the Student Council suggest if the repair cannot start now?',
+        options: [
+          'Students will buy a new lift.',
+          'The school could open the staff lift during break time.',
+          'Students will use the stairs every day.',
+          'The school will close the lift area.',
+        ],
+        answer: 1,
+        why: [
+          '信中冇講學生夾錢買升降機。',
+          '正確。信中問 "could the school at least open the staff lift during break time?"',
+          '佢哋想要 lift，唔係叫所有人行樓梯。',
+          '信中冇講封閉升降機。',
+        ],
+      },
+      {
+        type: 'inference',
+        q: 'What is the tone of the letter?',
+        options: ['Angry and rude.', 'Polite and reasonable.', 'Funny.', 'Sad.'],
+        answer: 1,
+        why: [
+          '信中有 "Thank you for your time"、"Yours sincerely"，唔係粗魯。',
+          '正確。既有請求亦有讓步（明白維修要錢），語氣有禮而且講道理。',
+          '信中冇搞笑。',
+          '雖然有困難，但語氣係理性爭取，唔係悲傷。',
+        ],
+      },
+    ],
+  },
 ];

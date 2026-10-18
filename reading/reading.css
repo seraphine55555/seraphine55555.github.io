@@ -171,6 +171,47 @@ body {
   gap: 12px;
 }
 
+/* 年級選擇（同數練一樣：先揀年級，再揀篇章）。 */
+.grade-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.grade-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: var(--card);
+  color: var(--muted);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.grade-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.grade-btn.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.grade-btn.is-empty {
+  opacity: 0.55;
+}
+
+.empty {
+  color: var(--muted);
+}
+
 .passage-card {
   background: var(--card);
   border: 1px solid var(--hairline);

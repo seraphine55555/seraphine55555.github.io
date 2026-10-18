@@ -17,11 +17,18 @@
 
   var DICT = {
     'app.title': ['閱讀理解', '閱讀理解', 'Reading Lab'],
-    'app.trial': ['試用版 · 3 篇', '試用版 · 3 篇', 'Trial · 3 passages'],
+    'app.trial': ['試用版 · {n} 篇', '試用版 · {n} 篇', 'Trial · {n} passages'],
     'app.sub': [
       '英文閱讀 · 每篇 5 題 · 每個選項都有解釋',
       '英文閱讀 · 每篇 5 題 · 每個選項都有解釋',
       'English reading · 5 questions each · every option explained',
+    ],
+    'app.all': ['全部', '全部', 'All'],
+    'app.chooseGrade': ['揀年級', '選年級', 'Choose a level'],
+    'app.empty': [
+      '呢個年級暫時未有樣本。',
+      '這個年級暫時未有樣本。',
+      'No sample for this level yet.',
     ],
     'app.lede': [
       '揀一篇，答 5 題。每題答完會逐個選項解釋——包括你揀錯嗰個。',
@@ -61,6 +68,7 @@
     'kind.story': ['故事', '故事', 'Story'],
     'kind.report': ['說明文', '說明文', 'Report'],
     'kind.notice': ['告示', '告示', 'Notice'],
+    'kind.letter': ['書信', '書信', 'Letter'],
     'type.main': ['主旨', '主旨', 'Main idea'],
     'type.detail': ['細節', '細節', 'Detail'],
     'type.inference': ['推論', '推論', 'Inference'],
@@ -104,9 +112,34 @@
   }
 
   var answers = loadAnswers();
+  var GRADE_KEY = 'reading/grade';
+  var GRADES = ['all', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6'];
+  var grade = 'all';
+  try {
+    var g = localStorage.getItem(GRADE_KEY);
+    if (g && GRADES.indexOf(g) >= 0) grade = g;
+  } catch (e) {}
   var state = { view: 'home', passageId: null, qIndex: 0, picked: null };
 
   var root = document.getElementById('app');
+
+  function levelNum(p) {
+    return parseInt(String(p.level).replace(/[^0-9]/g, ''), 10) || 99;
+  }
+
+  /* 年級由細到大；同年級保留原本次序（題庫作者排位）。 */
+  function sortedPassages() {
+    return PASSAGES.slice().sort(function (a, b) {
+      return levelNum(a) - levelNum(b);
+    });
+  }
+
+  function filteredPassages() {
+    if (grade === 'all') return sortedPassages();
+    return sortedPassages().filter(function (p) {
+      return p.level === grade;
+    });
+  }
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -127,7 +160,7 @@
       title.appendChild(document.createTextNode(t('app.title') + ' '));
       var pill = document.createElement('span');
       pill.className = 'pill';
-      pill.textContent = t('app.trial');
+      pill.textContent = t('app.trial', { n: PASSAGES.length });
       title.appendChild(pill);
     }
     var sub = document.getElementById('page-sub');
@@ -160,9 +193,45 @@
     var note = el('p', 'trial-note', t('app.note'));
     wrap.appendChild(note);
 
+    /* 年級選擇：同數練一樣，先揀年級再揀篇章。 */
+    var gradeRow = el('div', 'grade-row');
+    gradeRow.setAttribute('role', 'group');
+    gradeRow.setAttribute('aria-label', t('app.chooseGrade'));
+    GRADES.forEach(function (g) {
+      var all = g === 'all';
+      var list = all
+        ? PASSAGES
+        : PASSAGES.filter(function (p) {
+            return p.level === g;
+          });
+      var b = el('button', 'grade-btn' + (grade === g ? ' is-on' : ''), all ? t('app.all') : g);
+      b.type = 'button';
+      b.setAttribute('data-grade', g);
+      b.setAttribute('aria-pressed', grade === g ? 'true' : 'false');
+      if (!all && list.length === 0) b.classList.add('is-empty');
+      b.title = all ? '' : list.length + ' 篇';
+      b.addEventListener('click', function () {
+        grade = g;
+        try {
+          localStorage.setItem(GRADE_KEY, grade);
+        } catch (e) {}
+        render();
+      });
+      gradeRow.appendChild(b);
+    });
+    wrap.appendChild(gradeRow);
+
+    var shown = filteredPassages();
+    if (shown.length === 0) {
+      wrap.appendChild(el('p', 'empty', t('app.empty')));
+      root.replaceChildren(wrap);
+      return;
+    }
+
     var list = el('ul', 'passage-list');
-    PASSAGES.forEach(function (p) {
+    shown.forEach(function (p) {
       var li = el('li', 'passage-card');
+      li.setAttribute('data-passage', p.id);
       var head = el('div', 'passage-head');
       var title = el('h2', null, p.title);
       head.appendChild(title);
