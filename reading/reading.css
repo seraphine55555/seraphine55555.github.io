@@ -224,6 +224,12 @@ body {
   font-size: 14.5px;
 }
 
+.scheduled {
+  margin: -6px 0 14px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
 .wrong-card {
   display: flex;
   align-items: center;

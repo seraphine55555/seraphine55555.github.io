@@ -13,7 +13,7 @@ window.READING_PASSAGES = [
     id: 'p3-lunchbox',
     level: 'P3',
     kind: 'story',
-    words: 118,
+    words: 101,
     title: 'The Lunch Box Mix-up',
     text:
       'On Monday morning, Ken put his lunch box in his school bag and ran to the bus stop. ' +
@@ -106,7 +106,7 @@ window.READING_PASSAGES = [
     id: 'p4-beans',
     level: 'P4',
     kind: 'report',
-    words: 116,
+    words: 100,
     title: 'Our Bean Plants',
     text:
       'Last month, Class 4B started a small garden outside the classroom. ' +
@@ -209,7 +209,7 @@ window.READING_PASSAGES = [
     id: 'p4-library',
     level: 'P4',
     kind: 'notice',
-    words: 96,
+    words: 88,
     title: 'School Library Notice',
     text:
       'SUNSHINE PRIMARY SCHOOL LIBRARY\n\n' +
@@ -301,7 +301,7 @@ window.READING_PASSAGES = [
     id: 'p1-mycat',
     level: 'P1',
     kind: 'story',
-    words: 46,
+    words: 39,
     title: 'My Cat Mimi',
     text:
       'This is my cat, Mimi. She is white and grey. ' +
@@ -375,7 +375,7 @@ window.READING_PASSAGES = [
     id: 'p2-schoolbus',
     level: 'P2',
     kind: 'story',
-    words: 73,
+    words: 51,
     title: 'The School Bus',
     text:
       'Tom takes the school bus every day. The bus comes at seven thirty. ' +
@@ -455,7 +455,7 @@ window.READING_PASSAGES = [
     id: 'p5-oldbicycle',
     level: 'P5',
     kind: 'story',
-    words: 138,
+    words: 99,
     title: 'The Old Bicycle',
     text:
       'When Mr Lee was a boy, he rode an old bicycle to school every day. ' +
@@ -555,7 +555,7 @@ window.READING_PASSAGES = [
     id: 'p6-letter',
     level: 'P6',
     kind: 'letter',
-    words: 126,
+    words: 106,
     title: 'A Letter to the Principal',
     text:
       'Dear Principal Chan,\n\n' +

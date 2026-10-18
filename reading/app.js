@@ -57,9 +57,9 @@
       'Correct — this question is cleared from your list.',
     ],
     'app.reviewSummary': [
-      '清走 {fixed} 題，仲有 {left} 題。',
-      '清走 {fixed} 題，還有 {left} 題。',
-      'Cleared {fixed}, {left} still to go.',
+      '已排期 {fixed} 題，仲有 {left} 題到期。',
+      '已排期 {fixed} 題，還有 {left} 題到期。',
+      'Scheduled {fixed}, {left} still due.',
     ],
     'app.reviewAllClear': [
       '所有錯題都清走咗！',
@@ -70,6 +70,17 @@
     'app.noWeak': ['未夠數據睇弱項', '未夠數據看弱項', 'Not enough data yet'],
     'app.allGood': ['暫時未見弱項', '暫時未見弱項', 'No weak areas yet'],
     'app.breakdown': ['本篇題型表現', '本篇題型表現', 'By question type'],
+    'app.foot': [
+      '首次載入後可離線使用 · 毋須帳號 · 冇追蹤',
+      '首次載入後可離線使用 · 毋須帳號 · 沒有追蹤',
+      'Works offline after first visit · no account · no tracking',
+    ],
+    'app.scheduled': ['{n} 題已排期重溫', '{n} 題已排期重溫', '{n} questions scheduled for later'],
+    'app.reviewScheduled': [
+      '所有到期錯題都清走咗！{n} 題已排期之後重溫。',
+      '所有到期錯題都清走咗！{n} 題已排期之後重溫。',
+      'All due questions cleared! {n} scheduled for later review.',
+    ],
     'app.lede': [
       '揀一篇，答 5 題。每題答完會逐個選項解釋——包括你揀錯嗰個。',
       '選一篇，答 5 題。每題答完會逐個選項解釋——包括你選錯的那個。',
@@ -153,8 +164,11 @@
 
   var answers = loadAnswers();
   var GRADE_KEY = 'reading/grade';
-  var FIXED_KEY = 'reading/fixed';
+  var SRS_KEY = 'reading/srs';
   var GRADES = ['all', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6'];
+  var DAY = 24 * 60 * 60 * 1000;
+  /* 間隔重複：答對一次之後，隔 1／3／7／14／30 日再出。 */
+  var INTERVALS = [1, 3, 7, 14, 30];
   var grade = 'all';
   try {
     var g = localStorage.getItem(GRADE_KEY);
@@ -162,23 +176,53 @@
   } catch (e) {}
   var state = { view: 'home', passageId: null, qIndex: 0, picked: null };
 
-  var fixed = {};
+  /* srs[key] = { due: timestamp, step: 0.. }；due 過期就會入重練清單。 */
+  var srs = {};
   try {
-    var rawFixed = localStorage.getItem(FIXED_KEY);
-    if (rawFixed) fixed = JSON.parse(rawFixed) || {};
+    var rawSrs = localStorage.getItem(SRS_KEY);
+    if (rawSrs) srs = JSON.parse(rawSrs) || {};
   } catch (e) {
-    fixed = {};
+    srs = {};
   }
 
-  function saveFixed() {
+  function saveSrs() {
     try {
-      localStorage.setItem(FIXED_KEY, JSON.stringify(fixed));
+      localStorage.setItem(SRS_KEY, JSON.stringify(srs));
     } catch (e) {}
   }
 
   function qkey(p, i) {
     return p.id + ':' + i;
   }
+
+  function scheduleWrong(p, i) {
+    srs[qkey(p, i)] = { due: Date.now(), step: 0 };
+    saveSrs();
+  }
+
+  function scheduleCorrect(p, i) {
+    var key = qkey(p, i);
+    var step = ((srs[key] && srs[key].step) || 0) + 1;
+    var days = INTERVALS[Math.min(step - 1, INTERVALS.length - 1)];
+    srs[key] = { due: Date.now() + days * DAY, step: step };
+    saveSrs();
+  }
+
+  /* 舊資料遷移：答錯過但未有 srs 記錄 → 即刻到期。 */
+  (function migrate() {
+    var changed = false;
+    PASSAGES.forEach(function (p) {
+      var given = answers[p.id] || {};
+      p.questions.forEach(function (q, i) {
+        if (typeof given[i] !== 'number') return;
+        if (given[i] === q.answer) return;
+        if (srs[qkey(p, i)]) return;
+        srs[qkey(p, i)] = { due: 0, step: 0 };
+        changed = true;
+      });
+    });
+    if (changed) saveSrs();
+  })();
 
   var root = document.getElementById('app');
 
@@ -200,19 +244,29 @@
     });
   }
 
-  /* 錯題 = 答過、答錯、而且未清走。完全由 localStorage 推導，冇額外上傳。 */
-  function wrongList() {
+  /* 到期錯題 = srs 記錄 due <= now。完全由 localStorage 推導，冇額外上傳。 */
+  function dueList(now) {
+    var t = now || Date.now();
     var out = [];
     filteredPassages().forEach(function (p) {
-      var given = answers[p.id] || {};
       p.questions.forEach(function (q, i) {
-        if (typeof given[i] !== 'number') return;
-        if (given[i] === q.answer) return;
-        if (fixed[qkey(p, i)]) return;
+        var rec = srs[qkey(p, i)];
+        if (!rec) return;
+        if (rec.due > t) return;
         out.push({ p: p, i: i, q: q });
       });
     });
     return out;
+  }
+
+  /* 已排期（未到期）嘅數目，用嚟話俾用戶知「唔係消失，係遲啲再溫」。 */
+  function scheduledCount(now) {
+    var t = now || Date.now();
+    var n = 0;
+    Object.keys(srs).forEach(function (k) {
+      if (srs[k] && srs[k].due > t) n++;
+    });
+    return n;
   }
 
   /* 每個題型嘅答對率（只計答過嘅題）。 */
@@ -285,6 +339,8 @@
     }
     var sub = document.getElementById('page-sub');
     if (sub) sub.textContent = t('app.sub');
+    var foot = document.getElementById('page-foot');
+    if (foot) foot.textContent = t('app.foot');
     document.title = t('app.title') + ' · 試用版';
     render();
   }
@@ -347,7 +403,12 @@
       wrap.appendChild(el('p', 'summary', t('app.summary', ov)));
     }
 
-    var wrongs = wrongList();
+    var sched = scheduledCount();
+    if (sched > 0) {
+      wrap.appendChild(el('p', 'scheduled', t('app.scheduled', { n: sched })));
+    }
+
+    var wrongs = dueList();
     if (wrongs.length > 0) {
       var wc = el('div', 'wrong-card');
       wc.setAttribute('data-wrong-count', String(wrongs.length));
@@ -500,7 +561,7 @@
 
   /* 選項＋（答過之後）四個選項解釋。閱讀同錯題重練共用。
      fresh=true（重練）：唔理原本答案，重新答一次；答案只記喺 session，
-     唔會改寫原本分數，答對就經 fixed 清走。 */
+     唔會改寫原本分數；答對就排期（1／3／7…日後）再出，答錯就即刻到期。 */
   function answerArea(p, q, qIndex, opts) {
     var fresh = !!(opts && opts.fresh);
     var key = qkey(p, qIndex);
@@ -530,19 +591,17 @@
         if (locked) return;
         if (fresh) {
           state.reviewPicked[key] = i;
-          if (i === q.answer) fixed[key] = true;
-          else delete fixed[key];
-          saveFixed();
+          if (i === q.answer) scheduleCorrect(p, qIndex);
+          else scheduleWrong(p, qIndex);
           render();
           return;
         }
         answers[p.id] = answers[p.id] || {};
         answers[p.id][qIndex] = i;
         saveAnswers(answers);
-        /* 答對就由錯題清單清走；答錯就留低（清單係推導出嚟）。 */
-        if (i === q.answer) fixed[key] = true;
-        else delete fixed[key];
-        saveFixed();
+        if (i === q.answer) delete srs[key];
+        else scheduleWrong(p, qIndex);
+        saveSrs();
         render();
       });
       optsBox.appendChild(b);
@@ -660,7 +719,7 @@
   /* ---------------- 錯題重練 ---------------- */
 
   function startReview() {
-    var queue = wrongList();
+    var queue = dueList();
     if (!queue.length) return;
     state.reviewQueue = queue;
     state.reviewPos = 0;
@@ -735,12 +794,15 @@
   }
 
   function renderReviewDone() {
-    var left = wrongList().length;
+    var left = dueList().length;
+    var later = scheduledCount();
     var wrap = el('section', 'review-done');
     var h = el('h1', null, t('app.reviewBadge'));
     wrap.appendChild(h);
     if (left === 0) {
-      wrap.appendChild(el('p', 'lede', t('app.reviewAllClear')));
+      wrap.appendChild(
+        el('p', 'lede', later > 0 ? t('app.reviewScheduled', { n: later }) : t('app.reviewAllClear'))
+      );
     } else {
       wrap.appendChild(el('p', 'lede', t('app.reviewSummary', { fixed: state.reviewFixed || 0, left: left })));
     }
