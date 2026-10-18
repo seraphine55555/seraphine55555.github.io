@@ -642,4 +642,184 @@ window.READING_PASSAGES = [
       },
     ],
   },
+  {
+    id: 'p3-newgirl',
+    level: 'P3',
+    kind: 'story',
+    difficulty: 1,
+    words: 66,
+    title: 'The New Girl',
+    text:
+      'Today is Mia\'s first day at her new school. She feels nervous. ' +
+      'She stands alone in the playground. A girl named Sara comes over. ' +
+      '"Do you want to play with us?" she asks. Mia smiles and joins the game. ' +
+      'At lunch, Sara sits next to Mia. "Thank you," says Mia. ' +
+      '"I was scared this morning." "That\'s okay," says Sara. ' +
+      '"Everyone is scared on the first day."',
+    questions: [
+      {
+        type: 'detail',
+        q: 'How does Mia feel at the beginning of the story?',
+        options: ['Excited.', 'Nervous.', 'Angry.', 'Sleepy.'],
+        answer: 1,
+        why: [
+          '文中話佢 "feels nervous"，唔係 excited。',
+          '正確。第二句寫 "She feels nervous."',
+          '文中冇話佢嬲。',
+          '文中冇話佢眼瞓。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'Who asks Mia to play?',
+        options: ['Her teacher.', 'Sara.', 'Her mother.', 'The principal.'],
+        answer: 1,
+        why: [
+          '老師冇出現喺操場呢幕。',
+          '正確。文中話 "A girl named Sara comes over." 仲問佢想唔想一齊玩。',
+          '媽媽冇出現喺故事入面。',
+          '校長冇出現喺故事入面。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'What does Mia do after Sara asks her to play?',
+        options: ['She runs away.', 'She smiles and joins the game.', 'She starts to cry.', 'She goes home.'],
+        answer: 1,
+        why: [
+          '文中冇話佢走開。',
+          '正確。文中話 "Mia smiles and joins the game."',
+          '文中冇話佢喊。',
+          '文中冇話佢返屋企。',
+        ],
+      },
+      {
+        type: 'inference',
+        q: 'Why does Sara say "That\'s okay"?',
+        options: [
+          'She is angry with Mia.',
+          'She understands that Mia was scared.',
+          'She wants Mia\'s lunch.',
+          'She is Mia\'s teacher.',
+        ],
+        answer: 1,
+        why: [
+          'Sara 語氣友善，冇嬲。',
+          '正確。Mia 話自己驚，Sara 回應 "That\'s okay"，即係明白同安慰佢。',
+          '文中冇講爭午餐。',
+          'Sara 係同學，唔係老師。',
+        ],
+      },
+      {
+        type: 'main',
+        q: 'What is the story mainly about?',
+        options: [
+          'A game in the playground.',
+          'A girl who makes a friend on her first day.',
+          'Mia\'s lunch.',
+          'How to become a teacher.',
+        ],
+        answer: 1,
+        why: [
+          '遊戲只係其中一幕。',
+          '正確。全篇講 Mia 第一日返新學校，由緊張到識到 Sara。',
+          '午餐只係背景。',
+          '文章冇講點做老師。',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'p3-sciencefair',
+    level: 'P3',
+    kind: 'story',
+    difficulty: 3,
+    words: 106,
+    title: 'The Science Fair',
+    text:
+      'Last Friday, Class 3A held a science fair. Each group had to show one experiment. ' +
+      'Amy and Ken made a volcano with baking soda and vinegar. It was not easy. ' +
+      'Their first try only made a few bubbles, so they added more vinegar. ' +
+      'The second try was better, but the mixture went over the table. ' +
+      'They cleaned it up and tried again. This time, the volcano bubbled up high, and the class clapped. ' +
+      'Their teacher, Mr Wong, said, "The best part is not the volcano. It is that you tried three times." ' +
+      'Amy and Ken smiled. They did not win first prize, but they felt proud.',
+    questions: [
+      {
+        type: 'detail',
+        q: 'What did Amy and Ken make?',
+        options: ['A volcano.', 'A rocket.', 'A robot.', 'A kite.'],
+        answer: 0,
+        why: [
+          '正確。文中話 "Amy and Ken made a volcano"。',
+          '文中冇講火箭。',
+          '文中冇講機械人。',
+          '文中冇講風箏。',
+        ],
+      },
+      {
+        type: 'cause',
+        q: 'Why did their first try not work well?',
+        options: [
+          'They forgot to bring vinegar.',
+          'It only made a few bubbles.',
+          'The teacher stopped them.',
+          'They used too much water.',
+        ],
+        answer: 1,
+        why: [
+          '佢哋有 vinegar，只係份量唔夠。',
+          '正確。文中話 "Their first try only made a few bubbles"。',
+          '老師冇阻止佢哋。',
+          '文中冇提水。',
+        ],
+      },
+      {
+        type: 'detail',
+        q: 'What happened on the second try?',
+        options: [
+          'It worked perfectly.',
+          'The mixture went over the table.',
+          'Nothing happened at all.',
+          'They gave up.',
+        ],
+        answer: 1,
+        why: [
+          '第二次未完美，仲有意外。',
+          '正確。文中話 "the mixture went over the table"。',
+          '第二次有反應，唔係乜都冇。',
+          '佢哋冇放棄，仲試第三次。',
+        ],
+      },
+      {
+        type: 'inference',
+        q: 'What did Mr Wong think was the best part?',
+        options: [
+          'The volcano itself.',
+          'That they tried three times.',
+          'Winning first prize.',
+          'Cleaning the table.',
+        ],
+        answer: 1,
+        why: [
+          '老師話 "The best part is not the volcano"，即係唔係火山本身。',
+          '正確。老師話最好嘅部分係 "you tried three times"。',
+          '佢哋冇贏冠軍，老師亦冇提獎項。',
+          '清潔只係過程，唔係老師口中嘅重點。',
+        ],
+      },
+      {
+        type: 'vocab',
+        q: 'Which word best describes Amy and Ken?',
+        options: ['Lazy.', 'Determined.', 'Sleepy.', 'Angry.'],
+        answer: 1,
+        why: [
+          '佢哋試咗三次，唔係懶。',
+          '正確。試完一次又一次，最貼切係 determined（有毅力）。',
+          '文中冇話佢哋眼瞓。',
+          '佢哋最後開心、自豪，唔係嬲。',
+        ],
+      },
+    ],
+  },
 ];

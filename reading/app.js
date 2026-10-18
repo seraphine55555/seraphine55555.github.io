@@ -230,11 +230,21 @@
     return parseInt(String(p.level).replace(/[^0-9]/g, ''), 10) || 99;
   }
 
-  /* 年級由細到大；同年級保留原本次序（題庫作者排位）。 */
+  function difficultyOf(p) {
+    return typeof p.difficulty === 'number' && p.difficulty >= 1 && p.difficulty <= 3
+      ? p.difficulty
+      : 2;
+  }
+
+  /* 年級由細到大；同級再按難度（★→★★★）；同級同難度保留原本次序（穩定 sort）。 */
   function sortedPassages() {
     return PASSAGES.slice().sort(function (a, b) {
-      return levelNum(a) - levelNum(b);
+      return levelNum(a) - levelNum(b) || difficultyOf(a) - difficultyOf(b);
     });
+  }
+
+  function stars(p) {
+    return '★'.repeat(difficultyOf(p));
   }
 
   function filteredPassages() {
@@ -459,7 +469,8 @@
       var title = el('h2', null, p.title);
       head.appendChild(title);
       var meta = el('p', 'meta');
-      meta.textContent = t('app.level') + ' ' + p.level + ' · ' + t('kind.' + p.kind) + ' · ' + p.words + ' ' + t('app.words');
+      meta.textContent =
+        t('app.level') + ' ' + p.level + ' · ' + stars(p) + ' · ' + t('kind.' + p.kind) + ' · ' + p.words + ' ' + t('app.words');
       head.appendChild(meta);
       li.appendChild(head);
 
@@ -521,7 +532,9 @@
 
     var head = el('header', 'passage-header');
     head.appendChild(el('h1', null, p.title));
-    head.appendChild(el('p', 'meta', p.level + ' · ' + t('kind.' + p.kind) + ' · ' + p.words + ' ' + t('app.words')));
+    head.appendChild(
+      el('p', 'meta', p.level + ' · ' + stars(p) + ' · ' + t('kind.' + p.kind) + ' · ' + p.words + ' ' + t('app.words'))
+    );
     wrap.appendChild(head);
 
     var body = el('div', 'passage-text');
