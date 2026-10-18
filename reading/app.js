@@ -94,6 +94,7 @@
     'app.grammar': ['文法', '文法', 'Grammar'],
     'app.inText': ['文中', '文中', 'In the passage'],
     'app.example': ['例', '例', 'e.g.'],
+    'app.listen': ['朗讀', '朗讀', 'Listen'],
     'app.printHint': [
       '先自己作答，再對答案。答案喺最後一頁。',
       '先自己作答，再對答案。答案在最後一頁。',
@@ -559,6 +560,33 @@
     return null;
   }
 
+  /* 例句朗讀：用系統／瀏覽器內建語音；唔會發任何第三方請求。
+     部分裝置嘅英文語音要另裝語音包，離線未必有聲——見 docs。 */
+  function speak(text) {
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new window.SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    } catch (e) {
+      /* 冇語音能力就靜靜唔出聲 */
+    }
+  }
+
+  function ttsBtn(text) {
+    var b = el('button', 'tts-btn', '🔊');
+    b.type = 'button';
+    b.title = text;
+    b.setAttribute('aria-label', t('app.listen') + '：' + text);
+    b.addEventListener('click', function (e) {
+      e.preventDefault();
+      speak(text);
+    });
+    return b;
+  }
+
   /* 詞句詳解：生字表＋文法點。冇資料就回 null（唔會出空框）。 */
   function notesBlock(p) {
     var n = NOTES[p.id];
@@ -584,6 +612,7 @@
       if (v.pos) li.appendChild(el('span', 'v-pos', v.pos));
       li.appendChild(el('span', 'v-zh', v.zh));
       li.appendChild(el('span', 'v-eg', v.eg));
+      if (window.speechSynthesis) li.appendChild(ttsBtn(v.eg));
       ul.appendChild(li);
     });
     det.appendChild(ul);
@@ -597,6 +626,7 @@
         li.appendChild(el('p', 'g-zh', g.zh));
         if (g.from) li.appendChild(el('p', 'g-from', t('app.inText') + '：' + g.from));
         if (g.eg) li.appendChild(el('p', 'g-eg', t('app.example') + '：' + g.eg));
+        if (window.speechSynthesis) li.appendChild(ttsBtn(g.from || g.eg));
         gl.appendChild(li);
       });
       det.appendChild(gl);
