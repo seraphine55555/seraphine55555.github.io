@@ -11,6 +11,7 @@
   'use strict';
 
   var PASSAGES = window.READING_PASSAGES || [];
+  var NOTES = window.READING_NOTES || {};
   var STORE_KEY = 'reading/answers';
   var LANG_KEY = 'reading/lang';
   var LANGS = ['yue', 'zh', 'en'];
@@ -87,6 +88,12 @@
     'app.includeAnswers': ['包含答案', '包含答案', 'Include answers'],
     'app.printAll': ['列印全部（{n} 篇）', '列印全部（{n} 篇）', 'Print all ({n})'],
     'app.printGrade': ['列印本級（{grade} · {n} 篇）', '列印本級（{grade} · {n} 篇）', 'Print {grade} ({n})'],
+    'app.study': ['詞句詳解', '詞句詳解', 'Words & grammar'],
+    'app.studyCount': ['{v} 個詞語 · {g} 個文法點', '{v} 個詞語 · {g} 個文法點', '{v} words · {g} grammar points'],
+    'app.vocab': ['生字／詞語', '生字／詞語', 'Words & phrases'],
+    'app.grammar': ['文法', '文法', 'Grammar'],
+    'app.inText': ['文中', '文中', 'In the passage'],
+    'app.example': ['例', '例', 'e.g.'],
     'app.printHint': [
       '先自己作答，再對答案。答案喺最後一頁。',
       '先自己作答，再對答案。答案在最後一頁。',
@@ -552,6 +559,51 @@
     return null;
   }
 
+  /* 詞句詳解：生字表＋文法點。冇資料就回 null（唔會出空框）。 */
+  function notesBlock(p) {
+    var n = NOTES[p.id];
+    if (!n || !n.vocab || !n.vocab.length) return null;
+    var det = el('details', 'study-notes');
+    det.appendChild(
+      el(
+        'summary',
+        null,
+        '📖 ' +
+          t('app.study') +
+          '（' +
+          t('app.studyCount', { v: n.vocab.length, g: (n.grammar || []).length }) +
+          '）'
+      )
+    );
+
+    det.appendChild(el('h3', null, t('app.vocab')));
+    var ul = el('ul', 'vocab-list');
+    n.vocab.forEach(function (v) {
+      var li = el('li', 'vocab');
+      li.appendChild(el('span', 'v-w', v.w));
+      if (v.pos) li.appendChild(el('span', 'v-pos', v.pos));
+      li.appendChild(el('span', 'v-zh', v.zh));
+      li.appendChild(el('span', 'v-eg', v.eg));
+      ul.appendChild(li);
+    });
+    det.appendChild(ul);
+
+    if (n.grammar && n.grammar.length) {
+      det.appendChild(el('h3', null, t('app.grammar')));
+      var gl = el('ul', 'grammar-list');
+      n.grammar.forEach(function (g) {
+        var li = el('li', 'grammar');
+        li.appendChild(el('p', 'g-point', g.point));
+        li.appendChild(el('p', 'g-zh', g.zh));
+        if (g.from) li.appendChild(el('p', 'g-from', t('app.inText') + '：' + g.from));
+        if (g.eg) li.appendChild(el('p', 'g-eg', t('app.example') + '：' + g.eg));
+        gl.appendChild(li);
+      });
+      det.appendChild(gl);
+    }
+    return det;
+  }
+
   function renderPassage() {
     var p = passageById(state.passageId);
     if (!p) return renderHome();
@@ -587,6 +639,8 @@
     var body = el('div', 'passage-text');
     body.textContent = p.text;
     wrap.appendChild(body);
+    var nb = notesBlock(p);
+    if (nb) wrap.appendChild(nb);
 
     var qbox = el('section', 'question');
     var counter = el('p', 'counter', t('app.question', { n: state.qIndex + 1, total: p.questions.length }));
@@ -945,6 +999,25 @@
           kol.appendChild(li);
         });
         key.appendChild(kol);
+
+        var n = NOTES[p.id];
+        if (n) {
+          var box = el('div', 'ws-notes');
+          box.appendChild(el('h4', null, t('app.study')));
+          var vul = el('ul', 'ws-vocab');
+          n.vocab.forEach(function (v) {
+            vul.appendChild(el('li', null, v.w + (v.pos ? ' (' + v.pos + ')' : '') + ' — ' + v.zh + '　' + v.eg));
+          });
+          box.appendChild(vul);
+          if (n.grammar && n.grammar.length) {
+            var gul = el('ul', 'ws-grammar');
+            n.grammar.forEach(function (g) {
+              gul.appendChild(el('li', null, g.point + '：' + g.zh + '　' + t('app.inText') + '：' + g.from));
+            });
+            box.appendChild(gul);
+          }
+          key.appendChild(box);
+        }
       });
       sheet.appendChild(key);
     }

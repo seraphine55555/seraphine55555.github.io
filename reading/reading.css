@@ -683,6 +683,100 @@ body {
   margin: 16px 0 4px;
 }
 
+/* 詞句詳解（2026-10-18）：生字表＋文法點，預設收起。 */
+.study-notes {
+  margin: -8px 0 24px;
+  padding: 4px 16px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.study-notes summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.study-notes h3 {
+  margin: 10px 0 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.vocab-list,
+.grammar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.vocab {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  font-size: 14.5px;
+}
+
+.v-w {
+  font-weight: 700;
+}
+
+.v-pos {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.v-eg {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-family: var(--serif);
+  font-size: 13.5px;
+}
+
+.grammar {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--card-soft);
+}
+
+.g-point {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+
+.g-zh,
+.g-from,
+.g-eg {
+  margin: 0 0 3px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.g-from,
+.g-eg {
+  font-family: var(--serif);
+}
+
+.ws-notes h4 {
+  margin: 10px 0 4px;
+  font-size: 14px;
+}
+
+.ws-vocab,
+.ws-grammar {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  font-size: 12px;
+}
+
 #print-sheet {
   display: none;
   font-family: var(--serif);
@@ -830,17 +924,32 @@ footer p {
     align-items: start;
   }
 
-  .reading-top,
+  .reading-top {
+    grid-row: 1;
+    grid-column: 1 / -1;
+  }
+
   .passage-header {
+    grid-row: 2;
     grid-column: 1 / -1;
   }
 
   .passage-text {
+    grid-column: 1;
+    grid-row: 3;
     margin-top: 0;
     max-width: none;
   }
 
   .question {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 0;
+  }
+
+  .study-notes {
+    grid-column: 1 / -1;
+    grid-row: 4;
     margin-top: 0;
   }
 }

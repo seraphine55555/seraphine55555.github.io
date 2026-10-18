@@ -18,6 +18,7 @@ const ASSETS = [
   './reading.css',
   './app.js',
   './passages.js',
+  './notes.js',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
