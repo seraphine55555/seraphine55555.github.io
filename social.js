@@ -49,12 +49,18 @@
   /** 每個 app 嘅狀態（留言快取，用嚟切語言時重畫）。 */
   var apps = {};
 
+  /**
+   * 兩種 key 都要支援：
+   *   - 新 publishable key（sb_publishable_…）：只放 apikey header；放 Bearer 會因為唔係 JWT 被拒。
+   *   - 舊 legacy anon key（eyJ…）：apikey ＋ Authorization: Bearer 兩樣都放。
+   * 2026-10-18 實測：新 project 預設只出 publishable key，anon 要喺 legacy 分頁 copy。
+   */
+  var IS_PUBLISHABLE = /^sb_publishable_/.test(anon);
+
   function headers() {
-    return {
-      apikey: anon,
-      Authorization: 'Bearer ' + anon,
-      'Content-Type': 'application/json',
-    };
+    var h = { apikey: anon, 'Content-Type': 'application/json' };
+    if (!IS_PUBLISHABLE) h.Authorization = 'Bearer ' + anon;
+    return h;
   }
 
   function rest(path, options) {
