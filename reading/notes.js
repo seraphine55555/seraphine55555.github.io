@@ -10,11 +10,15 @@
  */
 window.READING_NOTES = {
   'p1-mycat': {
+    translation: [
+      '這是我養的貓 Mimi。牠是白色和灰色的。牠喜歡睡在我的床上。',
+      '每天早上，牠都在門口等我。我給牠牛奶，牠就說：「喵！」Mimi 是我最好的朋友。',
+    ],
     vocab: [
-      { w: 'grey', pos: 'adj.', zh: '灰色', eg: 'She is white and grey.' },
-      { w: 'sleep', pos: 'v.', zh: '睡覺', eg: 'She likes to sleep on my bed.' },
-      { w: 'waits', pos: 'v.', zh: '等待（wait 的第三人稱單數）', eg: 'She waits for me at the door.' },
-      { w: 'best friend', pos: 'n.', zh: '最好的朋友', eg: 'Mimi is my best friend.' },
+      { w: 'grey', ipa: '/ɡreɪ/', pos: 'adj.', zh: '灰色', eg: 'She is white and grey.' },
+      { w: 'sleep', ipa: '/sliːp/', pos: 'v.', zh: '睡覺', eg: 'She likes to sleep on my bed.' },
+      { w: 'waits', ipa: '/weɪts/', pos: 'v.', zh: '等待（wait 的第三人稱單數）', eg: 'She waits for me at the door.' },
+      { w: 'best friend', ipa: '/ˌbest ˈfrend/', pos: 'n.', zh: '最好的朋友', eg: 'Mimi is my best friend.' },
     ],
     grammar: [
       {
@@ -51,11 +55,16 @@ window.READING_NOTES = {
   },
 
   'p2-schoolbus': {
+    translation: [
+      'Tom 每天坐校車上學。校車在七點半到。Tom 和他的朋友 Ben 一起坐。',
+      '他們談論足球。有一天，校車遲了。Tom 等了十分鐘。',
+      '校車來的時候，司機說了對不起。Tom 和 Ben 仍然準時到學校。',
+    ],
     vocab: [
-      { w: 'school bus', pos: 'n.', zh: '校車', eg: 'Tom takes the school bus every day.' },
-      { w: 'late', pos: 'adj.', zh: '遲到；晚了', eg: 'the bus was late' },
-      { w: 'driver', pos: 'n.', zh: '司機', eg: 'the driver said sorry' },
-      { w: 'on time', pos: 'phr.', zh: '準時', eg: 'still got to school on time' },
+      { w: 'school bus', ipa: '/ˈskuːl bʌs/', pos: 'n.', zh: '校車', eg: 'Tom takes the school bus every day.' },
+      { w: 'late', ipa: '/leɪt/', pos: 'adj.', zh: '遲到；晚了', eg: 'the bus was late' },
+      { w: 'driver', ipa: '/ˈdraɪvə/', pos: 'n.', zh: '司機', eg: 'the driver said sorry' },
+      { w: 'on time', ipa: '/ɒn ˈtaɪm/', pos: 'phr.', zh: '準時', eg: 'still got to school on time' },
     ],
     grammar: [
       {
@@ -92,11 +101,17 @@ window.READING_NOTES = {
   },
 
   'p3-newgirl': {
+    translation: [
+      '新學期的第一天，Mia 覺得很緊張。她獨自站在操場上。',
+      '一個叫 Sara 的女孩走過來問：「你想和我們一起玩嗎？」',
+      'Mia 微笑著，加入了遊戲。',
+      '放學時，Mia 對媽媽說：「我今早很害怕，但現在我交到朋友了！」',
+    ],
     vocab: [
-      { w: 'nervous', pos: 'adj.', zh: '緊張', eg: 'She feels nervous.' },
-      { w: 'playground', pos: 'n.', zh: '操場', eg: 'She stands alone in the playground.' },
-      { w: 'scared', pos: 'adj.', zh: '害怕', eg: 'I was scared this morning.' },
-      { w: 'joins', pos: 'v.', zh: '加入（join 的第三人稱單數）', eg: 'Mia smiles and joins the game.' },
+      { w: 'nervous', ipa: '/ˈnɜːvəs/', pos: 'adj.', zh: '緊張', eg: 'She feels nervous.' },
+      { w: 'playground', ipa: '/ˈpleɪɡraʊnd/', pos: 'n.', zh: '操場', eg: 'She stands alone in the playground.' },
+      { w: 'scared', ipa: '/skeəd/', pos: 'adj.', zh: '害怕', eg: 'I was scared this morning.' },
+      { w: 'joins', ipa: '/dʒɔɪnz/', pos: 'v.', zh: '加入（join 的第三人稱單數）', eg: 'Mia smiles and joins the game.' },
     ],
     grammar: [
       {
@@ -133,12 +148,19 @@ window.READING_NOTES = {
   },
 
   'p3-lunchbox': {
+    translation: [
+      '學校旅行那天，家明太興奮了，沒有檢查自己的袋子。他拿起袋子就跑去校車。',
+      '午餐時，他打開袋子，呆住了。裏面是一個粉紅色飯盒，不是他的藍色飯盒！',
+      '「那是我的飯盒！」一個女孩說。她叫阿美。她拿錯了家明的飯盒。',
+      '他們交換飯盒，一起笑了。阿美分享了她的三明治，家明給了她一塊餅乾。',
+      '「幸好你坐在我旁邊。」她說。',
+    ],
     vocab: [
-      { w: 'excited', pos: 'adj.', zh: '興奮', eg: 'He was so excited about the school picnic' },
-      { w: 'froze', pos: 'v.', zh: '呆住（freeze 的過去式）', eg: 'he opened his bag and froze' },
-      { w: 'wrong', pos: 'adj.', zh: '錯的', eg: 'She had picked up the wrong box' },
-      { w: 'shared', pos: 'v.', zh: '分享（share 的過去式）', eg: 'They shared their sandwiches' },
-      { w: 'lucky', pos: 'adj.', zh: '幸運', eg: 'Lucky you sat next to me' },
+      { w: 'excited', ipa: '/ɪkˈsaɪtɪd/', pos: 'adj.', zh: '興奮', eg: 'He was so excited about the school picnic' },
+      { w: 'froze', ipa: '/frəʊz/', pos: 'v.', zh: '呆住（freeze 的過去式）', eg: 'he opened his bag and froze' },
+      { w: 'wrong', ipa: '/rɒŋ/', pos: 'adj.', zh: '錯的', eg: 'She had picked up the wrong box' },
+      { w: 'shared', ipa: '/ʃeəd/', pos: 'v.', zh: '分享（share 的過去式）', eg: 'They shared their sandwiches' },
+      { w: 'lucky', ipa: '/ˈlʌki/', pos: 'adj.', zh: '幸運', eg: 'Lucky you sat next to me' },
     ],
     grammar: [
       {
@@ -175,12 +197,19 @@ window.READING_NOTES = {
   },
 
   'p3-sciencefair': {
+    translation: [
+      '3A 班舉辦了一場科學展覽。每個學生都要展示一個實驗。',
+      'Amy 和 Ken 用醋和小蘇打做了一座火山。第一次只冒出幾個氣泡。',
+      '第二次比較好，但混合物溢出桌面。他們清理好，再試一次。',
+      '這次，泡沫升得很高！全班拍手，老師說：「最好的部分不是火山，而是你們嘗試了三次。」',
+      '他們沒有贏得第一名，但很自豪。',
+    ],
     vocab: [
-      { w: 'science fair', pos: 'n.', zh: '科學展覽', eg: 'Class 3A held a science fair' },
-      { w: 'vinegar', pos: 'n.', zh: '醋', eg: 'baking soda and vinegar' },
-      { w: 'mixture', pos: 'n.', zh: '混合物', eg: 'the mixture went over the table' },
-      { w: 'clapped', pos: 'v.', zh: '拍手（clap 的過去式）', eg: 'the class clapped' },
-      { w: 'proud', pos: 'adj.', zh: '自豪', eg: 'they felt proud' },
+      { w: 'science fair', ipa: '/ˈsaɪəns feə/', pos: 'n.', zh: '科學展覽', eg: 'Class 3A held a science fair' },
+      { w: 'vinegar', ipa: '/ˈvɪnɪɡə/', pos: 'n.', zh: '醋', eg: 'baking soda and vinegar' },
+      { w: 'mixture', ipa: '/ˈmɪkstʃə/', pos: 'n.', zh: '混合物', eg: 'the mixture went over the table' },
+      { w: 'clapped', ipa: '/klæpt/', pos: 'v.', zh: '拍手（clap 的過去式）', eg: 'the class clapped' },
+      { w: 'proud', ipa: '/praʊd/', pos: 'adj.', zh: '自豪', eg: 'they felt proud' },
     ],
     grammar: [
       {
@@ -217,12 +246,19 @@ window.READING_NOTES = {
   },
 
   'p4-beans': {
+    translation: [
+      '上個月，4B 班在課室外開始了一個小花園。他們在盒子裏種了五顆豆種子。',
+      'Miss Chan 叫他們要有耐心，每天早上淋水在泥土上，但不要太多。',
+      '起初，什麼都沒有發生。到了第八天，兩棵小小的綠色嫩芽出現了。',
+      '他們每個星期五量度植物。四星期後，最高的植物有 18 厘米。',
+      '他們學會了植物需要時間生長。',
+    ],
     vocab: [
-      { w: 'seeds', pos: 'n.', zh: '種子', eg: 'planted five bean seeds' },
-      { w: 'soil', pos: 'n.', zh: '泥土', eg: 'water the soil every morning' },
-      { w: 'shoots', pos: 'n.', zh: '嫩芽', eg: 'two tiny green shoots appeared' },
-      { w: 'measured', pos: 'v.', zh: '量度（measure 的過去式）', eg: 'They measured the plants every Friday' },
-      { w: 'patient', pos: 'adj.', zh: '有耐心', eg: 'told them to be patient' },
+      { w: 'seeds', ipa: '/siːdz/', pos: 'n.', zh: '種子', eg: 'planted five bean seeds' },
+      { w: 'soil', ipa: '/sɔɪl/', pos: 'n.', zh: '泥土', eg: 'water the soil every morning' },
+      { w: 'shoots', ipa: '/ʃuːts/', pos: 'n.', zh: '嫩芽', eg: 'two tiny green shoots appeared' },
+      { w: 'measured', ipa: '/ˈmeʒəd/', pos: 'v.', zh: '量度（measure 的過去式）', eg: 'They measured the plants every Friday' },
+      { w: 'patient', ipa: '/ˈpeɪʃnt/', pos: 'adj.', zh: '有耐心', eg: 'told them to be patient' },
     ],
     grammar: [
       {
@@ -259,12 +295,18 @@ window.READING_NOTES = {
   },
 
   'p4-library': {
+    translation: [
+      '陽光小學圖書館。開放時間：星期一至五上午八時至下午四時三十分（中午十二時至一時關閉午餐）。',
+      '星期六上午九時至中午十二時。星期日及公眾假期休息。',
+      '規則：你可以借兩本書，為期兩星期。把書歸還到門旁的紅色箱。',
+      '圖書館內不准飲食。請保持安靜。故事時間：星期六上午十一時。歡迎家長參加。',
+    ],
     vocab: [
-      { w: 'library', pos: 'n.', zh: '圖書館', eg: 'SUNSHINE PRIMARY SCHOOL LIBRARY' },
-      { w: 'borrow', pos: 'v.', zh: '借入', eg: 'You may borrow two books' },
-      { w: 'return', pos: 'v.', zh: '歸還', eg: 'Return books to the red box' },
-      { w: 'public holidays', pos: 'n.', zh: '公眾假期', eg: 'Closed on Sundays and public holidays.' },
-      { w: 'welcome', pos: 'adj.', zh: '歡迎', eg: 'Parents are welcome.' },
+      { w: 'library', ipa: '/ˈlaɪbrəri/', pos: 'n.', zh: '圖書館', eg: 'SUNSHINE PRIMARY SCHOOL LIBRARY' },
+      { w: 'borrow', ipa: '/ˈbɒrəʊ/', pos: 'v.', zh: '借入', eg: 'You may borrow two books' },
+      { w: 'return', ipa: '/rɪˈtɜːn/', pos: 'v.', zh: '歸還', eg: 'Return books to the red box' },
+      { w: 'public holidays', ipa: '/ˌpʌblɪk ˈhɒlədeɪz/', pos: 'n.', zh: '公眾假期', eg: 'Closed on Sundays and public holidays.' },
+      { w: 'welcome', ipa: '/ˈwelkəm/', pos: 'adj.', zh: '歡迎', eg: 'Parents are welcome.' },
     ],
     grammar: [
       {
@@ -301,12 +343,19 @@ window.READING_NOTES = {
   },
 
   'p5-oldbicycle': {
+    translation: [
+      '李先生還是男孩的時候，每天騎一輛舊單車上學。它又重又生鏽，鏈條經常甩掉。',
+      '他的朋友笑它，但李先生不介意。他自己修理它，並學會了機器怎樣運作。',
+      '很多年後，李先生成為工程師。上星期，他在父母的儲物室找到同一輛單車。',
+      '他把它清潔好，裝上新輪胎，騎它到公園。「它很慢，」他說，「但它仍然能動。」',
+      '他的孫子笑了，這次李先生和他們一起笑。',
+    ],
     vocab: [
-      { w: 'rusty', pos: 'adj.', zh: '生鏽的', eg: 'It was heavy and rusty' },
-      { w: 'chain', pos: 'n.', zh: '鏈條', eg: 'the chain often came off' },
-      { w: 'repaired', pos: 'v.', zh: '修理（repair 的過去式）', eg: 'He repaired it himself' },
-      { w: 'engineer', pos: 'n.', zh: '工程師', eg: 'Mr Lee became an engineer' },
-      { w: 'grandchildren', pos: 'n.', zh: '孫仔女', eg: 'His grandchildren laughed' },
+      { w: 'rusty', ipa: '/ˈrʌsti/', pos: 'adj.', zh: '生鏽的', eg: 'It was heavy and rusty' },
+      { w: 'chain', ipa: '/tʃeɪn/', pos: 'n.', zh: '鏈條', eg: 'the chain often came off' },
+      { w: 'repaired', ipa: '/rɪˈpeəd/', pos: 'v.', zh: '修理（repair 的過去式）', eg: 'He repaired it himself' },
+      { w: 'engineer', ipa: '/ˌendʒɪˈnɪə/', pos: 'n.', zh: '工程師', eg: 'Mr Lee became an engineer' },
+      { w: 'grandchildren', ipa: '/ˈɡræntʃɪldrən/', pos: 'n.', zh: '孫仔女', eg: 'His grandchildren laughed' },
     ],
     grammar: [
       {
@@ -343,12 +392,20 @@ window.READING_NOTES = {
   },
 
   'p6-letter': {
+    translation: [
+      '陳校長：我代表學生會寫信。我們有一個建議，想請學校做。',
+      '校園的後樓梯很暗，下雨時很滑。上個月，兩名學生在那裏跌倒。',
+      '我們已在請願信上收集了 120 個簽名。我們想請學校維修第二部升降機，並在樓梯加燈。',
+      '如果現在未能開始維修，學校可否至少在休息時間開放教員升降機？',
+      '我們明白資源有限。然而，我們認為安全對每個人都很重要。我們希望很快收到您的回覆。',
+      '此致　學生會主席 Amy Wong',
+    ],
     vocab: [
-      { w: 'principal', pos: 'n.', zh: '校長', eg: 'Dear Principal Chan' },
-      { w: 'behalf', pos: 'n.', zh: '代表（on behalf of）', eg: 'I am writing on behalf of the Student Council.' },
-      { w: 'signatures', pos: 'n.', zh: '簽名', eg: 'collected 120 signatures' },
-      { w: 'repair', pos: 'v.', zh: '維修', eg: 'repair the second lift' },
-      { w: 'safety', pos: 'n.', zh: '安全', eg: "important for everyone's safety" },
+      { w: 'principal', ipa: '/ˈprɪnsəpl/', pos: 'n.', zh: '校長', eg: 'Dear Principal Chan' },
+      { w: 'behalf', ipa: '/bɪˈhɑːf/', pos: 'n.', zh: '代表（on behalf of）', eg: 'I am writing on behalf of the Student Council.' },
+      { w: 'signatures', ipa: '/ˈsɪɡnətʃəz/', pos: 'n.', zh: '簽名', eg: 'collected 120 signatures' },
+      { w: 'repair', ipa: '/rɪˈpeə/', pos: 'v.', zh: '維修', eg: 'repair the second lift' },
+      { w: 'safety', ipa: '/ˈseɪfti/', pos: 'n.', zh: '安全', eg: "important for everyone's safety" },
     ],
     grammar: [
       {
@@ -380,6 +437,53 @@ window.READING_NOTES = {
         zh: 'However 放句首，後面加逗號，表示轉折。',
         from: 'However, we think',
         eg: 'It was raining. However, we went out.',
+      },
+    ],
+  },
+  'p4-wallet': {
+    translation: [
+      '星期一，Ben 在校車地板上找到一個棕色錢包。他打開它，看到一張車票卡、一張照片和二十元。',
+      '他第一個念頭是把錢留給自己，但他想起老師的話：「誠實的人會歸還不屬於自己的東西。」',
+      '他把錢包交給司機。第二天早上，一位老婆婆來到學校辦公室。錢包是她的。',
+      '她感謝 Ben，並送他一小盒餅乾。Ben 覺得比拿著那些錢更快樂。',
+    ],
+    vocab: [
+      { w: 'wallet', ipa: '/ˈwɒlɪt/', pos: 'n.', zh: '錢包', eg: 'Ben found a brown wallet.' },
+      { w: 'honest', ipa: '/ˈɒnɪst/', pos: 'adj.', zh: '誠實的', eg: 'Honest people return what is not theirs.' },
+      { w: 'office', ipa: '/ˈɒfɪs/', pos: 'n.', zh: '辦公室', eg: 'an old lady came to the school office' },
+      { w: 'cookies', ipa: '/ˈkʊkiz/', pos: 'n.', zh: '餅乾', eg: 'a small box of cookies' },
+      { w: 'happier', ipa: '/ˈhæpiə/', pos: 'adj.', zh: '更快樂（happy 的比較級）', eg: 'Ben felt happier' },
+    ],
+    grammar: [
+      {
+        point: '過去式講故事',
+        zh: '故事用過去式順序講：found、opened、saw、gave、came、thanked、felt。',
+        from: 'Ben found a brown wallet',
+        eg: 'She found a wallet and gave it to the driver.',
+      },
+      {
+        point: '名詞所有格 hers',
+        zh: 'hers = her wallet（她的錢包）；同 my／mine、your／yours 一樣，後面唔再加名詞。',
+        from: 'The wallet was hers.',
+        eg: 'This bag is mine; that one is hers.',
+      },
+      {
+        point: 'but 轉折',
+        zh: 'but 連接兩個相反意思：想留錢，但想起老師的話。',
+        from: 'but he remembered his teacher',
+        eg: 'He was tired, but he finished his work.',
+      },
+      {
+        point: '比較級 happier than',
+        zh: 'happy → happier；比較兩樣嘢用 than。',
+        from: 'happier than he would have',
+        eg: 'She feels happier than before.',
+      },
+      {
+        point: '引號引用別人的話',
+        zh: '用引號包住直接引語；呢句係老師講嘅話，所以用引號。',
+        from: 'Honest people return what is not theirs.',
+        eg: 'My teacher said, "Be honest."',
       },
     ],
   },

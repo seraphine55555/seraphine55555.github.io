@@ -95,6 +95,12 @@
     'app.inText': ['文中', '文中', 'In the passage'],
     'app.example': ['例', '例', 'e.g.'],
     'app.listen': ['朗讀', '朗讀', 'Listen'],
+    'app.translation': ['中文翻譯', '中文翻譯', 'Chinese translation'],
+    'app.translationHint': [
+      '先自己讀英文，再睇翻譯。',
+      '先自己讀英文，再看翻譯。',
+      'Read the English first, then check the translation.',
+    ],
     'app.printHint': [
       '先自己作答，再對答案。答案喺最後一頁。',
       '先自己作答，再對答案。答案在最後一頁。',
@@ -560,6 +566,18 @@
     return null;
   }
 
+  /* 中文翻譯：預設收起，避免小朋友一開波就睇中文。 */
+  function translationBlock(p) {
+    var n = NOTES[p.id];
+    if (!n || !n.translation || !n.translation.length) return null;
+    var det = el('details', 'translation');
+    det.appendChild(el('summary', null, '🇭🇰 ' + t('app.translation') + '（' + t('app.translationHint') + '）'));
+    n.translation.forEach(function (line) {
+      det.appendChild(el('p', null, line));
+    });
+    return det;
+  }
+
   /* 例句朗讀：用系統／瀏覽器內建語音；唔會發任何第三方請求。
      部分裝置嘅英文語音要另裝語音包，離線未必有聲——見 docs。 */
   function speak(text) {
@@ -609,6 +627,7 @@
     n.vocab.forEach(function (v) {
       var li = el('li', 'vocab');
       li.appendChild(el('span', 'v-w', v.w));
+      if (v.ipa) li.appendChild(el('span', 'v-ipa', v.ipa));
       if (v.pos) li.appendChild(el('span', 'v-pos', v.pos));
       li.appendChild(el('span', 'v-zh', v.zh));
       li.appendChild(el('span', 'v-eg', v.eg));
@@ -671,6 +690,8 @@
     wrap.appendChild(body);
     var nb = notesBlock(p);
     if (nb) wrap.appendChild(nb);
+    var tb = translationBlock(p);
+    if (tb) wrap.appendChild(tb);
 
     var qbox = el('section', 'question');
     var counter = el('p', 'counter', t('app.question', { n: state.qIndex + 1, total: p.questions.length }));
@@ -1036,7 +1057,9 @@
           box.appendChild(el('h4', null, t('app.study')));
           var vul = el('ul', 'ws-vocab');
           n.vocab.forEach(function (v) {
-            vul.appendChild(el('li', null, v.w + (v.pos ? ' (' + v.pos + ')' : '') + ' — ' + v.zh + '　' + v.eg));
+            vul.appendChild(
+              el('li', null, v.w + (v.ipa ? ' ' + v.ipa : '') + (v.pos ? ' (' + v.pos + ')' : '') + ' — ' + v.zh + '　' + v.eg)
+            );
           });
           box.appendChild(vul);
           if (n.grammar && n.grammar.length) {
@@ -1045,6 +1068,9 @@
               gul.appendChild(el('li', null, g.point + '：' + g.zh + '　' + t('app.inText') + '：' + g.from));
             });
             box.appendChild(gul);
+          }
+          if (n.translation && n.translation.length) {
+            box.appendChild(el('p', 'ws-trans', n.translation.join('')));
           }
           key.appendChild(box);
         }

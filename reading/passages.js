@@ -822,4 +822,105 @@ window.READING_PASSAGES = [
       },
     ],
   },
+  {
+    id: 'p4-wallet',
+    level: 'P4',
+    kind: 'story',
+    words: 91,
+    title: 'The Lost Wallet',
+    text:
+      'On Monday, Ben found a brown wallet on the floor of the school bus. ' +
+      'He opened it and saw a bus card, a photo and twenty dollars. His first idea was to keep ' +
+      "the money, but he remembered his teacher's words: 'Honest people return what is not theirs.' " +
+      'He gave the wallet to the driver. The next morning, an old lady came to the school office. ' +
+      'The wallet was hers. She thanked Ben and gave him a small box of cookies. Ben felt happier ' +
+      'than he would have with the money.',
+    questions: [
+      {
+        q: 'What is the story mainly about?',
+        type: 'main',
+        options: [
+          'How Ben spends twenty dollars.',
+          'Ben returns a wallet he found.',
+          'A bus driver loses a wallet.',
+          'How to make cookies.',
+        ],
+        answer: 1,
+        why: [
+          '二十元只係其中一個細節，唔係全篇主旨。',
+          '正確。全篇由搵到錢包、想留錢、最後歸還，主旨係「誠實歸還」。',
+          '司機冇唔見錢包；係老婆婆唔見。',
+          '餅乾只係結尾禮物，唔係主旨。',
+        ],
+      },
+      {
+        q: 'Where did Ben find the wallet?',
+        type: 'detail',
+        options: [
+          'In the classroom.',
+          'On the playground.',
+          'On the floor of the school bus.',
+          'At the school office.',
+        ],
+        answer: 2,
+        why: [
+          '文中冇講課室。',
+          '文中冇講操場。',
+          '正確。第一句："Ben found a brown wallet on the floor of the school bus."',
+          '學校辦公室係老婆婆後來去嘅地方。',
+        ],
+      },
+      {
+        q: 'Why did Ben decide to return the wallet?',
+        type: 'inference',
+        options: [
+          'He was afraid of the driver.',
+          'He remembered his teacher’s words about honesty.',
+          'The wallet was empty.',
+          'He wanted the cookies.',
+        ],
+        answer: 1,
+        why: [
+          '文中冇講佢怕司機。',
+          '正確。文中佢想起老師嘅話：誠實嘅人會歸還唔屬於自己嘅東西。',
+          '錢包裏面有二十元，唔係空。',
+          '餅乾係後來老婆婆送，歸還之前佢冇諗餅乾。',
+        ],
+      },
+      {
+        q: 'In the sentence "Honest people return what is not theirs.", "theirs" means…',
+        type: 'vocab',
+        options: [
+          'Ben’s money.',
+          'other people’s things.',
+          'the driver’s wallet.',
+          'the teacher’s words.',
+        ],
+        answer: 1,
+        why: [
+          'theirs 係指「唔屬於自己、屬於別人嘅東西」，唔係 Ben 嘅錢。',
+          '正確。theirs = 別人嘅東西；誠實嘅人會歸還唔屬於自己嘅東西。',
+          'theirs 唔專指司機；錢包係老婆婆嘅。',
+          'theirs 唔係指老師講嘅話。',
+        ],
+      },
+      {
+        q: 'Why did the old lady come to the school office?',
+        type: 'cause',
+        options: [
+          'To give Ben some cookies.',
+          'To look for her wallet.',
+          'To thank the bus driver.',
+          'To see the teacher.',
+        ],
+        answer: 1,
+        why: [
+          '送餅乾係搵返錢包之後嘅事，唔係嚟學校嘅原因。',
+          '正確。佢嚟係因為錢包係佢嘅（"The wallet was hers."），即係嚟搵返錢包。',
+          '文中冇講佢去多謝司機。',
+          '文中冇講佢要見老師。',
+        ],
+      },
+    ],
+  },
 ];
