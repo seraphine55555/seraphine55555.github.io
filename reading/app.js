@@ -30,6 +30,46 @@
       '這個年級暫時未有樣本。',
       'No sample for this level yet.',
     ],
+    'app.summary': [
+      '已完成 {done}／{total} 篇 · 答對 {right}／{answered} 題',
+      '已完成 {done}／{total} 篇 · 答對 {right}／{answered} 題',
+      '{done} of {total} passages done · {right} of {answered} correct',
+    ],
+    'app.weakTitle': ['弱項題型', '弱項題型', 'Weakest question types'],
+    'app.weakLine': ['{type}：{right}／{total}', '{type}：{right}／{total}', '{type}: {right}/{total}'],
+    'app.wrongTitle': ['錯題重練', '錯題重練', 'Practise missed questions'],
+    'app.wrongDesc': [
+      '有 {n} 題答錯過。重做答對，就會由清單清走。',
+      '有 {n} 題答錯過。重做答對，就會由清單清走。',
+      '{n} questions you missed. Answer them correctly to clear them.',
+    ],
+    'app.wrongStart': ['開始重練', '開始重練', 'Start practice'],
+    'app.reviewBadge': ['錯題重練', '錯題重練', 'Missed questions'],
+    'app.reviewOf': [
+      '第 {i}／{n} 題 · 來自《{title}》',
+      '第 {i}／{n} 題 · 來自《{title}》',
+      'Question {i} of {n} · from "{title}"',
+    ],
+    'app.showPassage': ['睇返文章', '看回文章', 'Show the passage'],
+    'app.reviewCorrect': [
+      '答對，呢題會由錯題清單移除。',
+      '答對，這題會由錯題清單移除。',
+      'Correct — this question is cleared from your list.',
+    ],
+    'app.reviewSummary': [
+      '清走 {fixed} 題，仲有 {left} 題。',
+      '清走 {fixed} 題，還有 {left} 題。',
+      'Cleared {fixed}, {left} still to go.',
+    ],
+    'app.reviewAllClear': [
+      '所有錯題都清走咗！',
+      '所有錯題都清走咗！',
+      'All missed questions cleared!',
+    ],
+    'app.reviewAgain': ['再重練', '再重練', 'Practise again'],
+    'app.noWeak': ['未夠數據睇弱項', '未夠數據看弱項', 'Not enough data yet'],
+    'app.allGood': ['暫時未見弱項', '暫時未見弱項', 'No weak areas yet'],
+    'app.breakdown': ['本篇題型表現', '本篇題型表現', 'By question type'],
     'app.lede': [
       '揀一篇，答 5 題。每題答完會逐個選項解釋——包括你揀錯嗰個。',
       '選一篇，答 5 題。每題答完會逐個選項解釋——包括你選錯的那個。',
@@ -113,6 +153,7 @@
 
   var answers = loadAnswers();
   var GRADE_KEY = 'reading/grade';
+  var FIXED_KEY = 'reading/fixed';
   var GRADES = ['all', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6'];
   var grade = 'all';
   try {
@@ -120,6 +161,24 @@
     if (g && GRADES.indexOf(g) >= 0) grade = g;
   } catch (e) {}
   var state = { view: 'home', passageId: null, qIndex: 0, picked: null };
+
+  var fixed = {};
+  try {
+    var rawFixed = localStorage.getItem(FIXED_KEY);
+    if (rawFixed) fixed = JSON.parse(rawFixed) || {};
+  } catch (e) {
+    fixed = {};
+  }
+
+  function saveFixed() {
+    try {
+      localStorage.setItem(FIXED_KEY, JSON.stringify(fixed));
+    } catch (e) {}
+  }
+
+  function qkey(p, i) {
+    return p.id + ':' + i;
+  }
 
   var root = document.getElementById('app');
 
@@ -139,6 +198,67 @@
     return sortedPassages().filter(function (p) {
       return p.level === grade;
     });
+  }
+
+  /* 錯題 = 答過、答錯、而且未清走。完全由 localStorage 推導，冇額外上傳。 */
+  function wrongList() {
+    var out = [];
+    filteredPassages().forEach(function (p) {
+      var given = answers[p.id] || {};
+      p.questions.forEach(function (q, i) {
+        if (typeof given[i] !== 'number') return;
+        if (given[i] === q.answer) return;
+        if (fixed[qkey(p, i)]) return;
+        out.push({ p: p, i: i, q: q });
+      });
+    });
+    return out;
+  }
+
+  /* 每個題型嘅答對率（只計答過嘅題）。 */
+  function typeStats() {
+    var by = {};
+    var order = [];
+    filteredPassages().forEach(function (p) {
+      var given = answers[p.id] || {};
+      p.questions.forEach(function (q, i) {
+        if (typeof given[i] !== 'number') return;
+        if (!by[q.type]) {
+          by[q.type] = { right: 0, total: 0 };
+          order.push(q.type);
+        }
+        by[q.type].total++;
+        if (given[i] === q.answer) by[q.type].right++;
+      });
+    });
+    return order
+      .map(function (ty) {
+        return { type: ty, right: by[ty].right, total: by[ty].total };
+      })
+      .filter(function (s) {
+        return s.total > 0;
+      })
+      .sort(function (a, b) {
+        return a.right / a.total - b.right / b.total;
+      });
+  }
+
+  function overall() {
+    var done = 0;
+    var right = 0;
+    var answered = 0;
+    PASSAGES.forEach(function (p) {
+      var given = answers[p.id] || {};
+      var n = 0;
+      p.questions.forEach(function (q, i) {
+        if (typeof given[i] !== 'number') return;
+        n++;
+        answered++;
+        if (given[i] === q.answer) right++;
+      });
+      if (n === p.questions.length) done++;
+    });
+    return { done: done, right: right, answered: answered, total: PASSAGES.length };
   }
 
   function el(tag, cls, text) {
@@ -220,6 +340,48 @@
       gradeRow.appendChild(b);
     });
     wrap.appendChild(gradeRow);
+
+    /* 進度摘要 + 錯題重練 + 弱項（2026-10-18 加）：答過先顯示，唔會一開波就滿屏數字。 */
+    var ov = overall();
+    if (ov.answered > 0) {
+      wrap.appendChild(el('p', 'summary', t('app.summary', ov)));
+    }
+
+    var wrongs = wrongList();
+    if (wrongs.length > 0) {
+      var wc = el('div', 'wrong-card');
+      wc.setAttribute('data-wrong-count', String(wrongs.length));
+      var wt = el('div', 'wrong-text');
+      wt.appendChild(el('h3', null, t('app.wrongTitle') + '（' + wrongs.length + '）'));
+      wt.appendChild(el('p', 'meta', t('app.wrongDesc', { n: wrongs.length })));
+      wc.appendChild(wt);
+      var wbtn = el('button', 'btn primary', t('app.wrongStart'));
+      wbtn.type = 'button';
+      wbtn.setAttribute('data-wrong-start', '');
+      wbtn.addEventListener('click', startReview);
+      wc.appendChild(wbtn);
+      wrap.appendChild(wc);
+    }
+
+    var stats = typeStats();
+    if (ov.answered > 0) {
+      var weak = el('div', 'weak');
+      weak.appendChild(el('h3', null, t('app.weakTitle')));
+      var weakOnly = stats.filter(function (s) {
+        return s.right < s.total;
+      });
+      if (weakOnly.length) {
+        var wl = el('ul', 'weak-list');
+        weakOnly.slice(0, 3).forEach(function (s) {
+          var li = el('li', null, t('app.weakLine', { type: t('type.' + s.type), right: s.right, total: s.total }));
+          wl.appendChild(li);
+        });
+        weak.appendChild(wl);
+      } else {
+        weak.appendChild(el('p', 'meta', t('app.allGood')));
+      }
+      wrap.appendChild(weak);
+    }
 
     var shown = filteredPassages();
     if (shown.length === 0) {
@@ -315,21 +477,49 @@
     var qtext = el('h2', 'qtext', q.q);
     qbox.appendChild(qtext);
 
-    var letters = ['A', 'B', 'C', 'D'];
-    var opts = el('div', 'options');
-    opts.setAttribute('role', 'group');
-    opts.setAttribute('aria-label', t('app.allOptions'));
+    var area = answerArea(p, q, state.qIndex);
+    qbox.appendChild(area.box);
+    if (area.answered) {
+      qbox.appendChild(
+        nextButton(state.qIndex === p.questions.length - 1 ? t('app.finish') : t('app.next'), function () {
+          if (state.qIndex === p.questions.length - 1) {
+            state.view = 'result';
+          } else {
+            state.qIndex++;
+          }
+          render();
+        })
+      );
+    } else {
+      qbox.appendChild(el('p', 'hint', t('app.pickFirst')));
+    }
 
-    var locked = typeof given[state.qIndex] === 'number';
-    var picked = locked ? given[state.qIndex] : state.picked;
+    wrap.appendChild(qbox);
+    root.replaceChildren(wrap);
+  }
+
+  /* 選項＋（答過之後）四個選項解釋。閱讀同錯題重練共用。
+     fresh=true（重練）：唔理原本答案，重新答一次；答案只記喺 session，
+     唔會改寫原本分數，答對就經 fixed 清走。 */
+  function answerArea(p, q, qIndex, opts) {
+    var fresh = !!(opts && opts.fresh);
+    var key = qkey(p, qIndex);
+    var box = el('div', 'answer-area');
+    var letters = ['A', 'B', 'C', 'D'];
+    var locked = fresh
+      ? typeof state.reviewPicked[key] === 'number'
+      : typeof (answers[p.id] || {})[qIndex] === 'number';
+    var picked = fresh ? state.reviewPicked[key] : locked ? answers[p.id][qIndex] : null;
+
+    var optsBox = el('div', 'options');
+    optsBox.setAttribute('role', 'group');
+    optsBox.setAttribute('aria-label', t('app.allOptions'));
 
     q.options.forEach(function (text, i) {
       var b = el('button', 'option', null);
       b.type = 'button';
-      var letter = el('span', 'letter', letters[i]);
-      var label = el('span', 'option-text', text);
-      b.appendChild(letter);
-      b.appendChild(label);
+      b.appendChild(el('span', 'letter', letters[i]));
+      b.appendChild(el('span', 'option-text', text));
       b.setAttribute('aria-pressed', picked === i ? 'true' : 'false');
       if (locked) {
         b.disabled = true;
@@ -337,44 +527,39 @@
         if (i === picked && picked !== q.answer) b.classList.add('is-wrong');
       }
       b.addEventListener('click', function () {
-        if (typeof (answers[p.id] || {})[state.qIndex] === 'number') return;
-        state.picked = i;
-        answers[p.id] = answers[p.id] || {};
-        answers[p.id][state.qIndex] = i;
-        saveAnswers(answers);
-        render();
-      });
-      opts.appendChild(b);
-    });
-    qbox.appendChild(opts);
-
-    if (typeof picked === 'number') {
-      qbox.appendChild(feedback(q, picked, letters));
-      var nav = el('div', 'nav-row');
-      var next = el(
-        'button',
-        'btn primary',
-        state.qIndex === p.questions.length - 1 ? t('app.finish') : t('app.next')
-      );
-      next.type = 'button';
-      next.addEventListener('click', function () {
-        state.picked = null;
-        if (state.qIndex === p.questions.length - 1) {
-          state.view = 'result';
-        } else {
-          state.qIndex++;
+        if (locked) return;
+        if (fresh) {
+          state.reviewPicked[key] = i;
+          if (i === q.answer) fixed[key] = true;
+          else delete fixed[key];
+          saveFixed();
+          render();
+          return;
         }
+        answers[p.id] = answers[p.id] || {};
+        answers[p.id][qIndex] = i;
+        saveAnswers(answers);
+        /* 答對就由錯題清單清走；答錯就留低（清單係推導出嚟）。 */
+        if (i === q.answer) fixed[key] = true;
+        else delete fixed[key];
+        saveFixed();
         render();
       });
-      nav.appendChild(next);
-      qbox.appendChild(nav);
-    } else {
-      var hint = el('p', 'hint', t('app.pickFirst'));
-      qbox.appendChild(hint);
-    }
+      optsBox.appendChild(b);
+    });
+    box.appendChild(optsBox);
 
-    wrap.appendChild(qbox);
-    root.replaceChildren(wrap);
+    if (locked) box.appendChild(feedback(q, picked, letters));
+    return { box: box, answered: locked, picked: picked };
+  }
+
+  function nextButton(label, handler) {
+    var nav = el('div', 'nav-row');
+    var b = el('button', 'btn primary', label);
+    b.type = 'button';
+    b.addEventListener('click', handler);
+    nav.appendChild(b);
+    return nav;
   }
 
   function feedback(q, picked, letters) {
@@ -412,6 +597,30 @@
     wrap.appendChild(el('p', 'score-big', t('app.score', { score: score, total: p.questions.length })));
     wrap.appendChild(el('p', 'lede', t('app.resultLede')));
 
+    /* 本篇逐個題型嘅答對率：家長一眼睇到「推論」定「詞義」弱。 */
+    var byType = {};
+    var order = [];
+    p.questions.forEach(function (q, i) {
+      if (!byType[q.type]) {
+        byType[q.type] = { right: 0, total: 0 };
+        order.push(q.type);
+      }
+      byType[q.type].total++;
+      if ((answers[p.id] || {})[i] === q.answer) byType[q.type].right++;
+    });
+    if (order.length > 1) {
+      var tb = el('div', 'type-break');
+      tb.appendChild(el('h3', null, t('app.breakdown')));
+      var tul = el('ul', 'weak-list');
+      order.forEach(function (ty) {
+        tul.appendChild(
+          el('li', null, t('app.weakLine', { type: t('type.' + ty), right: byType[ty].right, total: byType[ty].total }))
+        );
+      });
+      tb.appendChild(tul);
+      wrap.appendChild(tb);
+    }
+
     var list = el('ol', 'review-list');
     p.questions.forEach(function (q, i) {
       var picked = (answers[p.id] || {})[i];
@@ -448,9 +657,116 @@
     root.replaceChildren(wrap);
   }
 
+  /* ---------------- 錯題重練 ---------------- */
+
+  function startReview() {
+    var queue = wrongList();
+    if (!queue.length) return;
+    state.reviewQueue = queue;
+    state.reviewPos = 0;
+    state.reviewFixed = 0;
+    state.reviewPicked = {};
+    state.view = 'review';
+    render();
+  }
+
+  function renderReview() {
+    var queue = state.reviewQueue || [];
+    if (!queue.length) {
+      state.view = 'home';
+      return renderHome();
+    }
+    var item = queue[state.reviewPos];
+    var p = item.p;
+    var q = item.q;
+    var idx = item.i;
+    var wrap = el('section', 'review-mode');
+
+    var top = el('div', 'reading-top');
+    var badge = el('span', 'pill', t('app.reviewBadge'));
+    top.appendChild(badge);
+    var back = el('button', 'btn ghost', '← ' + t('app.back'));
+    back.type = 'button';
+    back.addEventListener('click', function () {
+      state.view = 'home';
+      render();
+    });
+    top.appendChild(back);
+    wrap.appendChild(top);
+
+    var head = el('header', 'passage-header');
+    head.appendChild(
+      el('p', 'counter', t('app.reviewOf', { i: state.reviewPos + 1, n: queue.length, title: p.title }))
+    );
+    head.appendChild(el('h1', null, p.title));
+    wrap.appendChild(head);
+
+    /* 重練時可以即時睇返篇文章，唔使跳走。 */
+    var det = el('details', 'passage-details');
+    det.appendChild(el('summary', null, t('app.showPassage')));
+    var body = el('div', 'passage-text');
+    body.textContent = p.text;
+    det.appendChild(body);
+    wrap.appendChild(det);
+
+    var qbox = el('section', 'question');
+    qbox.appendChild(el('span', 'tag', t('type.' + q.type)));
+    qbox.appendChild(el('h2', 'qtext', q.q));
+    var area = answerArea(p, q, idx, { fresh: true });
+    qbox.appendChild(area.box);
+    if (area.answered) {
+      qbox.appendChild(
+        nextButton(t('app.next'), function () {
+          var ok = state.reviewPicked[qkey(p, idx)] === q.answer;
+          if (ok) state.reviewFixed = (state.reviewFixed || 0) + 1;
+          if (state.reviewPos === queue.length - 1) {
+            state.view = 'reviewDone';
+          } else {
+            state.reviewPos++;
+          }
+          render();
+        })
+      );
+    } else {
+      qbox.appendChild(el('p', 'hint', t('app.pickFirst')));
+    }
+    wrap.appendChild(qbox);
+    root.replaceChildren(wrap);
+  }
+
+  function renderReviewDone() {
+    var left = wrongList().length;
+    var wrap = el('section', 'review-done');
+    var h = el('h1', null, t('app.reviewBadge'));
+    wrap.appendChild(h);
+    if (left === 0) {
+      wrap.appendChild(el('p', 'lede', t('app.reviewAllClear')));
+    } else {
+      wrap.appendChild(el('p', 'lede', t('app.reviewSummary', { fixed: state.reviewFixed || 0, left: left })));
+    }
+    var row = el('div', 'nav-row');
+    var home = el('button', 'btn primary', t('app.back'));
+    home.type = 'button';
+    home.addEventListener('click', function () {
+      state.view = 'home';
+      render();
+    });
+    row.appendChild(home);
+    if (left > 0) {
+      var again = el('button', 'btn', t('app.reviewAgain'));
+      again.type = 'button';
+      again.addEventListener('click', startReview);
+      row.appendChild(again);
+    }
+    wrap.appendChild(row);
+    root.replaceChildren(wrap);
+  }
+
   function render() {
     if (state.view === 'home') return renderHome();
     if (state.view === 'read') return renderPassage();
+    if (state.view === 'review') return renderReview();
+    if (state.view === 'reviewDone') return renderReviewDone();
     if (state.view === 'result') return renderResult();
     return renderHome();
   }
