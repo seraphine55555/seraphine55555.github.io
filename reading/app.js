@@ -81,6 +81,14 @@
       '所有到期錯題都清走咗！{n} 題已排期之後重溫。',
       'All due questions cleared! {n} scheduled for later review.',
     ],
+    'app.print': ['列印工作紙', '列印工作紙', 'Print worksheet'],
+    'app.printTitle': ['閱讀理解工作紙', '閱讀理解工作紙', 'Reading worksheet'],
+    'app.answerKey': ['答案（家長用）', '答案（家長用）', 'Answer key (for parents)'],
+    'app.printHint': [
+      '先自己作答，再對答案。答案喺最後一頁。',
+      '先自己作答，再對答案。答案在最後一頁。',
+      'Answer all questions first. The answer key is on the last page.',
+    ],
     'app.lede': [
       '揀一篇，答 5 題。每題答完會逐個選項解釋——包括你揀錯嗰個。',
       '選一篇，答 5 題。每題答完會逐個選項解釋——包括你選錯的那個。',
@@ -528,6 +536,13 @@
       render();
     });
     top.appendChild(back);
+    var printBtn = el('button', 'btn', '🖨 ' + t('app.print'));
+    printBtn.type = 'button';
+    printBtn.setAttribute('data-print', '');
+    printBtn.addEventListener('click', function () {
+      printWorksheet(p);
+    });
+    top.appendChild(printBtn);
     wrap.appendChild(top);
 
     var head = el('header', 'passage-header');
@@ -835,6 +850,68 @@
     }
     wrap.appendChild(row);
     root.replaceChildren(wrap);
+  }
+
+  /* ---------------- 列印工作紙（2026-10-18）----------------
+     家長習慣印出嚟做；同一頁資料，print CSS 只顯示 #print-sheet，
+     最後一頁係答案（page-break-before）。 */
+  function printWorksheet(p) {
+    var sheet = document.getElementById('print-sheet');
+    if (!sheet) {
+      sheet = document.createElement('div');
+      sheet.id = 'print-sheet';
+      sheet.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(sheet);
+    }
+    sheet.replaceChildren();
+
+    var head = el('header', 'ws-head');
+    head.appendChild(el('h1', null, t('app.printTitle')));
+    head.appendChild(
+      el('p', 'ws-meta', p.level + ' · ' + stars(p) + ' · ' + t('kind.' + p.kind) + ' · ' + t('app.printHint'))
+    );
+    sheet.appendChild(head);
+
+    sheet.appendChild(el('h2', 'ws-title', p.title));
+    var text = el('div', 'ws-passage');
+    text.textContent = p.text;
+    sheet.appendChild(text);
+
+    var letters = ['A', 'B', 'C', 'D'];
+    var ol = el('ol', 'ws-questions');
+    p.questions.forEach(function (q, i) {
+      var li = el('li', 'ws-q');
+      li.appendChild(el('p', 'ws-qtext', q.q));
+      var ul = el('ul', 'ws-options');
+      q.options.forEach(function (op, oi) {
+        ul.appendChild(el('li', null, letters[oi] + '. ' + op));
+      });
+      li.appendChild(ul);
+      ol.appendChild(li);
+    });
+    sheet.appendChild(ol);
+
+    var key = el('section', 'ws-key');
+    key.appendChild(el('h2', null, t('app.answerKey')));
+    var kol = el('ol', 'ws-answers');
+    p.questions.forEach(function (q, i) {
+      var li = el('li', null, '');
+      var why = (q.why && q.why[q.answer] ? q.why[q.answer] : '').replace(/^正確。\s*/, '');
+      li.textContent = letters[q.answer] + ' — ' + why;
+      kol.appendChild(li);
+    });
+    key.appendChild(kol);
+    sheet.appendChild(key);
+
+    document.body.classList.add('print-mode');
+    try {
+      window.print();
+    } catch (e) {
+      /* 列印對話框被瀏覽器攔截都唔影響畫面 */
+    }
+    window.setTimeout(function () {
+      document.body.classList.remove('print-mode');
+    }, 600);
   }
 
   function render() {
