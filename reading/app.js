@@ -88,6 +88,7 @@
     'app.includeAnswers': ['包含答案', '包含答案', 'Include answers'],
     'app.printAll': ['列印全部（{n} 篇）', '列印全部（{n} 篇）', 'Print all ({n})'],
     'app.printGrade': ['列印本級（{grade} · {n} 篇）', '列印本級（{grade} · {n} 篇）', 'Print {grade} ({n})'],
+    'app.printWrong': ['列印錯題本（{n} 題）', '列印錯題本（{n} 題）', 'Print missed questions ({n})'],
     'app.study': ['詞句詳解', '詞句詳解', 'Words & grammar'],
     'app.studyCount': ['{v} 個詞語 · {g} 個文法點', '{v} 個詞語 · {g} 個文法點', '{v} words · {g} grammar points'],
     'app.vocab': ['生字／詞語', '生字／詞語', 'Words & phrases'],
@@ -485,6 +486,13 @@
       wbtn.setAttribute('data-wrong-start', '');
       wbtn.addEventListener('click', startReview);
       wc.appendChild(wbtn);
+      var pwbtn = el('button', 'btn ghost', t('app.printWrong', { n: wrongs.length }));
+      pwbtn.type = 'button';
+      pwbtn.setAttribute('data-print-wrong', '');
+      pwbtn.addEventListener('click', function () {
+        printWrong(wrongs);
+      });
+      wc.appendChild(pwbtn);
       wrap.appendChild(wc);
     }
 
@@ -992,10 +1000,16 @@
   /* ---------------- 列印工作紙（2026-10-18）----------------
      可以印一篇（閱讀畫面）或一次印本級／全部（首頁）。
      print CSS 只顯示 #print-sheet；每篇另起一頁，答案集中喺最後。 */
-  function printWorksheet(passages, includeAnswers) {
+  function printWorksheet(passages, includeAnswers, picks) {
     var list = Array.isArray(passages) ? passages : [passages];
     if (!list.length) return;
     var withKey = includeAnswers !== false;
+    var pickIdx = function (p) {
+      if (picks && picks[p.id]) return picks[p.id];
+      return p.questions.map(function (_, k) {
+        return k;
+      });
+    };
     var sheet = document.getElementById('print-sheet');
     if (!sheet) {
       sheet = document.createElement('div');
@@ -1023,7 +1037,8 @@
       block.appendChild(text);
 
       var ol = el('ol', 'ws-questions');
-      p.questions.forEach(function (q) {
+      pickIdx(p).forEach(function (qi) {
+        var q = p.questions[qi];
         var li = el('li', 'ws-q');
         li.appendChild(el('p', 'ws-qtext', q.q));
         var ul = el('ul', 'ws-options');
@@ -1043,7 +1058,8 @@
       list.forEach(function (p) {
         key.appendChild(el('h3', 'ws-keytitle', p.title));
         var kol = el('ol', 'ws-answers');
-        p.questions.forEach(function (q) {
+        pickIdx(p).forEach(function (qi) {
+          var q = p.questions[qi];
           var li = el('li', null, '');
           var why = (q.why && q.why[q.answer] ? q.why[q.answer] : '').replace(/^正確。\s*/, '');
           li.textContent = letters[q.answer] + ' — ' + why;
@@ -1087,6 +1103,30 @@
     window.setTimeout(function () {
       document.body.classList.remove('print-mode');
     }, 600);
+  }
+
+  /* 錯題本：只印到期錯題（按篇章分組），答案頁只列對應題目。 */
+  function printWrong(wrongs) {
+    var order = [];
+    var byId = {};
+    wrongs.forEach(function (w) {
+      if (!byId[w.p.id]) {
+        byId[w.p.id] = { p: w.p, idx: [] };
+        order.push(byId[w.p.id]);
+      }
+      byId[w.p.id].idx.push(w.i);
+    });
+    var picks = {};
+    order.forEach(function (o) {
+      picks[o.p.id] = o.idx;
+    });
+    printWorksheet(
+      order.map(function (o) {
+        return o.p;
+      }),
+      true,
+      picks
+    );
   }
 
   function render() {
