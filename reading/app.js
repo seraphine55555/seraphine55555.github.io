@@ -12,7 +12,9 @@
 
   var PASSAGES = window.READING_PASSAGES || [];
   var NOTES = window.READING_NOTES || {};
+  var SHORT = window.READING_SHORT || {};
   var STORE_KEY = 'reading/answers';
+  var SHORT_KEY = 'reading/short';
   var LANG_KEY = 'reading/lang';
   var LANGS = ['yue', 'zh', 'en'];
 
@@ -114,6 +116,9 @@
     'app.reportNextMore': ['仲有 {n} 篇未做，可以每日一篇。', '仲有 {n} 篇未做，可以每日一篇。', '{n} passages left — one a day works well.'],
     'app.reportNextAll': ['全部做完，可以重溫弱項題型。', '全部做完，可以重溫弱項題型。', 'All done — revisit the weak types.'],
     'app.localOnly': ['只存喺呢部機，冇上傳。', '只存在這台裝置，沒有上傳。', 'Stored on this device only. Nothing is uploaded.'],
+    'app.shortTitle': ['講一講（可選）', '講一講（可選）', 'Talk it through (optional)'],
+    'app.shortHint': ['用自己嘅話講一次，唔計分；答案只留喺呢部機。', '用自己嘅話講一次，不計分；答案只留在這台裝置。', 'Say it in your own words. Not marked; kept on this device.'],
+    'app.shortReveal': ['睇參考答案', '睇參考答案', 'Show a sample answer'],
     'app.study': ['詞句詳解', '詞句詳解', 'Words & grammar'],
     'app.studyCount': ['{v} 個詞語 · {g} 個文法點', '{v} 個詞語 · {g} 個文法點', '{v} words · {g} grammar points'],
     'app.vocab': ['生字／詞語', '生字／詞語', 'Words & phrases'],
@@ -210,6 +215,23 @@
   function saveAnswers(all) {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(all));
+    } catch (e) {}
+  }
+
+  /* 延伸題草稿：只存本機，重開篇章會記得。 */
+  var shortDrafts = {};
+  try {
+    var rawShort = localStorage.getItem(SHORT_KEY);
+    if (rawShort) shortDrafts = JSON.parse(rawShort) || {};
+  } catch (e) {
+    shortDrafts = {};
+  }
+
+  function saveShortDraft(id, text) {
+    if (text) shortDrafts[id] = text;
+    else delete shortDrafts[id];
+    try {
+      localStorage.setItem(SHORT_KEY, JSON.stringify(shortDrafts));
     } catch (e) {}
   }
 
@@ -626,6 +648,39 @@
     return det;
   }
 
+  /* 延伸題：唔計分，鼓勵用自己嘅話講一次；草稿只存本機。 */
+  function shortBlock(p) {
+    var s = SHORT[p.id];
+    if (!s || !s.q) return null;
+    var det = el('details', 'short-answer');
+    det.appendChild(el('summary', null, '✍️ ' + t('app.shortTitle')));
+    det.appendChild(el('p', 'short-q', s.q));
+    det.appendChild(el('p', 'meta', t('app.shortHint')));
+    var ta = document.createElement('textarea');
+    ta.className = 'short-input';
+    ta.rows = 3;
+    ta.maxLength = 600;
+    ta.setAttribute('data-short-input', '');
+    ta.value = shortDrafts[p.id] || '';
+    ta.addEventListener('input', function () {
+      saveShortDraft(p.id, ta.value);
+    });
+    det.appendChild(ta);
+    var btn = el('button', 'btn ghost', t('app.shortReveal'));
+    btn.type = 'button';
+    btn.setAttribute('data-short-reveal', '');
+    btn.setAttribute('aria-expanded', 'false');
+    var sample = el('p', 'short-sample', s.sample);
+    sample.hidden = true;
+    btn.addEventListener('click', function () {
+      sample.hidden = !sample.hidden;
+      btn.setAttribute('aria-expanded', String(!sample.hidden));
+    });
+    det.appendChild(btn);
+    det.appendChild(sample);
+    return det;
+  }
+
   /* 例句朗讀：用系統／瀏覽器內建語音；唔會發任何第三方請求。
      部分裝置嘅英文語音要另裝語音包，離線未必有聲——見 docs。 */
   function speak(text) {
@@ -740,6 +795,8 @@
     if (nb) wrap.appendChild(nb);
     var tb = translationBlock(p);
     if (tb) wrap.appendChild(tb);
+    var sb = shortBlock(p);
+    if (sb) wrap.appendChild(sb);
 
     var qbox = el('section', 'question');
     var counter = el('p', 'counter', t('app.question', { n: state.qIndex + 1, total: p.questions.length }));

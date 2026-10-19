@@ -793,6 +793,57 @@ body {
   font-size: 12px;
 }
 
+/* 延伸題（2026-10-19）：可選、唔計分、草稿只存本機。 */
+.short-answer {
+  margin: -8px 0 24px;
+  padding: 4px 16px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.short-answer summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.short-q {
+  margin: 6px 0 2px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.short-input {
+  width: 100%;
+  min-height: 84px;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  background: var(--card-soft);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+
+.short-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.short-sample {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(246, 168, 37, 0.1);
+  font-size: 14px;
+}
+
 /* 學習報告（2026-10-19）：一頁家長摘要。 */
 .report-sec {
   margin: 16px 0 0;
@@ -1085,6 +1136,12 @@ footer p {
   .translation {
     grid-column: 1 / -1;
     grid-row: 5;
+    margin-top: 0;
+  }
+
+  .short-answer {
+    grid-column: 1 / -1;
+    grid-row: 6;
     margin-top: 0;
   }
 }
