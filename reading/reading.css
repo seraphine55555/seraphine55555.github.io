@@ -793,6 +793,47 @@ body {
   font-size: 12px;
 }
 
+/* 學習報告（2026-10-19）：一頁家長摘要。 */
+.report-sec {
+  margin: 16px 0 0;
+  break-inside: avoid;
+}
+
+.report-sec h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.report-sec p {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+  text-align: left;
+  padding: 5px 6px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.report-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+@media print {
+  .report-table th,
+  .report-table td {
+    border-bottom-color: #ccc;
+  }
+}
+
 .v-eg {
   flex-basis: 100%;
   color: var(--muted);

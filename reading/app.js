@@ -97,6 +97,23 @@
       'Try next: {title} ({level} · {stars})',
     ],
     'app.perfect': ['全對，答得好！', '全對，答得好！', 'All correct!'],
+    'app.report': ['學習報告', '學習報告', 'Progress report'],
+    'app.reportHint': ['家長用：一頁睇完成績同弱項。', '家長用：一頁看完成績和弱項。', 'For parents: one page of progress and weak spots.'],
+    'app.grade': ['年級', '年級', 'Grade'],
+    'app.doneShort': ['完成', '完成', 'Done'],
+    'app.answeredShort': ['答題', '答題', 'Answered'],
+    'app.accuracy': ['答對率', '答對率', 'Accuracy'],
+    'app.overall': ['整體', '整體', 'Overall'],
+    'app.weakTypes': ['弱項題型', '弱項題型', 'Weak question types'],
+    'app.suggestion': ['建議', '建議', 'Suggested next step'],
+    'app.reportDone': ['已完成：{done} / {total} 篇', '已完成：{done} / {total} 篇', 'Completed: {done} / {total} passages'],
+    'app.reportAnswers': ['答題：{n} 題，答對 {right}（{pct}%）', '答題：{n} 題，答對 {right}（{pct}%）', 'Answered: {n}, correct {right} ({pct}%)'],
+    'app.dueLine': ['到期錯題：{n}；已排期：{m}', '到期錯題：{n}；已排期：{m}', 'Due now: {n}; scheduled: {m}'],
+    'app.reportNoWeak': ['暫時未有弱項。', '暫時未有弱項。', 'No weak types yet.'],
+    'app.reportNextDue': ['先重練 {n} 題到期錯題。', '先重練 {n} 題到期錯題。', 'Start with the {n} due questions.'],
+    'app.reportNextMore': ['仲有 {n} 篇未做，可以每日一篇。', '仲有 {n} 篇未做，可以每日一篇。', '{n} passages left — one a day works well.'],
+    'app.reportNextAll': ['全部做完，可以重溫弱項題型。', '全部做完，可以重溫弱項題型。', 'All done — revisit the weak types.'],
+    'app.localOnly': ['只存喺呢部機，冇上傳。', '只存在這台裝置，沒有上傳。', 'Stored on this device only. Nothing is uploaded.'],
     'app.study': ['詞句詳解', '詞句詳解', 'Words & grammar'],
     'app.studyCount': ['{v} 個詞語 · {g} 個文法點', '{v} 個詞語 · {g} 個文法點', '{v} words · {g} grammar points'],
     'app.vocab': ['生字／詞語', '生字／詞語', 'Words & phrases'],
@@ -476,6 +493,12 @@
         printWorksheet(shownEarly, box.checked);
       });
       tools.appendChild(pbtn);
+      var rbtn = el('button', 'btn ghost', '📄 ' + t('app.report'));
+      rbtn.type = 'button';
+      rbtn.setAttribute('data-print-report', '');
+      rbtn.title = t('app.reportHint');
+      rbtn.addEventListener('click', printReport);
+      tools.appendChild(rbtn);
       wrap.appendChild(tools);
     }
 
@@ -1060,6 +1083,159 @@
   /* ---------------- 列印工作紙（2026-10-18）----------------
      可以印一篇（閱讀畫面）或一次印本級／全部（首頁）。
      print CSS 只顯示 #print-sheet；每篇另起一頁，答案集中喺最後。 */
+  function ensureSheet() {
+    var sheet = document.getElementById('print-sheet');
+    if (!sheet) {
+      sheet = document.createElement('div');
+      sheet.id = 'print-sheet';
+      sheet.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(sheet);
+    }
+    return sheet;
+  }
+
+  function printReport() {
+    var sheet = ensureSheet();
+    sheet.replaceChildren();
+    sheet.className = 'report';
+
+    var byGrade = {};
+    GRADES.slice(1).forEach(function (g) {
+      byGrade[g] = { passages: 0, answered: 0, right: 0, done: 0 };
+    });
+    var answered = 0;
+    var right = 0;
+    var done = 0;
+    var types = {};
+    var torder = [];
+    PASSAGES.forEach(function (p) {
+      var given = answers[p.id] || {};
+      var n = 0;
+      var r = 0;
+      p.questions.forEach(function (q, i) {
+        if (typeof given[i] !== 'number') return;
+        n++;
+        answered++;
+        var ok = given[i] === q.answer;
+        if (ok) r++;
+        if (!types[q.type]) {
+          types[q.type] = { right: 0, total: 0 };
+          torder.push(q.type);
+        }
+        types[q.type].total++;
+        if (ok) types[q.type].right++;
+      });
+      right += r;
+      if (n === p.questions.length) done++;
+      var g = byGrade[p.level];
+      if (g) {
+        g.passages++;
+        g.answered += n;
+        g.right += r;
+        if (n === p.questions.length) g.done++;
+      }
+    });
+
+    var now = Date.now();
+    var due = 0;
+    var sched = 0;
+    Object.keys(srs).forEach(function (k) {
+      var rec = srs[k];
+      if (!rec) return;
+      if (rec.due <= now) due++;
+      else sched++;
+    });
+
+    var head = el('header', 'report-head');
+    head.appendChild(el('h1', null, t('app.report')));
+    head.appendChild(
+      el('p', 'ws-meta', t('app.title') + ' · ' + t('app.reportHint') + ' · ' + new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : 'zh-HK'))
+    );
+    sheet.appendChild(head);
+
+    var sec1 = el('section', 'report-sec');
+    sec1.appendChild(el('h2', null, t('app.overall')));
+    sec1.appendChild(el('p', null, t('app.reportDone', { done: done, total: PASSAGES.length })));
+    sec1.appendChild(el('p', null, t('app.reportAnswers', { n: answered, right: right, pct: answered ? Math.round((right / answered) * 100) : 0 })));
+    sec1.appendChild(el('p', null, t('app.dueLine', { n: due, m: sched })));
+    sheet.appendChild(sec1);
+
+    var sec2 = el('section', 'report-sec');
+    sec2.appendChild(el('h2', null, t('app.grade')));
+    var table = el('table', 'report-table');
+    var thead = document.createElement('thead');
+    var hr = document.createElement('tr');
+    [t('app.grade'), t('app.doneShort'), t('app.answeredShort'), t('app.accuracy')].forEach(function (label) {
+      var th = document.createElement('th');
+      th.textContent = label;
+      hr.appendChild(th);
+    });
+    thead.appendChild(hr);
+    table.appendChild(thead);
+    var tbody = document.createElement('tbody');
+    GRADES.slice(1).forEach(function (g) {
+      var s = byGrade[g];
+      if (!s.passages) return;
+      var tr = document.createElement('tr');
+      [
+        g,
+        s.done + ' / ' + s.passages,
+        String(s.answered),
+        s.answered ? Math.round((s.right / s.answered) * 100) + '%' : '—',
+      ].forEach(function (v) {
+        var td = document.createElement('td');
+        td.textContent = v;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    sec2.appendChild(table);
+    sheet.appendChild(sec2);
+
+    var sec3 = el('section', 'report-sec');
+    sec3.appendChild(el('h2', null, t('app.weakTypes')));
+    var weak = torder
+      .map(function (ty) {
+        return { type: ty, right: types[ty].right, total: types[ty].total };
+      })
+      .filter(function (s) {
+        return s.right < s.total;
+      })
+      .sort(function (a, b) {
+        return a.right / a.total - b.right / b.total;
+      });
+    if (!weak.length) {
+      sec3.appendChild(el('p', null, t('app.reportNoWeak')));
+    } else {
+      var ul = document.createElement('ul');
+      weak.forEach(function (s) {
+        var li = document.createElement('li');
+        li.textContent = t('app.weakLine', { type: t('type.' + s.type), right: s.right, total: s.total });
+        ul.appendChild(li);
+      });
+      sec3.appendChild(ul);
+    }
+    sheet.appendChild(sec3);
+
+    var sec4 = el('section', 'report-sec');
+    sec4.appendChild(el('h2', null, t('app.suggestion')));
+    if (due > 0) sec4.appendChild(el('p', null, t('app.reportNextDue', { n: due })));
+    else if (done < PASSAGES.length) sec4.appendChild(el('p', null, t('app.reportNextMore', { n: PASSAGES.length - done })));
+    else sec4.appendChild(el('p', null, t('app.reportNextAll')));
+    sec4.appendChild(el('p', 'meta', t('app.localOnly')));
+    sheet.appendChild(sec4);
+
+    document.body.classList.add('print-mode');
+    try {
+      window.print();
+    } catch (e) {}
+    window.setTimeout(function () {
+      document.body.classList.remove('print-mode');
+      sheet.className = '';
+    }, 600);
+  }
+
   function printWorksheet(passages, includeAnswers, picks) {
     var list = Array.isArray(passages) ? passages : [passages];
     if (!list.length) return;
@@ -1070,13 +1246,8 @@
         return k;
       });
     };
-    var sheet = document.getElementById('print-sheet');
-    if (!sheet) {
-      sheet = document.createElement('div');
-      sheet.id = 'print-sheet';
-      sheet.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(sheet);
-    }
+    var sheet = ensureSheet();
+    sheet.className = '';
     sheet.replaceChildren();
 
     var head = el('header', 'ws-head');
