@@ -286,6 +286,28 @@ body {
   background: var(--card);
 }
 
+/* 結果頁「下一步」：錯題重練／下一篇（2026-10-19）。 */
+.next-card {
+  margin: 18px 0 0;
+  padding: 12px 16px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--accent);
+  background: rgba(246, 168, 37, 0.08);
+}
+
+.next-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.next-card .meta {
+  margin: 0 0 4px;
+}
+
+.next-card .nav-row {
+  margin: 8px 0 0;
+}
+
 /* 錯題重練：可以即時展開文章。 */
 .review-mode .passage-details {
   margin: 0 0 16px;

@@ -89,6 +89,14 @@
     'app.printAll': ['列印全部（{n} 篇）', '列印全部（{n} 篇）', 'Print all ({n})'],
     'app.printGrade': ['列印本級（{grade} · {n} 篇）', '列印本級（{grade} · {n} 篇）', 'Print {grade} ({n})'],
     'app.printWrong': ['列印錯題本（{n} 題）', '列印錯題本（{n} 題）', 'Print missed questions ({n})'],
+    'app.nextTitle': ['下一步', '下一步', 'Next step'],
+    'app.retryWrong': ['重練本篇錯題（{n}）', '重練本篇錯題（{n}）', "Retry this passage's missed questions ({n})"],
+    'app.nextPassage': [
+      '試下一篇：{title}（{level} · {stars}）',
+      '試下一篇：{title}（{level} · {stars}）',
+      'Try next: {title} ({level} · {stars})',
+    ],
+    'app.perfect': ['全對，答得好！', '全對，答得好！', 'All correct!'],
     'app.study': ['詞句詳解', '詞句詳解', 'Words & grammar'],
     'app.studyCount': ['{v} 個詞語 · {g} 個文法點', '{v} 個詞語 · {g} 個文法點', '{v} words · {g} grammar points'],
     'app.vocab': ['生字／詞語', '生字／詞語', 'Words & phrases'],
@@ -278,6 +286,15 @@
     return sortedPassages().filter(function (p) {
       return p.level === grade;
     });
+  }
+
+  /* 下一篇：跟排序（年級→難度）行，去到最尾就繞返第一篇。 */
+  function nextAfter(p) {
+    var list = sortedPassages();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === p.id) return list[(i + 1) % list.length];
+    }
+    return null;
   }
 
   /* 到期錯題 = srs 記錄 due <= now。完全由 localStorage 推導，冇額外上傳。 */
@@ -865,6 +882,46 @@
     });
     wrap.appendChild(list);
 
+    /* 下一步：錯題優先重練，其次推介下一篇，唔使家長自己揀。 */
+    var wrongList = [];
+    p.questions.forEach(function (q, i) {
+      var picked = (answers[p.id] || {})[i];
+      if (typeof picked === 'number' && picked !== q.answer) wrongList.push({ p: p, i: i, q: q });
+    });
+    var np = nextAfter(p);
+    var card = el('div', 'next-card');
+    card.appendChild(el('h3', null, t('app.nextTitle')));
+    if (!wrongList.length) card.appendChild(el('p', 'meta', t('app.perfect')));
+    var nrow = el('div', 'nav-row');
+    if (wrongList.length) {
+      var rb = el('button', 'btn primary', t('app.retryWrong', { n: wrongList.length }));
+      rb.type = 'button';
+      rb.setAttribute('data-retry-passage', '');
+      rb.addEventListener('click', function () {
+        startReviewOf(wrongList);
+      });
+      nrow.appendChild(rb);
+    }
+    if (np && np.id !== p.id) {
+      var nb = el('button', 'btn ' + (wrongList.length ? 'ghost' : 'primary'), t('app.nextPassage', {
+        title: np.title,
+        level: np.level,
+        stars: stars(np),
+      }));
+      nb.type = 'button';
+      nb.setAttribute('data-next-passage', np.id);
+      nb.addEventListener('click', function () {
+        state.passageId = np.id;
+        state.view = 'read';
+        state.qIndex = 0;
+        state.picked = null;
+        render();
+      });
+      nrow.appendChild(nb);
+    }
+    card.appendChild(nrow);
+    wrap.appendChild(card);
+
     var row = el('div', 'nav-row');
     var back = el('button', 'btn primary', t('app.back'));
     back.type = 'button';
@@ -892,8 +949,11 @@
   /* ---------------- 錯題重練 ---------------- */
 
   function startReview() {
-    var queue = dueList();
-    if (!queue.length) return;
+    startReviewOf(dueList());
+  }
+
+  function startReviewOf(queue) {
+    if (!queue || !queue.length) return;
     state.reviewQueue = queue;
     state.reviewPos = 0;
     state.reviewFixed = 0;
