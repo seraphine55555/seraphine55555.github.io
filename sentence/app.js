@@ -7,9 +7,12 @@
   'use strict';
 
   var BANK = window.SENTENCE_BANK || [];
+  var COMBINE = window.SENTENCE_COMBINE || [];
   var KEY = 'sentence/progress';
   var GKEY = 'sentence/grade';
   var LKEY = 'sentence/lang';
+  var MKEY = 'sentence/mode';
+  var SKEY = 'sentence/streak';
   var LANGS = ['yue', 'zh', 'en'];
   var GRADES = ['all', 'P3', 'P4', 'P5', 'P6'];
 
@@ -42,15 +45,42 @@
     done: ['全部做完！', '全部做完！', 'All done!'],
     empty: ['呢個年級未有句子。', '這個年級未有句子。', 'No sentences for this level yet.'],
     counter: ['第 {i} / {n} 句', '第 {i} / {n} 句', 'Sentence {i} / {n}'],
+    modeScramble: ['重組句子', '重組句子', 'Unscramble'],
+    modeCombine: ['合併句子', '合併句子', 'Combine'],
+    combineTitle: ['句子合併', '句子合併', 'Sentence combining'],
+    combineSub: [
+      '睇兩句，揀一個連接詞，再把兩句合併成一句。',
+      '看兩句，選一個連接詞，再把兩句合併成一句。',
+      'Read two sentences, pick a connector, then build one combined sentence.',
+    ],
+    kernels: ['两句', '兩句', 'Two sentences'],
+    pickConnector: ['揀一個連接詞', '選一個連接詞', 'Pick a connector'],
+    connector: ['連接詞', '連接詞', 'Connector'],
+    combinePrompt: [
+      '把兩句合併成一句通順的英文句子。',
+      '把兩句合併成一句通順的英文句子。',
+      'Combine the two sentences into one.',
+    ],
+    twoKernels: ['2 句 · {n} 個詞', '2 句 · {n} 個詞', '2 sentences · {n} words'],
+    sentenceCard: ['句子', '句子', 'Sentence'],
+    combineCard: ['合併', '合併', 'Combine'],
+    streak: ['連續 {n} 日', '連續 {n} 日', '{n}-day streak'],
+    mNew: ['新', '新', 'New'],
+    mLearning: ['練習中', '練習中', 'Learning'],
+    mSolid: ['熟練', '熟練', 'Solid'],
+    mShaky: ['重溫', '重溫', 'Review'],
   };
 
   var lang = 'zh';
   var grade = 'all';
+  var mode = 'scramble';
   try {
     var sl = localStorage.getItem(LKEY);
     if (sl && LANGS.indexOf(sl) >= 0) lang = sl;
     var sg = localStorage.getItem(GKEY);
     if (sg && GRADES.indexOf(sg) >= 0) grade = sg;
+    var sm = localStorage.getItem(MKEY);
+    if (sm === 'combine') mode = 'combine';
   } catch (e) {}
 
   function t(key, vars) {
@@ -86,6 +116,19 @@
   var checked = false;
   var lastOk = false;
   var startedAt = 0;
+  var combine = null;
+  var combineStep = 'connector';
+  var combineBank = [];
+  var combineAnswer = [];
+  var combineChecked = false;
+  var combineOk = false;
+  var combineHint = '';
+  var combineStartedAt = 0;
+  var streak = { last: '', n: 0 };
+  try {
+    var ss = JSON.parse(localStorage.getItem(SKEY) || '{}');
+    if (ss && typeof ss.n === 'number') streak = { last: ss.last || '', n: ss.n };
+  } catch (e) {}
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -95,9 +138,34 @@
   }
 
   function filtered() {
-    return BANK.filter(function (s) {
+    var base = mode === 'combine' ? COMBINE : BANK;
+    return base.filter(function (s) {
       return grade === 'all' || s.level === grade;
     });
+  }
+
+  function mastery(id) {
+    var r = progress[id];
+    if (!r || !r.tries) return { key: 'new', pct: 0 };
+    var acc = r.correct / r.tries;
+    var key = r.tries >= 3 && acc >= 0.8 ? 'solid' : acc >= 0.5 ? 'learning' : 'shaky';
+    return { key: key, pct: Math.round(acc * 100) };
+  }
+
+  function localDay(ts) {
+    var d = new Date(ts == null ? Date.now() : ts);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function bumpStreak() {
+    var today = localDay();
+    if (streak.last === today) return;
+    var y = localDay(Date.now() - 86400000);
+    streak.n = streak.last === y ? streak.n + 1 : 1;
+    streak.last = today;
+    try {
+      localStorage.setItem(SKEY, JSON.stringify(streak));
+    } catch (e) {}
   }
 
   function doneCount(list) {
@@ -150,6 +218,36 @@
     startSentence(list[at + 1].id);
   }
 
+  function startCombine(id) {
+    combine = COMBINE.filter(function (s) {
+      return s.id === id;
+    })[0];
+    if (!combine) return;
+    combineStep = 'connector';
+    combineBank = [];
+    combineAnswer = [];
+    combineChecked = false;
+    combineOk = false;
+    combineHint = '';
+    combineStartedAt = Date.now();
+    view = 'play';
+    render();
+  }
+
+  function nextCombine() {
+    if (!combine) return;
+    var list = currentList();
+    var at = -1;
+    for (var i = 0; i < list.length; i++) if (list[i].id === combine.id) at = i;
+    if (at < 0 || at + 1 >= list.length) {
+      view = 'home';
+      combine = null;
+      render();
+      return;
+    }
+    startCombine(list[at + 1].id);
+  }
+
   function usedSet() {
     var used = {};
     answer.forEach(function (b) {
@@ -159,15 +257,49 @@
   }
 
   function render() {
+    if (view === 'play' && mode === 'combine') return renderCombinePlay();
     if (view === 'play' && current) return renderPlay();
     return renderHome();
   }
 
   function renderHome() {
     app.replaceChildren();
-    var h = el('h1', null, t('title'));
-    app.appendChild(h);
-    app.appendChild(el('p', 'sub', t('sub')));
+    app.appendChild(el('h1', null, mode === 'combine' ? t('combineTitle') : t('title')));
+    app.appendChild(el('p', 'sub', mode === 'combine' ? t('combineSub') : t('sub')));
+
+    var modes = el('div', 'modes');
+    [
+      { key: 'scramble', label: t('modeScramble') },
+      { key: 'combine', label: t('modeCombine') },
+    ].forEach(function (m) {
+      var b = el('button', 'mode-tab' + (mode === m.key ? ' is-on' : ''), m.label);
+      b.type = 'button';
+      b.setAttribute('data-mode', m.key);
+      b.setAttribute('aria-pressed', mode === m.key ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        if (mode === m.key) return;
+        mode = m.key;
+        view = 'home';
+        current = null;
+        combine = null;
+        if (mode === 'combine' && grade === 'P3') {
+          grade = 'all';
+          try {
+            localStorage.setItem(GKEY, grade);
+          } catch (e) {}
+        }
+        try {
+          localStorage.setItem(MKEY, mode);
+        } catch (e) {}
+        render();
+      });
+      modes.appendChild(b);
+    });
+    app.appendChild(modes);
+
+    if (streak.n > 0) {
+      app.appendChild(el('p', 'streak', '🔥 ' + t('streak', { n: streak.n })));
+    }
 
     var row = el('div', 'grades');
     GRADES.forEach(function (g) {
@@ -194,25 +326,220 @@
       return;
     }
 
+    var mlabel = { new: 'mNew', learning: 'mLearning', solid: 'mSolid', shaky: 'mShaky' };
     var wrap = el('div', 'list');
     list.forEach(function (s, i) {
       var done = progress[s.id] && progress[s.id].correct > 0;
+      var m = mastery(s.id);
       var card = el('article', 'sentence-card' + (done ? ' is-done' : ''));
       card.setAttribute('data-id', s.id);
-      var body = el('div');
-      body.appendChild(el('h2', null, (lang === 'en' ? 'Sentence ' : '句子 ') + (i + 1) + ' · ' + s.level));
-      body.appendChild(el('p', 'meta', t('words', { n: s.tokens.length }) + (done ? ' · ✓' : '')));
+      var body = el('div', 'card-body');
+      body.appendChild(
+        el(
+          'h2',
+          null,
+          t(mode === 'combine' ? 'combineCard' : 'sentenceCard') + ' ' + (i + 1) + ' · ' + s.level
+        )
+      );
+      var metaText =
+        mode === 'combine' ? t('twoKernels', { n: s.tokens.length }) : t('words', { n: s.tokens.length });
+      body.appendChild(el('p', 'meta', metaText + (done ? ' · ✓' : '')));
+      body.appendChild(el('span', 'badge badge-' + m.key, t(mlabel[m.key])));
+      var bar = el('div', 'mastery-bar');
+      bar.setAttribute('role', 'img');
+      bar.setAttribute('aria-label', t(mlabel[m.key]) + ' ' + m.pct + '%');
+      var fill = el('span', 'mastery-fill');
+      fill.style.width = m.pct + '%';
+      bar.appendChild(fill);
+      body.appendChild(bar);
       card.appendChild(body);
       var btn = el('button', 'btn primary', done ? t('again') : t('start'));
       btn.type = 'button';
       btn.setAttribute('data-start', s.id);
       btn.addEventListener('click', function () {
-        startSentence(s.id);
+        if (mode === 'combine') startCombine(s.id);
+        else startSentence(s.id);
       });
       card.appendChild(btn);
       wrap.appendChild(card);
     });
     app.appendChild(wrap);
+  }
+
+  function renderCombinePlay() {
+    if (!combine) {
+      view = 'home';
+      return renderHome();
+    }
+    app.replaceChildren();
+    var list = currentList();
+    var at = 0;
+    for (var i = 0; i < list.length; i++) if (list[i].id === combine.id) at = i;
+
+    var top = el('div', 'play-top');
+    var back = el('button', 'btn ghost', '← ' + t('back'));
+    back.type = 'button';
+    back.addEventListener('click', function () {
+      view = 'home';
+      combine = null;
+      render();
+    });
+    top.appendChild(back);
+    top.appendChild(el('span', 'counter', t('counter', { i: at + 1, n: list.length })));
+    app.appendChild(top);
+
+    app.appendChild(el('p', 'prompt', t('combinePrompt')));
+
+    var kernels = el('section', 'panel kernels-panel');
+    kernels.appendChild(el('h2', null, t('kernels')));
+    combine.kernels.forEach(function (sentence) {
+      kernels.appendChild(el('p', 'kernel', sentence));
+    });
+    app.appendChild(kernels);
+
+    if (combineStep === 'connector') {
+      var cp = el('section', 'panel');
+      cp.appendChild(el('h2', null, t('pickConnector')));
+      var opts = el('div', 'connectors');
+      combine.options.forEach(function (opt, idx) {
+        var b = el('button', 'connector-btn', opt.w);
+        b.type = 'button';
+        b.setAttribute('data-connector-opt', String(idx));
+        b.addEventListener('click', function () {
+          if (opt.ok) {
+            combineStep = 'arrange';
+            combineHint = '';
+            combineBank = shuffled(combine.tokens.length);
+            combineAnswer = [];
+            combineChecked = false;
+            combineOk = false;
+            render();
+          } else {
+            combineHint = opt.why;
+            render();
+          }
+        });
+        opts.appendChild(b);
+      });
+      cp.appendChild(opts);
+      if (combineHint) cp.appendChild(el('p', 'connector-hint', combineHint));
+      app.appendChild(cp);
+      return;
+    }
+
+    var answerPanel = el('section', 'panel');
+    answerPanel.appendChild(el('h2', null, t('answer')));
+    var area = el('div', 'answer-area');
+    area.setAttribute('data-answer', '');
+    if (!combineAnswer.length) {
+      area.appendChild(el('span', 'placeholder', t('placeholder')));
+    } else {
+      combineAnswer.forEach(function (bankIdx, pos) {
+        var c = el('button', 'chip answer-chip', combine.tokens[combineBank[bankIdx]]);
+        c.type = 'button';
+        c.setAttribute('data-answer-pos', String(pos));
+        c.setAttribute('aria-label', '移除 ' + combine.tokens[combineBank[bankIdx]]);
+        c.addEventListener('click', function () {
+          if (combineChecked) return;
+          combineAnswer.splice(pos, 1);
+          render();
+        });
+        area.appendChild(c);
+      });
+    }
+    answerPanel.appendChild(area);
+    app.appendChild(answerPanel);
+
+    var bankPanel = el('section', 'panel');
+    bankPanel.appendChild(el('h2', null, t('bank')));
+    var bankWrap = el('div', 'bank');
+    var used = {};
+    combineAnswer.forEach(function (b) {
+      used[b] = true;
+    });
+    combineBank.forEach(function (tokenIdx, bi) {
+      if (used[bi]) return;
+      var c = el('button', 'chip', combine.tokens[tokenIdx]);
+      c.type = 'button';
+      c.setAttribute('data-bank-idx', String(bi));
+      c.addEventListener('click', function () {
+        if (combineChecked) return;
+        combineAnswer.push(bi);
+        render();
+      });
+      bankWrap.appendChild(c);
+    });
+    bankPanel.appendChild(bankWrap);
+    app.appendChild(bankPanel);
+
+    var controls = el('div', 'controls');
+    var undo = el('button', 'btn ghost', t('undo'));
+    undo.type = 'button';
+    undo.disabled = combineChecked || !combineAnswer.length;
+    undo.addEventListener('click', function () {
+      combineAnswer.pop();
+      render();
+    });
+    controls.appendChild(undo);
+
+    var reset = el('button', 'btn ghost', t('reset'));
+    reset.type = 'button';
+    reset.disabled = combineChecked;
+    reset.addEventListener('click', function () {
+      combineBank = shuffled(combine.tokens.length);
+      combineAnswer = [];
+      render();
+    });
+    controls.appendChild(reset);
+
+    var check = el('button', 'btn primary', t('check'));
+    check.type = 'button';
+    check.setAttribute('data-check', '');
+    check.disabled = combineChecked || combineAnswer.length !== combine.tokens.length;
+    check.addEventListener('click', function () {
+      var ok = combineAnswer.every(function (bi, pos) {
+        return combine.tokens[combineBank[bi]] === combine.tokens[pos];
+      });
+      combineChecked = true;
+      combineOk = ok;
+      var rec = progress[combine.id] || { tries: 0, correct: 0 };
+      rec.tries += 1;
+      if (ok) rec.correct += 1;
+      rec.last = new Date().toISOString();
+      progress[combine.id] = rec;
+      saveProgress();
+      bumpStreak();
+      if (window.HubProgress) {
+        window.HubProgress.log({
+          app: 'sentence',
+          skill: 'combining',
+          correct: ok,
+          ms: combineStartedAt ? Date.now() - combineStartedAt : 0,
+        });
+      }
+      render();
+    });
+    controls.appendChild(check);
+    app.appendChild(controls);
+
+    if (combineChecked) {
+      var fb = el('section', 'feedback ' + (combineOk ? 'ok' : 'bad'));
+      fb.setAttribute('aria-live', 'polite');
+      fb.appendChild(el('h2', null, combineOk ? t('correct') : t('wrong')));
+      fb.appendChild(el('p', 'full-sentence', combine.tokens.join(' ') + '.'));
+      var hint = el('p', 'hint');
+      hint.appendChild(el('strong', null, t('hint') + '：'));
+      hint.appendChild(document.createTextNode(' ' + combine.why));
+      fb.appendChild(hint);
+      fb.appendChild(el('p', 'hint', t('translation') + '：' + combine.zh));
+      var next = el('button', 'btn primary', t('next'));
+      next.type = 'button';
+      next.setAttribute('data-next', '');
+      next.style.marginTop = '12px';
+      next.addEventListener('click', nextCombine);
+      fb.appendChild(next);
+      app.appendChild(fb);
+    }
   }
 
   function renderPlay() {
@@ -315,6 +642,7 @@
       rec.last = new Date().toISOString();
       progress[current.id] = rec;
       saveProgress();
+      bumpStreak();
       if (window.HubProgress) {
         window.HubProgress.log({
           app: 'sentence',

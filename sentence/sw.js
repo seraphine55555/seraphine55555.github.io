@@ -2,8 +2,8 @@
  * Network-first：有網時攞最新，斷網時用快取；導航請求 fallback 去 index.html。
  * 只快取本站 5 個檔案，冇第三方。
  */
-const CACHE = 'sentence-v1';
-const ASSETS = ['./', './index.html', './style.css', './sentences.js', './app.js', './manifest.webmanifest'];
+const CACHE = 'sentence-v2';
+const ASSETS = ['./', './index.html', './style.css', './sentences.js', './combine.js', './app.js', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));

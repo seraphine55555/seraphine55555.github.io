@@ -355,6 +355,125 @@ h1 {
   text-align: center;
 }
 
+.modes {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 12px;
+  flex-wrap: wrap;
+}
+
+.mode-tab {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.mode-tab.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #201505;
+  font-weight: 700;
+}
+
+.streak {
+  color: var(--warn);
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+.card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge {
+  display: inline-block;
+  margin: 6px 0 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.badge-solid {
+  border-color: rgba(74, 222, 128, 0.6);
+  color: var(--good);
+}
+
+.badge-learning {
+  border-color: rgba(246, 168, 37, 0.6);
+  color: var(--accent);
+}
+
+.badge-shaky {
+  border-color: rgba(248, 113, 113, 0.6);
+  color: var(--bad);
+}
+
+.mastery-bar {
+  height: 5px;
+  margin: 6px 0 0;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  max-width: 240px;
+}
+
+.mastery-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+}
+
+.kernels-panel .kernel {
+  font-family: var(--serif);
+  font-size: 18px;
+  margin: 0 0 6px;
+}
+
+.kernels-panel .kernel:last-child {
+  margin-bottom: 0;
+}
+
+.connectors {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.connector-btn {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.connector-btn:hover {
+  border-color: var(--accent);
+}
+
+.connector-hint {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--warn);
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--ink);
+  font-size: 14px;
+  border-radius: 0 8px 8px 0;
+}
+
 @media (max-width: 520px) {
   h1 {
     font-size: 24px;
