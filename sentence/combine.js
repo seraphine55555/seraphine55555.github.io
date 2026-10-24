@@ -1,9 +1,9 @@
 /*
- * 句子合併題庫（2026-10-24，pilot）
+ * 句子合併題庫（2026-10-24／25，18 題：P4–P6 各 6）
  *
  * 研究結論：重組句子只係 Killgallon 六種練習之一，亦係考試題型；
  * sentence combining 有最強證據（Quill Connect 用預先寫好嘅答案集做即時批改，
- * 所以離線、零 AI 都做得到）。呢個 pilot 用 6 題 P4–P6，每題：
+ * 所以離線、零 AI 都做得到）。每題：
  *   1. 兩個 kernel sentences
  *   2. 三選一 connector（錯咗有 reason-based hint）
  *   3. 用同一批詞排成合併句（答案唯一）
@@ -54,6 +54,48 @@ window.SENTENCE_COMBINE = [
     why: 'which 緊貼被修飾嘅名詞 The book；關係子句之後才返回主句 is due today。',
   },
   {
+    id: 'c-p4-4',
+    level: 'P4',
+    kernels: ['The girl is my cousin.', 'She won the race.'],
+    connector: 'who',
+    options: [
+      { w: 'who', ok: true, why: 'who 修飾人（The girl），帶出「贏咗比賽」嘅關係子句。' },
+      { w: 'which', ok: false, why: 'which 修飾物件；The girl 係人，所以用 who。' },
+      { w: 'because', ok: false, why: 'because 講原因；呢句係用關係子句描述個女仔，唔係解釋原因。' },
+    ],
+    tokens: ['The', 'girl', 'who', 'won', 'the', 'race', 'is', 'my', 'cousin'],
+    zh: '贏了比賽的那個女孩是我的表妹。',
+    why: 'who won the race 緊貼 The girl；主句動詞 is 在關係子句之後。',
+  },
+  {
+    id: 'c-p4-5',
+    level: 'P4',
+    kernels: ['You must finish your homework.', 'You can watch TV.'],
+    connector: 'before',
+    options: [
+      { w: 'before', ok: true, why: 'before 表示時間先後：先做功課，才可以看電視。' },
+      { w: 'after', ok: false, why: 'after 會變成「看電視之後才做功課」，同原意相反。' },
+      { w: 'although', ok: false, why: 'although 係讓步；呢句係先後條件，唔係轉折。' },
+    ],
+    tokens: ['You', 'must', 'finish', 'your', 'homework', 'before', 'you', 'can', 'watch', 'TV'],
+    zh: '你必須先完成功課，才可以看電視。',
+    why: 'before 引導時間子句；主句用 must，子句用 can，語氣保持一致。',
+  },
+  {
+    id: 'c-p4-6',
+    level: 'P4',
+    kernels: ['It was very cold.', 'We stayed indoors.'],
+    connector: 'so',
+    options: [
+      { w: 'so', ok: true, why: 'so 表示結果：天氣很冷，所以我們留在室內。' },
+      { w: 'because', ok: false, why: 'because 會變成「因為留在室內，所以很冷」，因果倒轉。' },
+      { w: 'although', ok: false, why: 'although 係讓步；呢兩句係因果，唔係轉折。' },
+    ],
+    tokens: ['It', 'was', 'very', 'cold', 'so', 'we', 'stayed', 'indoors'],
+    zh: '天氣很冷，所以我們留在室內。',
+    why: 'so 連接結果子句，前面是原因（very cold），後面是結果（stayed indoors）。',
+  },
+  {
     id: 'c-p5-1',
     level: 'P5',
     kernels: ['I had more time.', 'I would practise the violin.'],
@@ -82,6 +124,62 @@ window.SENTENCE_COMBINE = [
     why: 'because 引導原因子句，放在主句後面；broke down 係「故障」嘅固定配搭。',
   },
   {
+    id: 'c-p5-3',
+    level: 'P5',
+    kernels: ['The film was boring.', 'We left early.'],
+    connector: 'so',
+    options: [
+      { w: 'so', ok: true, why: 'so 配合 that 構成「so + 形容詞 + that」：套戲太悶，所以我們早走。' },
+      { w: 'because', ok: false, why: 'because 只講原因，唔會用 so...that 嘅結果句式。' },
+      { w: 'although', ok: false, why: 'although 係讓步；呢句係「太…以致…」嘅結果。' },
+    ],
+    tokens: ['The', 'film', 'was', 'so', 'boring', 'that', 'we', 'left', 'early'],
+    zh: '這部電影太沉悶，所以我們提早離開。',
+    why: 'so + 形容詞（boring）+ that + 結果子句；that 唔可以省略。',
+  },
+  {
+    id: 'c-p5-4',
+    level: 'P5',
+    kernels: ['He studied hard.', 'He passed the exam.'],
+    connector: 'Because',
+    options: [
+      { w: 'Because', ok: true, why: 'Because 引導原因：他努力讀書，所以合格。' },
+      { w: 'So', ok: false, why: 'So 係結果；「努力」係原因，「合格」係結果，方向相反。' },
+      { w: 'Although', ok: false, why: 'Although 係讓步；呢句係因果，唔係轉折。' },
+    ],
+    tokens: ['Because', 'he', 'studied', 'hard', 'he', 'passed', 'the', 'exam'],
+    zh: '因為他努力讀書，所以他考試合格了。',
+    why: 'Because 放句首引導原因子句，逗號後是主句結果。',
+  },
+  {
+    id: 'c-p5-5',
+    level: 'P5',
+    kernels: ['You can borrow my book.', 'You return it tomorrow.'],
+    connector: 'as long as',
+    options: [
+      { w: 'as long as', ok: true, why: 'as long as 表示條件：只要你明天還書，就可以借。' },
+      { w: 'because', ok: false, why: 'because 係原因；呢句係「只要…就…」嘅條件。' },
+      { w: 'although', ok: false, why: 'although 係讓步；呢句係條件交換，唔係轉折。' },
+    ],
+    tokens: ['You', 'can', 'borrow', 'my', 'book', 'as', 'long', 'as', 'you', 'return', 'it', 'tomorrow'],
+    zh: '你可以借我的書，只要你明天還。',
+    why: 'as long as 引導條件子句；主句用 can，子句用現在式 return。',
+  },
+  {
+    id: 'c-p5-6',
+    level: 'P5',
+    kernels: ['She has lived here.', 'She was a child.'],
+    connector: 'since',
+    options: [
+      { w: 'since', ok: true, why: 'since 後面接過去時間點：由小時候到現在。' },
+      { w: 'for', ok: false, why: 'for 後面要接一段時間（for ten years），唔可以接 she was a child。' },
+      { w: 'from', ok: false, why: 'from 只講起點，唔配合現在完成式 has lived。' },
+    ],
+    tokens: ['She', 'has', 'lived', 'here', 'since', 'she', 'was', 'a', 'child'],
+    zh: '她從小便住在這裡。',
+    why: '現在完成式 has lived + since + 過去時間點（she was a child）。',
+  },
+  {
     id: 'c-p6-1',
     level: 'P6',
     kernels: ['He finished the race.', 'He broke the record.'],
@@ -94,5 +192,75 @@ window.SENTENCE_COMBINE = [
     tokens: ['Not', 'only', 'did', 'he', 'finish', 'the', 'race', 'but', 'he', 'also', 'broke', 'the', 'record'],
     zh: '他不但完成了比賽，還打破了紀錄。',
     why: 'Not only 置句首用倒裝 did he + 原形 finish；but he also 後面用過去式 broke，兩邊對稱。',
+  },
+  {
+    id: 'c-p6-2',
+    level: 'P6',
+    kernels: ['The train was delayed.', 'We still arrived on time.'],
+    connector: 'Although',
+    options: [
+      { w: 'Although', ok: true, why: 'Although 表示讓步：雖然火車延誤，我們仍然準時到。' },
+      { w: 'Because', ok: false, why: 'Because 係原因；延誤唔係「準時到」嘅原因。' },
+      { w: 'So', ok: false, why: 'So 係結果；呢句重點係「雖然…仍然…」。' },
+    ],
+    tokens: ['Although', 'the', 'train', 'was', 'delayed', 'we', 'still', 'arrived', 'on', 'time'],
+    zh: '雖然火車延誤了，我們仍然準時到達。',
+    why: 'Although 引導讓步子句；主句用 still 強調「仍然」。',
+  },
+  {
+    id: 'c-p6-3',
+    level: 'P6',
+    kernels: ['He felt dizzy.', 'He had not eaten.'],
+    connector: 'because',
+    options: [
+      { w: 'because', ok: true, why: 'because 表示原因：因為沒有吃東西，所以頭暈。' },
+      { w: 'although', ok: false, why: 'although 係讓步；呢句係因果。' },
+      { w: 'so', ok: false, why: 'so 係結果；「頭暈」係結果，「沒有吃東西」係原因。' },
+    ],
+    tokens: ['He', 'felt', 'dizzy', 'because', 'he', 'had', 'not', 'eaten'],
+    zh: '他感到頭暈，因為他沒有吃東西。',
+    why: 'because 引導原因子句；had not eaten 是過去完成式，表示在頭暈之前發生。',
+  },
+  {
+    id: 'c-p6-4',
+    level: 'P6',
+    kernels: ['The more you read.', 'The more you learn.'],
+    connector: 'The more',
+    options: [
+      { w: 'The more', ok: true, why: 'The + 比較級, the + 比較級 = 越……越……。' },
+      { w: 'Although', ok: false, why: 'Although 係讓步；呢句係「越讀得多，學得越多」嘅平行比較。' },
+      { w: 'If', ok: false, why: 'If 係條件；呢句用 the more...the more... 嘅固定句式，唔係 if。' },
+    ],
+    tokens: ['The', 'more', 'you', 'read', 'the', 'more', 'you', 'learn'],
+    zh: '你讀得越多，就學得越多。',
+    why: '兩個 the + 比較級子句並列；第二個 the 前面用逗號。',
+  },
+  {
+    id: 'c-p6-5',
+    level: 'P6',
+    kernels: ['She did not realise the danger.', 'She opened the door.'],
+    connector: 'until',
+    options: [
+      { w: 'until', ok: true, why: 'until 表示「直到…才」：開門之前都未意識到危險。' },
+      { w: 'because', ok: false, why: 'because 係原因；呢句係時間界線，唔係原因。' },
+      { w: 'although', ok: false, why: 'although 係讓步；呢句係「直到…才」嘅時間關係。' },
+    ],
+    tokens: ['She', 'did', 'not', 'realise', 'the', 'danger', 'until', 'she', 'opened', 'the', 'door'],
+    zh: '她直到打開門才意識到危險。',
+    why: 'not ... until ... 表示「直到…才…」；until 後面接過去式 opened。',
+  },
+  {
+    id: 'c-p6-6',
+    level: 'P6',
+    kernels: ['It is important.', 'We protect the environment.'],
+    connector: 'that',
+    options: [
+      { w: 'that', ok: true, why: 'that 引導名詞子句，說明 important 嘅內容。' },
+      { w: 'which', ok: false, why: 'which 修飾名詞；呢度係說明「重要」嘅內容，用 that 子句。' },
+      { w: 'because', ok: false, why: 'because 係原因；呢句係「…是重要的」嘅內容子句。' },
+    ],
+    tokens: ['It', 'is', 'important', 'that', 'we', 'protect', 'the', 'environment'],
+    zh: '我們保護環境是很重要的。',
+    why: 'It is important that + 主語 + 動詞原形（protect）；that 子句是真正主語。',
   },
 ];

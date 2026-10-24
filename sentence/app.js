@@ -8,6 +8,7 @@
 
   var BANK = window.SENTENCE_BANK || [];
   var COMBINE = window.SENTENCE_COMBINE || [];
+  var ERRORS = window.SENTENCE_ERRORS || [];
   var KEY = 'sentence/progress';
   var GKEY = 'sentence/grade';
   var LKEY = 'sentence/lang';
@@ -69,6 +70,20 @@
     mLearning: ['練習中', '練習中', 'Learning'],
     mSolid: ['熟練', '熟練', 'Solid'],
     mShaky: ['重溫', '重溫', 'Review'],
+    modeError: ['改錯', '改錯', 'Error hunt'],
+    errorTitle: ['句子改錯', '句子改錯', 'Error hunt'],
+    errorSub: [
+      '每句得一個錯處：先點錯字，再揀正確寫法。',
+      '每句只有一個錯處：先點錯字，再選正確寫法。',
+      'Each sentence has one mistake: tap the wrong word, then pick the correct form.',
+    ],
+    errorPrompt: ['搵出句子入面嘅錯處。', '找出句子裡的錯處。', 'Find the mistake in the sentence.'],
+    errorTokenHint: ['呢個字冇錯，再睇一次。', '這個字沒有錯，再看一次。', 'That word is fine — look again.'],
+    errorPickFix: ['揀正確寫法', '選正確寫法', 'Pick the correct form'],
+    errorFixed: ['改正後', '改正後', 'Corrected'],
+    errorWrongFix: ['未啱，正確寫法係 {w}。', '未啱，正確寫法是 {w}。', 'Not quite — the correct form is {w}.'],
+    errorCard: ['改錯', '改錯', 'Error'],
+    errorMeta: ['{n} 個詞 · 1 個錯處', '{n} 個詞 · 1 個錯處', '{n} words · 1 mistake'],
   };
 
   var lang = 'zh';
@@ -80,8 +95,8 @@
     var sg = localStorage.getItem(GKEY);
     if (sg && GRADES.indexOf(sg) >= 0) grade = sg;
     var sm = localStorage.getItem(MKEY);
-    if (sm === 'combine') mode = 'combine';
-    if (mode === 'combine' && grade === 'P3') grade = 'all';
+    if (sm === 'combine' || sm === 'error') mode = sm;
+    if (mode !== 'scramble' && grade === 'P3') grade = 'all';
   } catch (e) {}
 
   function t(key, vars) {
@@ -125,6 +140,11 @@
   var combineOk = false;
   var combineHint = '';
   var combineStartedAt = 0;
+  var errorItem = null;
+  var errorStage = 'token';
+  var errorHint = '';
+  var errorFixWrong = '';
+  var errorStartedAt = 0;
   var streak = { last: '', n: 0 };
   try {
     var ss = JSON.parse(localStorage.getItem(SKEY) || '{}');
@@ -139,7 +159,7 @@
   }
 
   function filtered() {
-    var base = mode === 'combine' ? COMBINE : BANK;
+    var base = mode === 'combine' ? COMBINE : mode === 'error' ? ERRORS : BANK;
     return base.filter(function (s) {
       return grade === 'all' || s.level === grade;
     });
@@ -249,6 +269,33 @@
     startCombine(list[at + 1].id);
   }
 
+  function startError(id) {
+    errorItem = ERRORS.filter(function (s) {
+      return s.id === id;
+    })[0];
+    if (!errorItem) return;
+    errorStage = 'token';
+    errorHint = '';
+    errorFixWrong = '';
+    errorStartedAt = Date.now();
+    view = 'play';
+    render();
+  }
+
+  function nextError() {
+    if (!errorItem) return;
+    var list = currentList();
+    var at = -1;
+    for (var i = 0; i < list.length; i++) if (list[i].id === errorItem.id) at = i;
+    if (at < 0 || at + 1 >= list.length) {
+      view = 'home';
+      errorItem = null;
+      render();
+      return;
+    }
+    startError(list[at + 1].id);
+  }
+
   function usedSet() {
     var used = {};
     answer.forEach(function (b) {
@@ -259,19 +306,25 @@
 
   function render() {
     if (view === 'play' && mode === 'combine') return renderCombinePlay();
+    if (view === 'play' && mode === 'error') return renderErrorPlay();
     if (view === 'play' && current) return renderPlay();
     return renderHome();
   }
 
   function renderHome() {
     app.replaceChildren();
-    app.appendChild(el('h1', null, mode === 'combine' ? t('combineTitle') : t('title')));
-    app.appendChild(el('p', 'sub', mode === 'combine' ? t('combineSub') : t('sub')));
+    app.appendChild(
+      el('h1', null, mode === 'combine' ? t('combineTitle') : mode === 'error' ? t('errorTitle') : t('title'))
+    );
+    app.appendChild(
+      el('p', 'sub', mode === 'combine' ? t('combineSub') : mode === 'error' ? t('errorSub') : t('sub'))
+    );
 
     var modes = el('div', 'modes');
     [
       { key: 'scramble', label: t('modeScramble') },
       { key: 'combine', label: t('modeCombine') },
+      { key: 'error', label: t('modeError') },
     ].forEach(function (m) {
       var b = el('button', 'mode-tab' + (mode === m.key ? ' is-on' : ''), m.label);
       b.type = 'button';
@@ -283,7 +336,8 @@
         view = 'home';
         current = null;
         combine = null;
-        if (mode === 'combine' && grade === 'P3') {
+        errorItem = null;
+        if (mode !== 'scramble' && grade === 'P3') {
           grade = 'all';
           try {
             localStorage.setItem(GKEY, grade);
@@ -303,7 +357,7 @@
     }
 
     var row = el('div', 'grades');
-    var gradeList = mode === 'combine' ? ['all', 'P4', 'P5', 'P6'] : GRADES;
+    var gradeList = mode === 'scramble' ? GRADES : ['all', 'P4', 'P5', 'P6'];
     gradeList.forEach(function (g) {
       var b = el('button', 'grade-btn' + (grade === g ? ' is-on' : ''), g === 'all' ? t('all') : g);
       b.type = 'button';
@@ -340,11 +394,19 @@
         el(
           'h2',
           null,
-          t(mode === 'combine' ? 'combineCard' : 'sentenceCard') + ' ' + (i + 1) + ' · ' + s.level
+          t(mode === 'combine' ? 'combineCard' : mode === 'error' ? 'errorCard' : 'sentenceCard') +
+            ' ' +
+            (i + 1) +
+            ' · ' +
+            s.level
         )
       );
       var metaText =
-        mode === 'combine' ? t('twoKernels', { n: s.tokens.length }) : t('words', { n: s.tokens.length });
+        mode === 'combine'
+          ? t('twoKernels', { n: s.tokens.length })
+          : mode === 'error'
+            ? t('errorMeta', { n: s.tokens.length })
+            : t('words', { n: s.tokens.length });
       body.appendChild(el('p', 'meta', metaText + (done ? ' · ✓' : '')));
       body.appendChild(el('span', 'badge badge-' + m.key, t(mlabel[m.key])));
       var bar = el('div', 'mastery-bar');
@@ -360,12 +422,124 @@
       btn.setAttribute('data-start', s.id);
       btn.addEventListener('click', function () {
         if (mode === 'combine') startCombine(s.id);
+        else if (mode === 'error') startError(s.id);
         else startSentence(s.id);
       });
       card.appendChild(btn);
       wrap.appendChild(card);
     });
     app.appendChild(wrap);
+  }
+
+  function renderErrorPlay() {
+    if (!errorItem) {
+      view = 'home';
+      return renderHome();
+    }
+    app.replaceChildren();
+    var list = currentList();
+    var at = 0;
+    for (var i = 0; i < list.length; i++) if (list[i].id === errorItem.id) at = i;
+
+    var top = el('div', 'play-top');
+    var back = el('button', 'btn ghost', '← ' + t('back'));
+    back.type = 'button';
+    back.addEventListener('click', function () {
+      view = 'home';
+      errorItem = null;
+      render();
+    });
+    top.appendChild(back);
+    top.appendChild(el('span', 'counter', t('counter', { i: at + 1, n: list.length })));
+    app.appendChild(top);
+
+    app.appendChild(el('p', 'prompt', t('errorPrompt')));
+
+    var sentencePanel = el('section', 'panel error-sentence-panel');
+    var sentence = el('p', 'error-sentence');
+    errorItem.tokens.forEach(function (word, idx) {
+      var b = el('button', 'error-token' + (errorStage !== 'token' && idx === errorItem.wrong ? ' is-bad' : ''), word);
+      b.type = 'button';
+      b.setAttribute('data-token', String(idx));
+      if (errorStage === 'token') {
+        b.addEventListener('click', function () {
+          if (idx === errorItem.wrong) {
+            errorStage = 'fix';
+            errorHint = '';
+            render();
+          } else {
+            errorHint = t('errorTokenHint');
+            render();
+          }
+        });
+      } else {
+        b.disabled = true;
+      }
+      sentence.appendChild(b);
+      sentence.appendChild(document.createTextNode(' '));
+    });
+    sentencePanel.appendChild(sentence);
+    if (errorHint) sentencePanel.appendChild(el('p', 'connector-hint', errorHint));
+    app.appendChild(sentencePanel);
+
+    if (errorStage === 'fix') {
+      var fixPanel = el('section', 'panel');
+      fixPanel.appendChild(el('h2', null, t('errorPickFix')));
+      var fixes = el('div', 'connectors');
+      shuffled(errorItem.fixes.length).forEach(function (idx) {
+        var b = el('button', 'connector-btn fix-btn', errorItem.fixes[idx]);
+        b.type = 'button';
+        b.setAttribute('data-fix-opt', String(idx));
+        b.addEventListener('click', function () {
+          var ok = idx === 0;
+          errorStage = 'done';
+          errorFixWrong = ok ? '' : t('errorWrongFix', { w: errorItem.fixes[0] });
+          var rec = progress[errorItem.id] || { tries: 0, correct: 0 };
+          rec.tries += 1;
+          if (ok) rec.correct += 1;
+          rec.last = new Date().toISOString();
+          progress[errorItem.id] = rec;
+          saveProgress();
+          bumpStreak();
+          if (window.HubProgress) {
+            window.HubProgress.log({
+              app: 'sentence',
+              skill: 'proofreading',
+              correct: ok,
+              ms: errorStartedAt ? Date.now() - errorStartedAt : 0,
+            });
+          }
+          render();
+        });
+        fixes.appendChild(b);
+      });
+      fixPanel.appendChild(fixes);
+      app.appendChild(fixPanel);
+    }
+
+    if (errorStage === 'done') {
+      var ok = !errorFixWrong;
+      var fb = el('section', 'feedback ' + (ok ? 'ok' : 'bad'));
+      fb.setAttribute('aria-live', 'polite');
+      fb.appendChild(el('h2', null, ok ? t('correct') : t('wrong')));
+      var fixed = errorItem.tokens.map(function (word, idx) {
+        return idx === errorItem.wrong ? errorItem.fixes[0] : word;
+      });
+      fb.appendChild(el('p', 'full-sentence', fixed.join(' ') + '.'));
+      if (errorFixWrong) fb.appendChild(el('p', 'connector-hint', errorFixWrong));
+      var hint = el('p', 'hint');
+      hint.appendChild(el('strong', null, t('hint') + '：'));
+      hint.appendChild(document.createTextNode(' ' + errorItem.why));
+      fb.appendChild(hint);
+      fb.appendChild(el('p', 'hint', t('translation') + '：' + errorItem.zh));
+      var next = el('button', 'btn primary', t('next'));
+      next.type = 'button';
+      next.setAttribute('data-next', '');
+      next.style.marginTop = '12px';
+      next.addEventListener('click', nextError);
+      fb.appendChild(next);
+      app.appendChild(fb);
+    }
   }
 
   function renderCombinePlay() {

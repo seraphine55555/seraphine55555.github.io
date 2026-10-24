@@ -474,6 +474,39 @@ h1 {
   border-radius: 0 8px 8px 0;
 }
 
+.error-sentence {
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.9;
+  margin: 0;
+}
+
+.error-token {
+  min-height: 44px;
+  padding: 2px 6px;
+  margin: 0 -1px;
+  border: 1px solid transparent;
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.error-token:hover {
+  border-color: var(--accent);
+}
+
+.error-token.is-bad {
+  border-color: rgba(248, 113, 113, 0.7);
+  background: rgba(248, 113, 113, 0.14);
+}
+
+.error-token:disabled {
+  cursor: default;
+}
+
 @media (max-width: 520px) {
   h1 {
     font-size: 24px;
