@@ -508,6 +508,16 @@ h1 {
   border-radius: 0 8px 8px 0;
 }
 
+.alt-hint {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--good);
+  background: rgba(74, 222, 128, 0.08);
+  color: var(--ink);
+  font-size: 14px;
+  border-radius: 0 8px 8px 0;
+}
+
 .error-sentence {
   font-family: var(--serif);
   font-size: 19px;

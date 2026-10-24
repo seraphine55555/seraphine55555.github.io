@@ -91,6 +91,11 @@
     smartLearning: ['學習中', '學習中', 'Learning'],
     smartRefining: ['精煉中', '精煉中', 'Refining'],
     smartChallenge: ['挑戰區', '挑戰區', 'Challenge zone'],
+    altCorrect: [
+      '正確！呢個次序都合文法。另一個寫法：',
+      '正確！這個次序也合文法。另一個寫法：',
+      'Correct! This order also works. Another version:',
+    ],
   };
 
   var lang = 'zh';
@@ -671,6 +676,32 @@
     }
   }
 
+  function sameSeq(a, b) {
+    if (!a || !b || a.length !== b.length) return false;
+    for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
+
+  function displayToken(item, token, pos) {
+    /* 同一個 token 放句首要大寫、放句中被連接詞細寫：例如 Although → although。
+       只處理單字連接詞；其他 token（I、TV）保持原樣。 */
+    if (pos === 0 && /^[a-z]/.test(token)) {
+      return token.charAt(0).toUpperCase() + token.slice(1);
+    }
+    if (pos > 0 && item.connector && item.connector.indexOf(' ') === -1 && token === item.connector) {
+      return token.toLowerCase();
+    }
+    return token;
+  }
+
+  function sentenceText(item, seq) {
+    return seq
+      .map(function (idx, pos) {
+        return displayToken(item, item.tokens[idx], pos);
+      })
+      .join(' ') + '.';
+  }
+
   function renderCombinePlay() {
     if (!combine) {
       view = 'home';
@@ -741,7 +772,11 @@
       area.appendChild(el('span', 'placeholder', t('placeholder')));
     } else {
       combineAnswer.forEach(function (bankIdx, pos) {
-        var c = el('button', 'chip answer-chip', combine.tokens[combineBank[bankIdx]]);
+        var c = el(
+          'button',
+          'chip answer-chip',
+          displayToken(combine, combine.tokens[combineBank[bankIdx]], pos)
+        );
         c.type = 'button';
         c.setAttribute('data-answer-pos', String(pos));
         c.setAttribute('aria-label', '移除 ' + combine.tokens[combineBank[bankIdx]]);
@@ -803,9 +838,18 @@
     check.setAttribute('data-check', '');
     check.disabled = combineChecked || combineAnswer.length !== combine.tokens.length;
     check.addEventListener('click', function () {
-      var ok = combineAnswer.every(function (bi, pos) {
-        return combine.tokens[combineBank[bi]] === combine.tokens[pos];
+      var seq = combineAnswer.map(function (bi) {
+        return combineBank[bi];
       });
+      var canonical = combine.tokens.map(function (_tok, i) {
+        return i;
+      });
+      var ok = sameSeq(seq, canonical);
+      if (!ok && combine.accepted) {
+        ok = combine.accepted.some(function (alt) {
+          return sameSeq(seq, alt);
+        });
+      }
       combineChecked = true;
       combineOk = ok;
       recordResult(combine.id, ok);
@@ -823,10 +867,23 @@
     app.appendChild(controls);
 
     if (combineChecked) {
+      var seq = combineAnswer.map(function (bi) {
+        return combineBank[bi];
+      });
+      var canonical = combine.tokens.map(function (_tok, i) {
+        return i;
+      });
+      var isAlt = combineOk && !sameSeq(seq, canonical);
       var fb = el('section', 'feedback ' + (combineOk ? 'ok' : 'bad'));
       fb.setAttribute('aria-live', 'polite');
       fb.appendChild(el('h2', null, combineOk ? t('correct') : t('wrong')));
-      fb.appendChild(el('p', 'full-sentence', combine.tokens.join(' ') + '.'));
+      fb.appendChild(el('p', 'full-sentence', sentenceText(combine, isAlt ? seq : canonical)));
+      if (isAlt) {
+        var alt = el('p', 'alt-hint');
+        alt.appendChild(el('strong', null, t('altCorrect')));
+        alt.appendChild(document.createTextNode(' ' + sentenceText(combine, canonical)));
+        fb.appendChild(alt);
+      }
       var hint = el('p', 'hint');
       hint.appendChild(el('strong', null, t('hint') + '：'));
       hint.appendChild(document.createTextNode(' ' + combine.why));
