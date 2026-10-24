@@ -85,6 +85,7 @@
   var answer = [];
   var checked = false;
   var lastOk = false;
+  var startedAt = 0;
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -126,6 +127,7 @@
     answer = [];
     checked = false;
     lastOk = false;
+    startedAt = Date.now();
     view = 'play';
     render();
   }
@@ -313,6 +315,14 @@
       rec.last = new Date().toISOString();
       progress[current.id] = rec;
       saveProgress();
+      if (window.HubProgress) {
+        window.HubProgress.log({
+          app: 'sentence',
+          skill: 'word-order',
+          correct: ok,
+          ms: startedAt ? Date.now() - startedAt : 0,
+        });
+      }
       render();
     });
     controls.appendChild(check);

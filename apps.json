@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "apps": [
+    {
+      "id": "dictalab",
+      "name": { "yue": "讀默", "zh": "讀默", "en": "DictaLab" },
+      "tag": { "yue": "中文默書", "zh": "中文默書", "en": "Chinese dictation" },
+      "href": "dictalab/",
+      "icon": "icons/dictalab.png",
+      "adapter": "dictalab",
+      "events": false
+    },
+    {
+      "id": "mathslab",
+      "name": { "yue": "數練", "zh": "數練", "en": "MathsLab" },
+      "tag": { "yue": "數學練習", "zh": "數學練習", "en": "Maths practice" },
+      "href": "mathslab/",
+      "icon": "icons/mathslab.png",
+      "adapter": "mathslab",
+      "events": false
+    },
+    {
+      "id": "reading",
+      "name": { "yue": "閱讀理解", "zh": "閱讀理解", "en": "Reading Lab" },
+      "tag": { "yue": "英文閱讀", "zh": "英文閱讀", "en": "English reading" },
+      "href": "reading/",
+      "icon": "icons/reading.png",
+      "adapter": "reading",
+      "events": true
+    },
+    {
+      "id": "sentence",
+      "name": { "yue": "句子重組", "zh": "句子重組", "en": "Sentence Lab" },
+      "tag": { "yue": "英文句子", "zh": "英文句子", "en": "English sentences" },
+      "href": "sentence/",
+      "icon": "icons/sentence.png",
+      "adapter": "sentence",
+      "events": true
+    }
+  ]
+}

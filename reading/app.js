@@ -872,6 +872,9 @@
         if (i === q.answer) delete srs[key];
         else scheduleWrong(p, qIndex);
         saveSrs();
+        if (window.HubProgress) {
+          window.HubProgress.log({ app: 'reading', skill: 'comprehension', correct: i === q.answer });
+        }
         render();
       });
       optsBox.appendChild(b);

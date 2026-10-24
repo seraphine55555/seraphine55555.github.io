@@ -82,6 +82,10 @@ body {
   color: var(--muted);
 }
 
+.hero-links {
+  margin: 14px 0 0;
+}
+
 /* ---------- 區塊標題 ---------- */
 
 h2 {

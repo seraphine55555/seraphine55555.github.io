@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>家長總覽 · Parent Overview</title>
+    <meta name="description" content="四個練習 app 的本機進度總覽：練習次數、正確率、最後活動。全部只在這台裝置讀取，不會上傳。" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="icon" href="../icons/sentence.png" />
+    <link rel="stylesheet" href="parent.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../">
+        <span class="brand__mark" aria-hidden="true">家</span>
+        <span>
+          <strong data-i18n="title"></strong>
+          <small data-i18n="sub"></small>
+        </span>
+      </a>
+      <div class="lang" role="group" aria-label="語言">
+        <button type="button" data-lang="yue" aria-pressed="false">粵</button>
+        <button type="button" data-lang="zh" aria-pressed="true">繁</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </header>
+
+    <main id="app" class="wrap">
+      <p class="loading" data-i18n="loading"></p>
+    </main>
+
+    <footer class="foot">
+      <span data-i18n="privacy"></span>
+      <a href="../" data-i18n="back"></a>
+    </footer>
+
+    <script src="../progress.js"></script>
+    <script src="parent.js"></script>
+  </body>
+</html>
