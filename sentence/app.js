@@ -81,6 +81,7 @@
     if (sg && GRADES.indexOf(sg) >= 0) grade = sg;
     var sm = localStorage.getItem(MKEY);
     if (sm === 'combine') mode = 'combine';
+    if (mode === 'combine' && grade === 'P3') grade = 'all';
   } catch (e) {}
 
   function t(key, vars) {
@@ -302,7 +303,8 @@
     }
 
     var row = el('div', 'grades');
-    GRADES.forEach(function (g) {
+    var gradeList = mode === 'combine' ? ['all', 'P4', 'P5', 'P6'] : GRADES;
+    gradeList.forEach(function (g) {
       var b = el('button', 'grade-btn' + (grade === g ? ' is-on' : ''), g === 'all' ? t('all') : g);
       b.type = 'button';
       b.setAttribute('data-grade', g);
