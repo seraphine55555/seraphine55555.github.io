@@ -1,0 +1,15 @@
+{
+  "name": "句子重組 Sentence Lab",
+  "short_name": "句子重組",
+  "description": "小學英文句子重組練習：每句有文法解釋，進度只存本機。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#16213a",
+  "lang": "zh-HK",
+  "icons": [
+    { "src": "../icons/sentence.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "../icons/sentence-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

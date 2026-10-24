@@ -357,5 +357,9 @@
     x.setAttribute('aria-pressed', x.getAttribute('data-lang') === lang ? 'true' : 'false');
   });
 
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+
   render();
 })();
