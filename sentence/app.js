@@ -14,6 +14,7 @@
   var LKEY = 'sentence/lang';
   var MKEY = 'sentence/mode';
   var SKEY = 'sentence/streak';
+  var SCORE_KEY = 'sentence/score';
   var LANGS = ['yue', 'zh', 'en'];
   var GRADES = ['all', 'P3', 'P4', 'P5', 'P6'];
   var SRS_DAYS = [1, 3, 7, 14, 30];
@@ -86,6 +87,10 @@
     errorCard: ['改錯', '改錯', 'Error'],
     errorMeta: ['{n} 個詞 · 1 個錯處', '{n} 個詞 · 1 個錯處', '{n} words · 1 mistake'],
     review: ['重練 {n} 題', '重練 {n} 題', 'Review {n} today'],
+    smartTitle: ['掌握度', '掌握度', 'SmartScore'],
+    smartLearning: ['學習中', '學習中', 'Learning'],
+    smartRefining: ['精煉中', '精煉中', 'Refining'],
+    smartChallenge: ['挑戰區', '挑戰區', 'Challenge zone'],
   };
 
   var lang = 'zh';
@@ -124,6 +129,45 @@
     try {
       localStorage.setItem(KEY, JSON.stringify(progress));
     } catch (e) {}
+  }
+
+  var scores = {};
+  try {
+    scores = JSON.parse(localStorage.getItem(SCORE_KEY) || '{}') || {};
+  } catch (e) {
+    scores = {};
+  }
+
+  function saveScores() {
+    try {
+      localStorage.setItem(SCORE_KEY, JSON.stringify(scores));
+    } catch (e) {}
+  }
+
+  function modeScore() {
+    var row = scores[mode];
+    return row && typeof row.score === 'number' ? row : { score: 0, run: 0 };
+  }
+
+  /* 簡化版 SmartScore（唔係 IXL 官方演算法，只取同樣嘅分段概念）：
+     0–69 學習區 +5／−2；70–89 精煉區 +2／−5；90–100 挑戰區 +1／−10；
+     每 10 連對額外 +2。分數只升到 100，唔會跌穿 0。 */
+  function bumpScore(ok) {
+    var row = scores[mode] || { score: 0, run: 0 };
+    var score = typeof row.score === 'number' ? row.score : 0;
+    var run = typeof row.run === 'number' ? row.run : 0;
+    if (ok) {
+      var inc = score < 70 ? 5 : score < 90 ? 2 : 1;
+      run += 1;
+      if (run > 0 && run % 10 === 0) inc += 2;
+      score = Math.min(100, score + inc);
+    } else {
+      var dec = score < 70 ? 2 : score < 90 ? 5 : 10;
+      score = Math.max(0, score - dec);
+      run = 0;
+    }
+    scores[mode] = { score: score, run: run };
+    saveScores();
   }
 
   var app = document.getElementById('app');
@@ -203,6 +247,7 @@
     progress[id] = rec;
     saveProgress();
     bumpStreak();
+    bumpScore(ok);
   }
 
   function dueList() {
@@ -415,6 +460,23 @@
       modes.appendChild(b);
     });
     app.appendChild(modes);
+
+    var ms = modeScore();
+    var scoreCard = el('div', 'score-card');
+    var scoreHead = el('div', 'score-head');
+    scoreHead.appendChild(el('span', 'score-label', t('smartTitle')));
+    scoreHead.appendChild(el('strong', 'score-value', ms.score + ' / 100'));
+    var status = ms.score >= 90 ? t('smartChallenge') : ms.score >= 70 ? t('smartRefining') : t('smartLearning');
+    scoreHead.appendChild(el('span', 'score-status', status));
+    scoreCard.appendChild(scoreHead);
+    var scoreBar = el('div', 'mastery-bar score-bar');
+    scoreBar.setAttribute('role', 'img');
+    scoreBar.setAttribute('aria-label', t('smartTitle') + ' ' + ms.score + ' / 100');
+    var scoreFill = el('span', 'mastery-fill');
+    scoreFill.style.width = ms.score + '%';
+    scoreBar.appendChild(scoreFill);
+    scoreCard.appendChild(scoreBar);
+    app.appendChild(scoreCard);
 
     if (streak.n > 0) {
       app.appendChild(el('p', 'streak', '🔥 ' + t('streak', { n: streak.n })));

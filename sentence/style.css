@@ -416,6 +416,40 @@ h1 {
   color: var(--bad);
 }
 
+.score-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 10px 12px;
+  margin: 0 0 12px;
+}
+
+.score-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.score-label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.score-value {
+  font-size: 18px;
+}
+
+.score-status {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.score-bar {
+  max-width: none;
+}
+
 .mastery-bar {
   height: 5px;
   margin: 6px 0 0;
