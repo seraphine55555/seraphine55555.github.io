@@ -16,6 +16,7 @@
   var SKEY = 'sentence/streak';
   var LANGS = ['yue', 'zh', 'en'];
   var GRADES = ['all', 'P3', 'P4', 'P5', 'P6'];
+  var SRS_DAYS = [1, 3, 7, 14, 30];
 
   var DICT = {
     title: ['句子重組', '句子重組', 'Sentence Builder'],
@@ -84,6 +85,7 @@
     errorWrongFix: ['未啱，正確寫法係 {w}。', '未啱，正確寫法是 {w}。', 'Not quite — the correct form is {w}.'],
     errorCard: ['改錯', '改錯', 'Error'],
     errorMeta: ['{n} 個詞 · 1 個錯處', '{n} 個詞 · 1 個錯處', '{n} words · 1 mistake'],
+    review: ['重練 {n} 題', '重練 {n} 題', 'Review {n} today'],
   };
 
   var lang = 'zh';
@@ -145,6 +147,8 @@
   var errorHint = '';
   var errorFixWrong = '';
   var errorStartedAt = 0;
+  var reviewQueue = null;
+  var reviewPos = 0;
   var streak = { last: '', n: 0 };
   try {
     var ss = JSON.parse(localStorage.getItem(SKEY) || '{}');
@@ -189,6 +193,62 @@
     } catch (e) {}
   }
 
+  function recordResult(id, ok) {
+    var rec = progress[id] || { tries: 0, correct: 0, step: 0 };
+    rec.tries = (rec.tries || 0) + 1;
+    if (ok) rec.correct = (rec.correct || 0) + 1;
+    rec.step = ok ? Math.min((rec.step || 0) + 1, SRS_DAYS.length - 1) : 0;
+    rec.due = ok ? Date.now() + SRS_DAYS[rec.step] * 86400000 : Date.now();
+    rec.last = new Date().toISOString();
+    progress[id] = rec;
+    saveProgress();
+    bumpStreak();
+  }
+
+  function dueList() {
+    var now = Date.now();
+    return filtered().filter(function (s) {
+      var r = progress[s.id];
+      return r && typeof r.due === 'number' && r.due <= now;
+    });
+  }
+
+  function startItem(id, keepQueue) {
+    if (!keepQueue) {
+      reviewQueue = null;
+      reviewPos = 0;
+    }
+    if (mode === 'combine') startCombine(id);
+    else if (mode === 'error') startError(id);
+    else startSentence(id);
+  }
+
+  function startReview() {
+    var ids = dueList().map(function (s) {
+      return s.id;
+    });
+    if (!ids.length) return;
+    reviewQueue = ids;
+    reviewPos = 0;
+    startItem(ids[0], true);
+  }
+
+  function nextInReview() {
+    if (!reviewQueue) return false;
+    reviewPos += 1;
+    if (reviewPos < reviewQueue.length) {
+      startItem(reviewQueue[reviewPos], true);
+      return true;
+    }
+    reviewQueue = null;
+    view = 'home';
+    current = null;
+    combine = null;
+    errorItem = null;
+    render();
+    return true;
+  }
+
   function doneCount(list) {
     return list.filter(function (s) {
       return progress[s.id] && progress[s.id].correct > 0;
@@ -227,6 +287,7 @@
 
   function nextSentence() {
     if (!current) return;
+    if (nextInReview()) return;
     var list = currentList();
     var at = -1;
     for (var i = 0; i < list.length; i++) if (list[i].id === current.id) at = i;
@@ -257,6 +318,7 @@
 
   function nextCombine() {
     if (!combine) return;
+    if (nextInReview()) return;
     var list = currentList();
     var at = -1;
     for (var i = 0; i < list.length; i++) if (list[i].id === combine.id) at = i;
@@ -284,6 +346,7 @@
 
   function nextError() {
     if (!errorItem) return;
+    if (nextInReview()) return;
     var list = currentList();
     var at = -1;
     for (var i = 0; i < list.length; i++) if (list[i].id === errorItem.id) at = i;
@@ -337,6 +400,7 @@
         current = null;
         combine = null;
         errorItem = null;
+        reviewQueue = null;
         if (mode !== 'scramble' && grade === 'P3') {
           grade = 'all';
           try {
@@ -376,6 +440,16 @@
 
     var list = filtered();
     app.appendChild(el('p', 'progress-line', t('progress', { done: doneCount(list), total: list.length })));
+
+    var due = dueList();
+    if (due.length) {
+      var review = el('button', 'btn primary review-btn', t('review', { n: due.length }));
+      review.type = 'button';
+      review.setAttribute('data-review', '');
+      review.style.marginBottom = '12px';
+      review.addEventListener('click', startReview);
+      app.appendChild(review);
+    }
 
     if (!list.length) {
       app.appendChild(el('div', 'empty', t('empty')));
@@ -421,9 +495,7 @@
       btn.type = 'button';
       btn.setAttribute('data-start', s.id);
       btn.addEventListener('click', function () {
-        if (mode === 'combine') startCombine(s.id);
-        else if (mode === 'error') startError(s.id);
-        else startSentence(s.id);
+        startItem(s.id);
       });
       card.appendChild(btn);
       wrap.appendChild(card);
@@ -447,6 +519,7 @@
     back.addEventListener('click', function () {
       view = 'home';
       errorItem = null;
+      reviewQueue = null;
       render();
     });
     top.appendChild(back);
@@ -494,13 +567,7 @@
           var ok = idx === 0;
           errorStage = 'done';
           errorFixWrong = ok ? '' : t('errorWrongFix', { w: errorItem.fixes[0] });
-          var rec = progress[errorItem.id] || { tries: 0, correct: 0 };
-          rec.tries += 1;
-          if (ok) rec.correct += 1;
-          rec.last = new Date().toISOString();
-          progress[errorItem.id] = rec;
-          saveProgress();
-          bumpStreak();
+          recordResult(errorItem.id, ok);
           if (window.HubProgress) {
             window.HubProgress.log({
               app: 'sentence',
@@ -558,6 +625,7 @@
     back.addEventListener('click', function () {
       view = 'home';
       combine = null;
+      reviewQueue = null;
       render();
     });
     top.appendChild(back);
@@ -678,13 +746,7 @@
       });
       combineChecked = true;
       combineOk = ok;
-      var rec = progress[combine.id] || { tries: 0, correct: 0 };
-      rec.tries += 1;
-      if (ok) rec.correct += 1;
-      rec.last = new Date().toISOString();
-      progress[combine.id] = rec;
-      saveProgress();
-      bumpStreak();
+      recordResult(combine.id, ok);
       if (window.HubProgress) {
         window.HubProgress.log({
           app: 'sentence',
@@ -730,6 +792,7 @@
     back.addEventListener('click', function () {
       view = 'home';
       current = null;
+      reviewQueue = null;
       render();
     });
     top.appendChild(back);
@@ -812,13 +875,7 @@
       });
       checked = true;
       lastOk = ok;
-      var rec = progress[current.id] || { tries: 0, correct: 0 };
-      rec.tries += 1;
-      if (ok) rec.correct += 1;
-      rec.last = new Date().toISOString();
-      progress[current.id] = rec;
-      saveProgress();
-      bumpStreak();
+      recordResult(current.id, ok);
       if (window.HubProgress) {
         window.HubProgress.log({
           app: 'sentence',
