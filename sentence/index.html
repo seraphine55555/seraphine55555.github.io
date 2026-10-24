@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>句子重組 · Sentence Lab</title>
+    <meta name="description" content="小學英文句子重組練習：點選詞語排成正確句子，每句有文法解釋。離線可用、沒有帳號。" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../">
+        <span class="brand__mark" aria-hidden="true">句</span>
+        <span>
+          <strong>Sentence Lab</strong>
+          <small>句子重組</small>
+        </span>
+      </a>
+      <div class="lang" role="group" aria-label="語言">
+        <button type="button" data-lang="yue" aria-pressed="false">粵</button>
+        <button type="button" data-lang="zh" aria-pressed="true">繁</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </header>
+
+    <main id="app" class="wrap"></main>
+
+    <footer class="foot">
+      <span>純前端 · 進度只存喺呢部機 · 冇帳號</span>
+      <a href="../">← 返回門戶</a>
+    </footer>
+
+    <script src="sentences.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
