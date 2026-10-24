@@ -539,6 +539,10 @@ footer a {
   display: none;
 }
 
+.social .btn[hidden] {
+  display: none;
+}
+
 .social-row {
   display: flex;
   flex-wrap: wrap;

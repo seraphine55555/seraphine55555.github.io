@@ -15,12 +15,12 @@
 
 -- ---------------------------------------------------------------- likes
 create table if not exists public.app_likes (
-  app_slug text primary key check (app_slug in ('dictalab', 'mathslab')),
+  app_slug text primary key check (app_slug in ('dictalab', 'mathslab', 'reading', 'sentence')),
   count integer not null default 0 check (count >= 0)
 );
 
 insert into public.app_likes (app_slug, count)
-values ('dictalab', 0), ('mathslab', 0)
+values ('dictalab', 0), ('mathslab', 0), ('reading', 0), ('sentence', 0)
 on conflict (app_slug) do nothing;
 
 alter table public.app_likes enable row level security;
@@ -63,7 +63,7 @@ grant execute on function public.like_app(text) to anon, authenticated;
 -- ------------------------------------------------------------- comments
 create table if not exists public.app_comments (
   id uuid primary key default gen_random_uuid(),
-  app_slug text not null check (app_slug in ('dictalab', 'mathslab')),
+  app_slug text not null check (app_slug in ('dictalab', 'mathslab', 'reading', 'sentence')),
   body text not null check (char_length(body) between 1 and 300),
   created_at timestamptz not null default now(),
   hidden boolean not null default false
@@ -87,7 +87,7 @@ create policy "comments insertable"
   on public.app_comments for insert
   with check (
     hidden = false
-    and app_slug in ('dictalab', 'mathslab')
+    and app_slug in ('dictalab', 'mathslab', 'reading', 'sentence')
     and char_length(body) between 1 and 300
   );
 

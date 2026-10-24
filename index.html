@@ -248,6 +248,73 @@
             <div class="actions">
               <a class="btn primary" href="reading/" data-i18n="rd.cta"></a>
             </div>
+            <div class="social" data-app="reading" hidden>
+              <div class="social-row">
+                <button class="btn slim like" type="button" data-like aria-pressed="false" hidden>
+                  <span class="heart" aria-hidden="true">♡</span>
+                  <span class="like-count" data-like-count>0</span>
+                  <span class="sr-only" data-i18n="social.like"></span>
+                </button>
+                <button class="btn slim" type="button" data-share data-i18n="social.share"></button>
+                <button
+                  class="btn slim"
+                  type="button"
+                  data-comments-toggle
+                  aria-expanded="false"
+                  aria-controls="comments-reading"
+                  hidden
+                >
+                  <span data-i18n="social.comments"></span>
+                  <span class="comment-count" data-comment-count hidden></span>
+                </button>
+              </div>
+              <div class="comments" id="comments-reading" data-comments hidden>
+                <ul class="comment-list" data-comment-list></ul>
+                <p class="tiny muted" data-comments-empty data-i18n="social.empty" hidden></p>
+                <form data-comment-form>
+                  <label class="sr-only" for="comment-input-reading" data-i18n="social.formLabel"></label>
+                  <textarea
+                    id="comment-input-reading"
+                    data-comment-input
+                    maxlength="300"
+                    rows="2"
+                    data-i18n-placeholder="social.placeholder"
+                    data-i18n-aria="social.formLabel"
+                  ></textarea>
+                  <div class="social-row">
+                    <button class="btn primary" type="submit" data-comment-send data-i18n="social.send"></button>
+                    <span class="tiny" role="status" data-comment-status></span>
+                  </div>
+                </form>
+                <p class="tiny muted" data-i18n-html="social.privacy"></p>
+              </div>
+            </div>
+            <div class="shots">
+              <img
+                src="shots/reading-1-home.webp"
+                data-i18n-alt="rd.shot1"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                src="shots/reading-2-passage.webp"
+                data-i18n-alt="rd.shot2"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                src="shots/reading-3-question.webp"
+                data-i18n-alt="rd.shot3"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
           </div>
         </article>
 
@@ -259,6 +326,65 @@
             <p class="desc" data-i18n-html="sg.desc"></p>
             <div class="actions">
               <a class="btn primary" href="sentence/" data-i18n="sg.cta"></a>
+            </div>
+            <div class="social" data-app="sentence" hidden>
+              <div class="social-row">
+                <button class="btn slim like" type="button" data-like aria-pressed="false" hidden>
+                  <span class="heart" aria-hidden="true">♡</span>
+                  <span class="like-count" data-like-count>0</span>
+                  <span class="sr-only" data-i18n="social.like"></span>
+                </button>
+                <button class="btn slim" type="button" data-share data-i18n="social.share"></button>
+                <button
+                  class="btn slim"
+                  type="button"
+                  data-comments-toggle
+                  aria-expanded="false"
+                  aria-controls="comments-sentence"
+                  hidden
+                >
+                  <span data-i18n="social.comments"></span>
+                  <span class="comment-count" data-comment-count hidden></span>
+                </button>
+              </div>
+              <div class="comments" id="comments-sentence" data-comments hidden>
+                <ul class="comment-list" data-comment-list></ul>
+                <p class="tiny muted" data-comments-empty data-i18n="social.empty" hidden></p>
+                <form data-comment-form>
+                  <label class="sr-only" for="comment-input-sentence" data-i18n="social.formLabel"></label>
+                  <textarea
+                    id="comment-input-sentence"
+                    data-comment-input
+                    maxlength="300"
+                    rows="2"
+                    data-i18n-placeholder="social.placeholder"
+                    data-i18n-aria="social.formLabel"
+                  ></textarea>
+                  <div class="social-row">
+                    <button class="btn primary" type="submit" data-comment-send data-i18n="social.send"></button>
+                    <span class="tiny" role="status" data-comment-status></span>
+                  </div>
+                </form>
+                <p class="tiny muted" data-i18n-html="social.privacy"></p>
+              </div>
+            </div>
+            <div class="shots">
+              <img
+                src="shots/sentence-1-home.webp"
+                data-i18n-alt="sg.shot1"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                src="shots/sentence-2-play.webp"
+                data-i18n-alt="sg.shot2"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
           </div>
         </article>
@@ -481,6 +607,21 @@
             '18 passages and 90 questions with per-option explanations, vocabulary (IPA), grammar notes, printable worksheets and a mistake book. Progress stays on this device.',
           ],
           'rd.cta': ['開啟閱讀理解', '開啟閱讀理解', 'Open Reading Lab'],
+          'rd.shot1': [
+            '閱讀理解主頁：年級篩選同 18 篇短文',
+            '閱讀理解主頁：年級篩選與 18 篇短文',
+            'Reading Lab home: grade filter and 18 passages',
+          ],
+          'rd.shot2': [
+            '閱讀理解文章頁：短文、詞句詳解同中文翻譯',
+            '閱讀理解文章頁：短文、詞句詳解與中文翻譯',
+            'Reading Lab passage page: the text, vocabulary notes and Chinese translation',
+          ],
+          'rd.shot3': [
+            '閱讀理解答題頁：題目、四個選項同答錯後嘅解釋',
+            '閱讀理解答題頁：題目、四個選項與答錯後的解釋',
+            'Reading Lab question page: the question, four options and the explanation after a wrong answer',
+          ],
           'sg.tag': [
             '小學 3–6 年級英文句子重組',
             '小學 3–6 年級英文句子重組',
@@ -492,6 +633,16 @@
             'Tap words to rebuild a correct sentence. Every sentence has a grammar note and a translation, covering common P3–P6 grammar. Works offline after the first visit.',
           ],
           'sg.cta': ['開啟句子重組', '開啟句子重組', 'Open Sentence Builder'],
+          'sg.shot1': [
+            '句子重組主頁：年級篩選同 12 句',
+            '句子重組主頁：年級篩選與 12 句',
+            'Sentence Lab home: grade filter and 12 sentences',
+          ],
+          'sg.shot2': [
+            '句子重組作答畫面：點選詞語排句',
+            '句子重組作答畫面：點選詞語排句',
+            'Sentence Lab practice screen: tapping words to build a sentence',
+          ],
 
           'claims.h2': ['你可以自己驗證嘅事', '你可以自行驗證的事', 'What you can check yourself'],
           'claims.1.claim': ['離線都用得', '離線亦可使用', 'Works offline'],

@@ -146,6 +146,17 @@
     state.like.querySelector('.heart').textContent = state.liked ? '♥' : '♡';
   }
 
+  function applySupport(state, supported) {
+    /* 2026-10-24：新 app（reading／sentence）嘅讚好／留言要等 Supabase 加 slug。
+       查到 app_likes 有呢個 slug 嘅 row 才顯示；未有就只出「分享」，唔會出壞掣。 */
+    state.like.hidden = !supported;
+    state.toggle.hidden = !supported;
+    if (!supported && state.panel && !state.panel.hidden) {
+      state.panel.hidden = true;
+      state.toggle.setAttribute('aria-expanded', 'false');
+    }
+  }
+
   function loadLikes(state) {
     return rest(
       LIKE_TABLE +
@@ -156,6 +167,7 @@
         var row = Array.isArray(rows) ? rows[0] : rows;
         state.likes = row && typeof row.count === 'number' ? row.count : 0;
         refreshLike(state);
+        applySupport(state, !!row);
       })
       .catch(function () {
         /* 讀唔到就顯示 0，唔好令成頁爆 */
