@@ -10,7 +10,10 @@
 (function () {
   'use strict';
 
-  var DATA = Array.isArray(window.WORDLAB_DATA) ? window.WORDLAB_DATA : [];
+  var DATA = (Array.isArray(window.WORDLAB_DATA) ? window.WORDLAB_DATA : []).concat(
+    Array.isArray(window.WORDLAB_BULK) ? window.WORDLAB_BULK : []
+  );
+  window.WORDLAB_ALL = DATA;
   var LANG_KEY = 'wordlab/lang';
   var SUBJECT_KEY = 'wordlab/subject';
   var GRADE_KEY = 'wordlab/grade';
@@ -101,6 +104,7 @@
     speak: ['朗讀', '朗讀', 'Listen'],
     noSpeech: ['呢部機未有語音，仍然可以繼續練。', '這部機未有語音，仍可繼續練。', 'No voice on this device — you can keep practising.'],
     noWords: ['搵唔到生字，請重新載入。', '找不到生字，請重新載入。', 'No words found — please reload.'],
+    exampleMissing: ['呢個字暫時未有例句。', '這個字暫時未有例句。', 'No example for this word yet.'],
     gradeLabel: ['年級', '年級', 'Grade'],
     newBadge: ['新', '新', 'New'],
     dueBadge: ['到期', '到期', 'Due'],
@@ -760,9 +764,14 @@
       var answer = el('div', 'answer');
       answer.appendChild(el('p', 'answer-label', t('meaning')));
       answer.appendChild(el('p', 'meaning', meaning(w)));
-      answer.appendChild(el('p', 'answer-label', t('example')));
-      answer.appendChild(el('p', 'example', primaryExample(w)));
-      answer.appendChild(el('p', 'translation', secondaryExample(w)));
+      var ex = primaryExample(w);
+      if (ex) {
+        answer.appendChild(el('p', 'answer-label', t('example')));
+        answer.appendChild(el('p', 'example', ex));
+        answer.appendChild(el('p', 'translation', secondaryExample(w)));
+      } else {
+        answer.appendChild(el('p', 'tiny muted', t('exampleMissing')));
+      }
       card.appendChild(answer);
     }
     app.appendChild(card);
