@@ -442,6 +442,16 @@ a {
   color: #c4b5fd;
 }
 
+.badge.ipa {
+  color: var(--muted);
+  font-family: var(--serif);
+  font-size: 10px;
+  max-width: 9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .badge.band-1 {
   color: var(--good);
   border-color: rgba(74, 222, 128, 0.4);

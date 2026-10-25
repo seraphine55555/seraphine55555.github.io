@@ -784,6 +784,7 @@
     card.appendChild(el('p', 'term', term(w)));
     var meta = el('p', 'word-meta');
     meta.appendChild(el('span', 'badge', w.grade));
+    if (w.ipa) meta.appendChild(el('span', 'badge ipa', w.ipa));
     meta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
     meta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
     meta.appendChild(
@@ -865,6 +866,7 @@
     card.appendChild(el('p', 'term', term(w)));
     var qmeta = el('p', 'word-meta');
     qmeta.appendChild(el('span', 'badge', w.grade));
+    if (w.ipa) qmeta.appendChild(el('span', 'badge ipa', w.ipa));
     qmeta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
     qmeta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
     qmeta.appendChild(
