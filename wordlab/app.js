@@ -26,6 +26,7 @@
   var DICT = {
     footLocal: ['純前端 · 進度只存喺呢部機 · 冇帳號', '純前端 · 進度只存於本機 · 沒有帳號', 'Local only · no account'],
     footHub: ['← 返回門戶', '← 返回門戶', '← Back to hub'],
+    footSource: ['詞庫：96 個自寫概念＋4,904 個 ECDICT（MIT）', '詞庫：96 個自寫概念＋4,904 個 ECDICT（MIT）', 'Word bank: 96 written concepts + 4,904 ECDICT entries (MIT)'],
     eyebrow: ['中英雙語 · 生字', '中英雙語 · 生字', 'Bilingual vocabulary'],
     heroTitle: ['詞語星球', '詞語星球', 'WordLab'],
     heroLead: [
@@ -1011,6 +1012,7 @@
       var key = n.getAttribute('data-i18n');
       if (key === 'foot.local') n.textContent = t('footLocal');
       if (key === 'foot.hub') n.textContent = t('footHub');
+      if (key === 'foot.source') n.textContent = t('footSource');
     });
     document.querySelectorAll('.lang button').forEach(function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-lang') === lang ? 'true' : 'false');
