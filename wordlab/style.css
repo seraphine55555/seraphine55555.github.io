@@ -388,13 +388,15 @@ a {
   background: rgba(125, 211, 252, 0.14);
 }
 
-.filter-chip.need-must.is-on {
+.filter-chip.need-must.is-on,
+.filter-chip.source-curated.is-on {
   border-color: rgba(246, 168, 37, 0.7);
   background: rgba(246, 168, 37, 0.14);
 }
 
 .filter-chip.need-rare.is-on,
-.filter-chip.need-bonus.is-on {
+.filter-chip.need-bonus.is-on,
+.filter-chip.source-dictionary.is-on {
   border-color: rgba(167, 139, 250, 0.65);
   background: rgba(167, 139, 250, 0.12);
 }
@@ -453,6 +455,16 @@ a {
 .badge.band-3 {
   color: #fda4af;
   border-color: rgba(253, 164, 175, 0.4);
+}
+
+.badge.source-curated {
+  color: var(--good);
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.badge.source-dictionary {
+  color: #c4b5fd;
+  border-color: rgba(167, 139, 250, 0.4);
 }
 
 .progress-bar {

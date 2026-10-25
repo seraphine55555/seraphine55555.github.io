@@ -19,6 +19,7 @@
   var GRADE_KEY = 'wordlab/grade';
   var NEED_KEY = 'wordlab/need';
   var BAND_KEY = 'wordlab/band';
+  var SOURCE_KEY = 'wordlab/source';
   var PROG_KEY = 'wordlab/progress/v1';
   var STREAK_KEY = 'wordlab/streak';
   var STEPS = [1, 3, 7, 14, 30];
@@ -62,6 +63,13 @@
     band1: ['基礎', '基礎', 'Basic'],
     band2: ['進階', '進階', 'Developing'],
     band3: ['挑戰', '挑戰', 'Challenge'],
+    sourceTitle: ['來源', '來源', 'Source'],
+    sourceAll: ['全部', '全部', 'All'],
+    sourceCurated: ['精選（有例句）', '精選（有例句）', 'Curated (with examples)'],
+    sourceDict: ['字典（無例句）', '字典（無例句）', 'Dictionary (no examples)'],
+    sourceCuratedBadge: ['精選', '精選', 'Curated'],
+    sourceDictBadge: ['字典', '字典', 'Dictionary'],
+    sourceNote: ['精選 96 個有人手例句；字典 4,904 個只有中文釋義，未有例句。', '精選 96 個有人手例句；字典 4,904 個只有中文釋義，未有例句。', '96 curated entries have examples; 4,904 dictionary entries have Chinese glosses but no examples.'],
     resetFilters: ['清除篩選', '清除篩選', 'Clear filters'],
     noFiltered: ['呢個組合暫時冇生字；試下清除篩選。', '這個組合暫時沒有生字；試試清除篩選。', 'No words in this combination — try clearing the filters.'],
     progressTitle: ['我的進度', '我的進度', 'My progress'],
@@ -194,6 +202,8 @@
   if (grade !== 'all' && !/^P[1-6]$/.test(grade)) grade = 'all';
   var need = load(NEED_KEY, 'all');
   if (['all', 'must', 'should', 'rare', 'bonus'].indexOf(need) < 0) need = 'all';
+  var sourceFilter = load(SOURCE_KEY, 'all');
+  if (['all', 'curated', 'dictionary'].indexOf(sourceFilter) < 0) sourceFilter = 'all';
   var band = load(BAND_KEY, 'all');
   if (band !== 'all' && [1, 2, 3].indexOf(Number(band)) < 0) band = 'all';
   if (band !== 'all') band = Number(band);
@@ -212,11 +222,16 @@
     });
   }
 
+  function wordSource(w) {
+    return w.source === 'ECDICT' ? 'dictionary' : 'curated';
+  }
+
   function currentWords() {
     return gradeWords().filter(function (w) {
       var okNeed = need === 'all' || w.need === need;
       var okBand = band === 'all' || Number(w.band) === band;
-      return okNeed && okBand;
+      var okSource = sourceFilter === 'all' || wordSource(w) === sourceFilter;
+      return okNeed && okBand && okSource;
     });
   }
 
@@ -238,11 +253,13 @@
     var words = gradeWords();
     var byNeed = { all: words.length, must: 0, should: 0, rare: 0, bonus: 0 };
     var byBand = { all: words.length, 1: 0, 2: 0, 3: 0 };
+    var bySource = { all: words.length, curated: 0, dictionary: 0 };
     words.forEach(function (w) {
       if (byNeed[w.need] !== undefined) byNeed[w.need] += 1;
       if (byBand[Number(w.band)] !== undefined) byBand[Number(w.band)] += 1;
+      bySource[wordSource(w)] += 1;
     });
-    return { need: byNeed, band: byBand };
+    return { need: byNeed, band: byBand, source: bySource };
   }
 
   function term(w) {
@@ -568,7 +585,26 @@
       bandRow.appendChild(b);
     });
     filterPanel.appendChild(bandRow);
-    filterPanel.appendChild(el('p', 'filter-note', t('needNote')));
+
+    var sourceHead = el('div', 'filter-subhead');
+    sourceHead.appendChild(el('span', 'filter-label', t('sourceTitle')));
+    filterPanel.appendChild(sourceHead);
+    var sourceRow = el('div', 'filter-chips');
+    [
+      { v: 'all', label: t('sourceAll'), n: counts.source.all },
+      { v: 'curated', label: t('sourceCurated'), n: counts.source.curated },
+      { v: 'dictionary', label: t('sourceDict'), n: counts.source.dictionary },
+    ].forEach(function (o) {
+      var b = el('button', 'filter-chip source-' + o.v + (sourceFilter === o.v ? ' is-on' : ''));
+      b.type = 'button';
+      b.setAttribute('data-source', o.v);
+      b.setAttribute('aria-pressed', sourceFilter === o.v ? 'true' : 'false');
+      b.appendChild(el('span', '', o.label));
+      b.appendChild(el('small', '', String(o.n)));
+      sourceRow.appendChild(b);
+    });
+    filterPanel.appendChild(sourceRow);
+    filterPanel.appendChild(el('p', 'filter-note', t('needNote') + ' ' + t('sourceNote')));
     app.appendChild(filterPanel);
 
     var prog = el('section', 'panel progress-panel');
@@ -750,6 +786,13 @@
     meta.appendChild(el('span', 'badge', w.grade));
     meta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
     meta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
+    meta.appendChild(
+      el(
+        'span',
+        'badge source-' + wordSource(w),
+        wordSource(w) === 'curated' ? t('sourceCuratedBadge') : t('sourceDictBadge')
+      )
+    );
     if (isNew(w)) meta.appendChild(el('span', 'badge new', t('newBadge')));
     else if (isDue(w)) meta.appendChild(el('span', 'badge due', t('dueBadge')));
     else if (isKnown(w)) meta.appendChild(el('span', 'badge known', t('knownBadge')));
@@ -824,6 +867,13 @@
     qmeta.appendChild(el('span', 'badge', w.grade));
     qmeta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
     qmeta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
+    qmeta.appendChild(
+      el(
+        'span',
+        'badge source-' + wordSource(w),
+        wordSource(w) === 'curated' ? t('sourceCuratedBadge') : t('sourceDictBadge')
+      )
+    );
     card.appendChild(qmeta);
 
     var options = el('div', 'options');
@@ -1060,11 +1110,22 @@
       render();
       return;
     }
+    if (target.hasAttribute('data-source')) {
+      sourceFilter = target.getAttribute('data-source');
+      save(SOURCE_KEY, sourceFilter);
+      view = 'home';
+      session = null;
+      lastResult = null;
+      render();
+      return;
+    }
     if (target.hasAttribute('data-reset-filters')) {
       need = 'all';
       band = 'all';
+      sourceFilter = 'all';
       save(NEED_KEY, need);
       save(BAND_KEY, band);
+      save(SOURCE_KEY, sourceFilter);
       view = 'home';
       session = null;
       lastResult = null;
