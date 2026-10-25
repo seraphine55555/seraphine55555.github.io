@@ -1,7 +1,7 @@
 {
   "name": "詞語星球 WordLab",
   "short_name": "詞語星球",
-  "description": "中英雙語生字練習：字卡、配對、快問快答；進度只存本機，可離線使用。",
+  "description": "5,000 個英文常用字練習：字卡、配對、快問快答；進度只存本機，可離線使用。",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

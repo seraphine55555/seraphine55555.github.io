@@ -77,9 +77,9 @@
         "en": "WordLab"
       },
       "tag": {
-        "yue": "中英生字",
-        "zh": "中英生字",
-        "en": "Bilingual vocabulary"
+        "yue": "英文生字",
+        "zh": "英文生字",
+        "en": "English vocabulary"
       },
       "href": "wordlab/",
       "icon": "icons/wordlab.png",
