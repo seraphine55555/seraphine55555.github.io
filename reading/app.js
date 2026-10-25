@@ -801,7 +801,9 @@
   })();
 
   function lookupWord(raw) {
-    var word = String(raw || '').replace(/[’']s$/i, '').toLowerCase();
+    var lower = String(raw || '').toLowerCase();
+    if (GLOSSARY[lower]) return GLOSSARY[lower];
+    var word = lower.replace(/[’']s$/i, '');
     if (GLOSSARY[word]) return GLOSSARY[word];
     var candidates = [];
     if (/ies$/.test(word)) candidates.push(word.slice(0, -3) + 'y');
