@@ -29,6 +29,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-2',
     level: 'P4',
+    fixed: true,
     kernels: ['The boy finished his homework.', 'He was tired.'],
     connector: 'After',
     options: [
@@ -43,6 +44,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-3',
     level: 'P4',
+    fixed: true,
     kernels: ['The book is due today.', 'You borrowed it from the library.'],
     connector: 'which',
     options: [
@@ -57,6 +59,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-4',
     level: 'P4',
+    fixed: true,
     kernels: ['The girl is my cousin.', 'She won the race.'],
     connector: 'who',
     options: [
@@ -71,6 +74,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-5',
     level: 'P4',
+    fixed: true,
     kernels: ['You must finish your homework.', 'You can watch TV.'],
     connector: 'before',
     options: [
@@ -85,6 +89,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-6',
     level: 'P4',
+    fixed: true,
     kernels: ['It was very cold.', 'We stayed indoors.'],
     connector: 'so',
     options: [
@@ -129,6 +134,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p5-3',
     level: 'P5',
+    fixed: true,
     kernels: ['The film was boring.', 'We left early.'],
     connector: 'so',
     options: [
@@ -166,6 +172,7 @@ window.SENTENCE_COMBINE = [
       { w: 'although', ok: false, why: 'although 係讓步；呢句係條件交換，唔係轉折。' },
     ],
     tokens: ['You', 'can', 'borrow', 'my', 'book', 'as', 'long', 'as', 'you', 'return', 'it', 'tomorrow'],
+    accepted: [[5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4]],
     zh: '你可以借我的書，只要你明天還。',
     why: 'as long as 引導條件子句；主句用 can，子句用現在式 return。',
   },
@@ -180,12 +187,14 @@ window.SENTENCE_COMBINE = [
       { w: 'from', ok: false, why: 'from 只講起點，唔配合現在完成式 has lived。' },
     ],
     tokens: ['She', 'has', 'lived', 'here', 'since', 'she', 'was', 'a', 'child'],
+    accepted: [[4, 5, 6, 7, 8, 0, 1, 2, 3]],
     zh: '她從小便住在這裡。',
     why: '現在完成式 has lived + since + 過去時間點（she was a child）。',
   },
   {
     id: 'c-p6-1',
     level: 'P6',
+    fixed: true,
     kernels: ['He finished the race.', 'He broke the record.'],
     connector: 'Not only',
     options: [
@@ -223,12 +232,14 @@ window.SENTENCE_COMBINE = [
       { w: 'so', ok: false, why: 'so 係結果；「頭暈」係結果，「沒有吃東西」係原因。' },
     ],
     tokens: ['He', 'felt', 'dizzy', 'because', 'he', 'had', 'not', 'eaten'],
+    accepted: [[3, 4, 5, 6, 7, 0, 1, 2]],
     zh: '他感到頭暈，因為他沒有吃東西。',
     why: 'because 引導原因子句；had not eaten 是過去完成式，表示在頭暈之前發生。',
   },
   {
     id: 'c-p6-4',
     level: 'P6',
+    fixed: true,
     kernels: ['The more you read.', 'The more you learn.'],
     connector: 'The more',
     options: [
@@ -251,12 +262,14 @@ window.SENTENCE_COMBINE = [
       { w: 'although', ok: false, why: 'although 係讓步；呢句係「直到…才」嘅時間關係。' },
     ],
     tokens: ['She', 'did', 'not', 'realise', 'the', 'danger', 'until', 'she', 'opened', 'the', 'door'],
+    accepted: [[6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5]],
     zh: '她直到打開門才意識到危險。',
     why: 'not ... until ... 表示「直到…才…」；until 後面接過去式 opened。',
   },
   {
     id: 'c-p6-6',
     level: 'P6',
+    fixed: true,
     kernels: ['It is important.', 'We protect the environment.'],
     connector: 'that',
     options: [
