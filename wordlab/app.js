@@ -488,6 +488,10 @@
     var dailyBtn = el('button', 'btn primary daily-btn', t('dailyStart', { n: dailyWords.length }));
     dailyBtn.type = 'button';
     dailyBtn.setAttribute('data-start-daily', '');
+    if (dailyWords.length < 2) {
+      dailyBtn.disabled = true;
+      dailyBtn.setAttribute('aria-disabled', 'true');
+    }
     daily.appendChild(dailyBtn);
     app.appendChild(daily);
 
@@ -597,6 +601,11 @@
       var card = el('button', 'mode-card');
       card.type = 'button';
       card.setAttribute('data-mode', m.v);
+      if (m.v !== 'flash' && list.length < 2) {
+        card.disabled = true;
+        card.classList.add('is-disabled');
+        card.setAttribute('aria-disabled', 'true');
+      }
       card.appendChild(el('span', 'mode-icon', m.icon));
       var body = el('span', 'mode-body');
       body.appendChild(el('strong', '', m.name));

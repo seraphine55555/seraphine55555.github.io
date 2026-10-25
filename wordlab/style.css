@@ -522,6 +522,12 @@ a {
   transition: border-color 120ms ease, transform 120ms ease;
 }
 
+.mode-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .mode-card:hover {
   border-color: rgba(246, 168, 37, 0.6);
   transform: translateY(-1px);
