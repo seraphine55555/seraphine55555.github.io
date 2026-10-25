@@ -1,8 +1,8 @@
-/* WordLab service worker（2026-10-25）
+﻿/* WordLab service worker（2026-10-25）
  * Network-first：有網時攞最新，斷網時用快取；導航請求 fallback 去 index.html。
  * 只快取本站靜態檔，冇第三方。
  */
-const CACHE = 'wordlab-v1';
+const CACHE = 'wordlab-v2';
 const ASSETS = [
   './',
   './index.html',

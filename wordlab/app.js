@@ -14,6 +14,8 @@
   var LANG_KEY = 'wordlab/lang';
   var SUBJECT_KEY = 'wordlab/subject';
   var GRADE_KEY = 'wordlab/grade';
+  var NEED_KEY = 'wordlab/need';
+  var BAND_KEY = 'wordlab/band';
   var PROG_KEY = 'wordlab/progress/v1';
   var STREAK_KEY = 'wordlab/streak';
   var STEPS = [1, 3, 7, 14, 30];
@@ -40,8 +42,27 @@
     dailyEmpty: ['呢個年級未有生字。', '這個年級未有生字。', 'No words for this grade yet.'],
     dailyAllDone: ['今日到期已經練完，可以揀模式自由練。', '今日到期已經練完，可以選模式自由練。', 'All due words are done — pick any mode to keep practising.'],
     gradeAll: ['全部', '全部', 'All'],
+    needTitle: ['學習優先', '學習優先', 'Priority'],
+    needMust: ['必學', '必學', 'Must learn'],
+    needShould: ['需要學', '需要學', 'Should learn'],
+    needRare: ['平時少用', '平時少用', 'Less common'],
+    needBonus: ['錦上添花', '錦上添花', 'Bonus'],
+    needAll: ['全部', '全部', 'All'],
+    needNote: [
+      '必學＝日常高頻；需要學＝校內常見；平時少用＝較書面／低頻；錦上添花＝進階增潤。',
+      '必學＝日常高頻；需要學＝校內常見；平時少用＝較書面／低頻；錦上添花＝進階增潤。',
+      'Must learn = everyday high-frequency; Should learn = common at school; Less common = more formal or low-frequency; Bonus = stretch enrichment.',
+    ],
+    bandTitle: ['難度', '難度', 'Difficulty'],
+    bandAll: ['全部', '全部', 'All'],
+    band1: ['基礎', '基礎', 'Basic'],
+    band2: ['進階', '進階', 'Developing'],
+    band3: ['挑戰', '挑戰', 'Challenge'],
+    resetFilters: ['清除篩選', '清除篩選', 'Clear filters'],
+    noFiltered: ['呢個組合暫時冇生字；試下清除篩選。', '這個組合暫時沒有生字；試試清除篩選。', 'No words in this combination — try clearing the filters.'],
     progressTitle: ['我的進度', '我的進度', 'My progress'],
     knownOf: ['已掌握 {n} / {m}', '已掌握 {n} / {m}', '{n} / {m} mastered'],
+    showingOf: ['顯示 {n} / {m} 個', '顯示 {n} / {m} 個', '{n} / {m} shown'],
     dueLabel: ['{n} 個到期', '{n} 個到期', '{n} due'],
     streakLabel: ['連續 {n} 日', '連續 {n} 日', '{n}-day streak'],
     modesTitle: ['揀一種玩法', '選一種玩法', 'Pick a way to play'],
@@ -166,6 +187,11 @@
   if (subject !== 'en' && subject !== 'zh') subject = 'en';
   var grade = load(GRADE_KEY, 'all');
   if (grade !== 'all' && !/^P[1-6]$/.test(grade)) grade = 'all';
+  var need = load(NEED_KEY, 'all');
+  if (['all', 'must', 'should', 'rare', 'bonus'].indexOf(need) < 0) need = 'all';
+  var band = load(BAND_KEY, 'all');
+  if (band !== 'all' && [1, 2, 3].indexOf(Number(band)) < 0) band = 'all';
+  if (band !== 'all') band = Number(band);
   var progress = load(PROG_KEY, {});
   if (!progress || typeof progress !== 'object') progress = {};
   var streak = load(STREAK_KEY, { date: '', count: 0 });
@@ -175,10 +201,43 @@
   var lastResult = null;
   var app = document.getElementById('app');
 
-  function currentWords() {
+  function gradeWords() {
     return DATA.filter(function (w) {
       return grade === 'all' || w.grade === grade;
     });
+  }
+
+  function currentWords() {
+    return gradeWords().filter(function (w) {
+      var okNeed = need === 'all' || w.need === need;
+      var okBand = band === 'all' || Number(w.band) === band;
+      return okNeed && okBand;
+    });
+  }
+
+  function needName(value) {
+    return value === 'must'
+      ? t('needMust')
+      : value === 'should'
+        ? t('needShould')
+        : value === 'rare'
+          ? t('needRare')
+          : t('needBonus');
+  }
+
+  function bandName(value) {
+    return value === 1 ? t('band1') : value === 2 ? t('band2') : t('band3');
+  }
+
+  function filterCounts() {
+    var words = gradeWords();
+    var byNeed = { all: words.length, must: 0, should: 0, rare: 0, bonus: 0 };
+    var byBand = { all: words.length, 1: 0, 2: 0, 3: 0 };
+    words.forEach(function (w) {
+      if (byNeed[w.need] !== undefined) byNeed[w.need] += 1;
+      if (byBand[Number(w.band)] !== undefined) byBand[Number(w.band)] += 1;
+    });
+    return { need: byNeed, band: byBand };
   }
 
   function term(w) {
@@ -280,6 +339,10 @@
     logEvent(skill || 'flashcard', ok, ms);
   }
 
+  function needRank(value) {
+    return value === 'must' ? 0 : value === 'should' ? 1 : value === 'rare' ? 2 : 3;
+  }
+
   function stats() {
     var list = currentWords();
     var known = 0;
@@ -295,7 +358,9 @@
 
   function dailyQueue(n) {
     var list = currentWords();
-    var due = list.filter(isDue);
+    var due = list.filter(isDue).sort(function (a, b) {
+      return needRank(a.need) - needRank(b.need) || Number(a.band) - Number(b.band);
+    });
     var picked = due.slice(0, n);
     if (picked.length < n) {
       var unseen = shuffled(list.filter(isNew));
@@ -363,7 +428,15 @@
   function renderHome() {
     var list = currentWords();
     if (!list.length) {
-      app.replaceChildren(el('p', 'empty', t('noWords')));
+      var empty = el('div', 'empty-state');
+      empty.appendChild(el('p', 'empty', DATA.length ? t('noFiltered') : t('noWords')));
+      if (DATA.length) {
+        var reset = el('button', 'btn ghost', t('resetFilters'));
+        reset.type = 'button';
+        reset.setAttribute('data-reset-filters', '');
+        empty.appendChild(reset);
+      }
+      app.replaceChildren(empty);
       return;
     }
     var st = stats();
@@ -441,6 +514,54 @@
     gradeWrap.appendChild(gradeRow);
     app.appendChild(gradeWrap);
 
+    /* 2026-10-25：學習優先（必學／需要學／少用／錦上添花）＋難度。
+       兩個 filter 係獨立維度，count 以「年級」為準，唔會因另一個 filter 縮到 0 而睇唔到。 */
+    var counts = filterCounts();
+    var filterPanel = el('section', 'panel filter-panel');
+    var filterHead = el('div', 'panel-head');
+    filterHead.appendChild(el('h2', '', t('needTitle')));
+    filterHead.appendChild(el('span', 'pill', t('showingOf', { n: list.length, m: gradeWords().length })));
+    filterPanel.appendChild(filterHead);
+    var needRow = el('div', 'filter-chips');
+    [
+      { v: 'all', label: t('needAll'), n: counts.need.all },
+      { v: 'must', label: t('needMust'), n: counts.need.must },
+      { v: 'should', label: t('needShould'), n: counts.need.should },
+      { v: 'rare', label: t('needRare'), n: counts.need.rare },
+      { v: 'bonus', label: t('needBonus'), n: counts.need.bonus },
+    ].forEach(function (o) {
+      var b = el('button', 'filter-chip need-' + o.v + (need === o.v ? ' is-on' : ''));
+      b.type = 'button';
+      b.setAttribute('data-need', o.v);
+      b.setAttribute('aria-pressed', need === o.v ? 'true' : 'false');
+      b.appendChild(el('span', '', o.label));
+      b.appendChild(el('small', '', String(o.n)));
+      needRow.appendChild(b);
+    });
+    filterPanel.appendChild(needRow);
+
+    var bandHead = el('div', 'filter-subhead');
+    bandHead.appendChild(el('span', 'filter-label', t('bandTitle')));
+    filterPanel.appendChild(bandHead);
+    var bandRow = el('div', 'filter-chips');
+    [
+      { v: 'all', label: t('bandAll'), n: counts.band.all },
+      { v: 1, label: t('band1'), n: counts.band[1] },
+      { v: 2, label: t('band2'), n: counts.band[2] },
+      { v: 3, label: t('band3'), n: counts.band[3] },
+    ].forEach(function (o) {
+      var b = el('button', 'filter-chip band-' + o.v + (band === o.v ? ' is-on' : ''));
+      b.type = 'button';
+      b.setAttribute('data-band', String(o.v));
+      b.setAttribute('aria-pressed', band === o.v ? 'true' : 'false');
+      b.appendChild(el('span', '', o.label));
+      b.appendChild(el('small', '', String(o.n)));
+      bandRow.appendChild(b);
+    });
+    filterPanel.appendChild(bandRow);
+    filterPanel.appendChild(el('p', 'filter-note', t('needNote')));
+    app.appendChild(filterPanel);
+
     var prog = el('section', 'panel progress-panel');
     var progHead = el('div', 'panel-head');
     progHead.appendChild(el('h2', '', t('progressTitle')));
@@ -493,7 +614,11 @@
     if (!words.length) return;
     if (!queue) {
       var sorted = words.slice().sort(function (a, b) {
-        return (isDue(a) ? 0 : 1) - (isDue(b) ? 0 : 1);
+        return (
+          (isDue(a) ? 0 : 1) - (isDue(b) ? 0 : 1) ||
+          needRank(a.need) - needRank(b.need) ||
+          Number(a.band) - Number(b.band)
+        );
       });
       words = shuffled(sorted.slice(0, Math.min(12, sorted.length)));
     }
@@ -609,6 +734,8 @@
     card.appendChild(el('p', 'term', term(w)));
     var meta = el('p', 'word-meta');
     meta.appendChild(el('span', 'badge', w.grade));
+    meta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
+    meta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
     if (isNew(w)) meta.appendChild(el('span', 'badge new', t('newBadge')));
     else if (isDue(w)) meta.appendChild(el('span', 'badge due', t('dueBadge')));
     else if (isKnown(w)) meta.appendChild(el('span', 'badge known', t('knownBadge')));
@@ -674,7 +801,11 @@
     card.appendChild(top);
     card.appendChild(el('p', 'prompt-label', t('quizHint')));
     card.appendChild(el('p', 'term', term(w)));
-    card.appendChild(el('p', 'word-grade', w.grade));
+    var qmeta = el('p', 'word-meta');
+    qmeta.appendChild(el('span', 'badge', w.grade));
+    qmeta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
+    qmeta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
+    card.appendChild(qmeta);
 
     var options = el('div', 'options');
     session.options.forEach(function (opt, i) {
@@ -884,6 +1015,36 @@
     if (target.hasAttribute('data-grade')) {
       grade = target.getAttribute('data-grade');
       save(GRADE_KEY, grade);
+      view = 'home';
+      session = null;
+      lastResult = null;
+      render();
+      return;
+    }
+    if (target.hasAttribute('data-need')) {
+      need = target.getAttribute('data-need');
+      save(NEED_KEY, need);
+      view = 'home';
+      session = null;
+      lastResult = null;
+      render();
+      return;
+    }
+    if (target.hasAttribute('data-band')) {
+      var bv = target.getAttribute('data-band');
+      band = bv === 'all' ? 'all' : Number(bv);
+      save(BAND_KEY, band);
+      view = 'home';
+      session = null;
+      lastResult = null;
+      render();
+      return;
+    }
+    if (target.hasAttribute('data-reset-filters')) {
+      need = 'all';
+      band = 'all';
+      save(NEED_KEY, need);
+      save(BAND_KEY, band);
       view = 'home';
       session = null;
       lastResult = null;

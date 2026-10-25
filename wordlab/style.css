@@ -348,6 +348,113 @@ a {
   color: var(--ink);
 }
 
+.filter-panel {
+  padding-bottom: 10px;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.filter-chip small {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+}
+
+.filter-chip.is-on {
+  color: var(--ink);
+  border-color: rgba(125, 211, 252, 0.65);
+  background: rgba(125, 211, 252, 0.14);
+}
+
+.filter-chip.need-must.is-on {
+  border-color: rgba(246, 168, 37, 0.7);
+  background: rgba(246, 168, 37, 0.14);
+}
+
+.filter-chip.need-rare.is-on,
+.filter-chip.need-bonus.is-on {
+  border-color: rgba(167, 139, 250, 0.65);
+  background: rgba(167, 139, 250, 0.12);
+}
+
+.filter-subhead {
+  margin: 10px 0 6px;
+}
+
+.filter-label {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.filter-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.empty-state {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  margin: 36px auto;
+  max-width: 26em;
+  text-align: center;
+}
+
+.badge.need-must {
+  border-color: rgba(246, 168, 37, 0.6);
+  color: var(--accent);
+}
+
+.badge.need-should {
+  border-color: rgba(125, 211, 252, 0.55);
+  color: var(--blue);
+}
+
+.badge.need-rare,
+.badge.need-bonus {
+  border-color: rgba(167, 139, 250, 0.55);
+  color: #c4b5fd;
+}
+
+.badge.band-1 {
+  color: var(--good);
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.badge.band-2 {
+  color: var(--accent-2);
+  border-color: rgba(255, 209, 102, 0.4);
+}
+
+.badge.band-3 {
+  color: #fda4af;
+  border-color: rgba(253, 164, 175, 0.4);
+}
+
 .progress-bar {
   height: 9px;
   border-radius: 999px;

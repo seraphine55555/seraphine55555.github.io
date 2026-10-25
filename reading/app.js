@@ -126,6 +126,19 @@
     'app.inText': ['文中', '文中', 'In the passage'],
     'app.example': ['例', '例', 'e.g.'],
     'app.listen': ['朗讀', '朗讀', 'Listen'],
+    'app.readPassage': ['🔊 朗讀全文', '🔊 朗讀全文', '🔊 Read aloud'],
+    'app.stopRead': ['⏹ 停止朗讀', '⏹ 停止朗讀', '⏹ Stop reading'],
+    'app.readStatus': ['朗讀中… {i}/{n}', '朗讀中… {i}/{n}', 'Reading… {i}/{n}'],
+    'app.readDone': ['朗讀完成', '朗讀完成', 'Finished reading'],
+    'app.noSpeech': ['呢部機未有語音；仍可繼續做題。', '這台裝置未有語音；仍可繼續做題。', 'No voice on this device — you can still do the questions.'],
+    'app.tapWordHint': ['點文章入面嘅英文字，睇解釋同聽發音。', '點文章裡的英文字，看解釋和聽發音。', 'Tap any English word to see its meaning and hear it.'],
+    'app.wordTitle': ['查字', '查字', 'Word look-up'],
+    'app.wordUnknown': ['呢個字未收錄中文解釋；可以聽發音，或問家長。', '這個字未收錄中文解釋；可以聽發音，或問家長。', 'No Chinese gloss for this word yet — listen, or ask a grown-up.'],
+    'app.wordRead': ['讀呢個字', '讀這個字', 'Say the word'],
+    'app.wordSentence': ['讀整句', '讀整句', 'Read the sentence'],
+    'app.wordClose': ['收埋', '收起', 'Close'],
+    'app.wordInSentence': ['句子', '句子', 'Sentence'],
+    'app.wordAria': ['查字：{w}', '查字：{w}', 'Look up: {w}'],
     'app.translation': ['中文翻譯', '中文翻譯', 'Chinese translation'],
     'app.translationHint': [
       '先自己讀英文，再睇翻譯。',
@@ -248,6 +261,8 @@
     if (g && GRADES.indexOf(g) >= 0) grade = g;
   } catch (e) {}
   var state = { view: 'home', passageId: null, qIndex: 0, picked: null };
+  var GLOSSARY = {};
+  var speechRun = 0;
 
   /* srs[key] = { due: timestamp, step: 0.. }；due 過期就會入重練清單。 */
   var srs = {};
@@ -696,6 +711,309 @@
     }
   }
 
+  /* ---------------------------------------------------------- 查字／朗讀
+     2026-10-25：把文章變成可點字嘅閱讀器。
+     - 字典來源：每篇 NOTES 嘅 vocab（有 IPA／詞性／中文解釋）＋ WordLab 嘅 48 個概念。
+     - 冇收錄嘅字仍然可以點：顯示「未收錄」＋照樣用瀏覽器 TTS 讀，唔會假裝有解釋。
+     - 朗讀全文逐句讀，會 highlight 當前句子；全部用本機 speechSynthesis，零第三方。
+  */
+  function addGloss(key, entry) {
+    var k = String(key || '').toLowerCase().trim();
+    if (!k || GLOSSARY[k]) return;
+    GLOSSARY[k] = entry;
+  }
+
+  (function buildGlossary() {
+    /* 最高頻功能詞：唔係「生字」，但點到都應該有最基本解釋。 */
+    var core = {
+      i: '我',
+      you: '你／你們',
+      he: '他',
+      she: '她',
+      it: '它',
+      we: '我們',
+      they: '他們',
+      a: '一個（冠詞）',
+      an: '一個（冠詞，用於元音前）',
+      the: '這／那（指定冠詞）',
+      is: '是（is）',
+      are: '是（are）',
+      was: '是（was，過去式）',
+      were: '是（were，過去式）',
+      have: '有',
+      has: '有（第三人稱單數）',
+      had: '有（過去式）',
+      do: '做',
+      does: '做（第三人稱單數）',
+      did: '做（過去式）',
+      can: '可以',
+      will: '將會',
+      in: '在……裡面',
+      on: '在……上面',
+      at: '在（某位置／時間）',
+      to: '到／向',
+      of: '……的',
+      and: '和',
+      but: '但是',
+      or: '或者',
+      with: '和……一起',
+      for: '為了／給',
+      from: '從',
+      my: '我的',
+      your: '你的',
+      his: '他的',
+      her: '她的',
+      our: '我們的',
+      their: '他們的',
+    };
+    Object.keys(core).forEach(function (k) {
+      addGloss(k, { word: k, ipa: '', pos: '', zh: core[k], eg: '' });
+    });
+    Object.keys(NOTES).forEach(function (pid) {
+      var n = NOTES[pid];
+      if (!n || !Array.isArray(n.vocab)) return;
+      n.vocab.forEach(function (v) {
+        if (!v || !v.w) return;
+        var entry = {
+          word: v.w,
+          ipa: v.ipa || '',
+          pos: v.pos || '',
+          zh: v.zh || '',
+          eg: v.eg || '',
+        };
+        addGloss(v.w, entry);
+        /* "best friend" 呢類片語：點其中一個字都應該查到成個片語。 */
+        v.w.split(/\s+/).forEach(function (part) {
+          if (part.length > 2 && !GLOSSARY[part.toLowerCase()]) addGloss(part, entry);
+        });
+      });
+    });
+    var wl = Array.isArray(window.WORDLAB_DATA) ? window.WORDLAB_DATA : [];
+    wl.forEach(function (w) {
+      if (!w || !w.en) return;
+      addGloss(w.en, { word: w.en, ipa: '', pos: '', zh: w.zh || '', eg: w.exEn || '' });
+    });
+  })();
+
+  function lookupWord(raw) {
+    var word = String(raw || '').replace(/[’']s$/i, '').toLowerCase();
+    if (GLOSSARY[word]) return GLOSSARY[word];
+    var candidates = [];
+    if (/ies$/.test(word)) candidates.push(word.slice(0, -3) + 'y');
+    if (/es$/.test(word)) candidates.push(word.slice(0, -2));
+    if (/s$/.test(word)) candidates.push(word.slice(0, -1));
+    if (/ied$/.test(word)) candidates.push(word.slice(0, -3) + 'y');
+    if (/ed$/.test(word)) {
+      candidates.push(word.slice(0, -2));
+      candidates.push(word.slice(0, -1));
+    }
+    if (/ing$/.test(word)) {
+      candidates.push(word.slice(0, -3));
+      candidates.push(word.slice(0, -3) + 'e');
+    }
+    if (/er$/.test(word)) {
+      candidates.push(word.slice(0, -2));
+      candidates.push(word.slice(0, -1));
+    }
+    if (/est$/.test(word)) {
+      candidates.push(word.slice(0, -3));
+      candidates.push(word.slice(0, -2));
+    }
+    for (var i = 0; i < candidates.length; i++) {
+      if (GLOSSARY[candidates[i]]) return GLOSSARY[candidates[i]];
+    }
+    return null;
+  }
+
+  function splitPassageSentences(text) {
+    var parts = String(text || '').match(/[^.!?]+[.!?]+["'”’]?|[^.!?]+$/g) || [];
+    return parts.map(function (s) {
+      return s.trim();
+    }).filter(Boolean);
+  }
+
+  /* 把一句切成 word button＋原有空格／標點；保留原本句子做朗讀及 context。 */
+  function sentenceNode(sentence, index, onWord) {
+    var line = el('span', 'sentence');
+    line.setAttribute('data-sentence', String(index));
+    var re = /[A-Za-z]+(?:['’][A-Za-z]+)*/g;
+    var last = 0;
+    var m;
+    while ((m = re.exec(sentence)) !== null) {
+      if (m.index > last) line.appendChild(document.createTextNode(sentence.slice(last, m.index)));
+      var text = m[0];
+      var b = el('button', 'word', text);
+      b.type = 'button';
+      b.setAttribute('data-word', text);
+      b.setAttribute('aria-label', t('app.wordAria', { w: text }));
+      (function (word) {
+        b.addEventListener('click', function () {
+          onWord(word, sentence);
+        });
+      })(text);
+      line.appendChild(b);
+      last = m.index + text.length;
+    }
+    if (last < sentence.length) line.appendChild(document.createTextNode(sentence.slice(last)));
+    return line;
+  }
+
+  function buildPassageBody(p, onWord) {
+    var body = el('div', 'passage-text');
+    body.setAttribute('data-passage-body', '');
+    var sentences = splitPassageSentences(p.text);
+    sentences.forEach(function (sentence, i) {
+      body.appendChild(sentenceNode(sentence, i, onWord));
+      if (i < sentences.length - 1) body.appendChild(document.createTextNode(' '));
+    });
+    return body;
+  }
+
+  function makeWordPop() {
+    var pop = el('section', 'word-pop');
+    pop.hidden = true;
+    pop.setAttribute('role', 'region');
+    pop.setAttribute('aria-live', 'polite');
+    return pop;
+  }
+
+  function showWordCard(pop, word, sentence) {
+    if (!pop) return;
+    pop.replaceChildren();
+    var info = lookupWord(word);
+    var head = el('div', 'word-pop-head');
+    head.appendChild(el('p', 'word-pop-kicker', t('app.wordTitle')));
+    head.appendChild(el('h3', 'word-pop-word', info && info.word ? info.word : word));
+    if (info && info.ipa) head.appendChild(el('span', 'word-pop-ipa', info.ipa));
+    if (info && info.pos) head.appendChild(el('span', 'word-pop-pos', info.pos));
+    pop.appendChild(head);
+
+    if (info && info.zh) {
+      pop.appendChild(el('p', 'word-pop-zh', info.zh));
+      if (info.eg) {
+        pop.appendChild(el('p', 'word-pop-eg', t('app.example') + '：' + info.eg));
+      }
+    } else {
+      pop.appendChild(el('p', 'word-pop-unknown', t('app.wordUnknown')));
+    }
+    pop.appendChild(el('p', 'word-pop-sentence', t('app.wordInSentence') + '：' + sentence));
+
+    var actions = el('div', 'word-pop-actions');
+    var wordBtn = el('button', 'btn ghost', '🔊 ' + t('app.wordRead'));
+    wordBtn.type = 'button';
+    wordBtn.addEventListener('click', function () {
+      speak(word);
+    });
+    actions.appendChild(wordBtn);
+    var sentenceBtn = el('button', 'btn ghost', '🔊 ' + t('app.wordSentence'));
+    sentenceBtn.type = 'button';
+    sentenceBtn.addEventListener('click', function () {
+      speak(sentence);
+    });
+    actions.appendChild(sentenceBtn);
+    var close = el('button', 'btn ghost', t('app.wordClose'));
+    close.type = 'button';
+    close.addEventListener('click', function () {
+      pop.hidden = true;
+    });
+    actions.appendChild(close);
+    pop.appendChild(actions);
+    pop.hidden = false;
+    if (typeof pop.scrollIntoView === 'function') {
+      pop.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+
+  function stopSpeech() {
+    speechRun += 1;
+    if (window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
+    }
+    document.querySelectorAll('.sentence.is-speaking').forEach(function (n) {
+      n.classList.remove('is-speaking');
+    });
+  }
+
+  /* 逐句朗讀；每句完結才讀下一句，避免長文一次過讀到唔知去邊。 */
+  function readPassage(p, body, onDone) {
+    stopSpeech();
+    var run = speechRun;
+    var sentences = splitPassageSentences(p.text);
+    var i = 0;
+    var status = document.querySelector('[data-read-status]');
+    function finish() {
+      if (run !== speechRun) return;
+      body.querySelectorAll('.sentence.is-speaking').forEach(function (n) {
+        n.classList.remove('is-speaking');
+      });
+      if (onDone) onDone();
+    }
+    function next() {
+      if (run !== speechRun) return;
+      if (i >= sentences.length) return finish();
+      var nodes = body.querySelectorAll('.sentence');
+      nodes.forEach(function (n) {
+        n.classList.toggle('is-speaking', Number(n.getAttribute('data-sentence')) === i);
+      });
+      if (status) status.textContent = t('app.readStatus', { i: i + 1, n: sentences.length });
+      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return finish();
+      try {
+        window.speechSynthesis.cancel();
+        var u = new window.SpeechSynthesisUtterance(sentences[i]);
+        u.lang = 'en-US';
+        u.rate = 0.9;
+        u.onend = function () {
+          i += 1;
+          next();
+        };
+        u.onerror = function () {
+          finish();
+        };
+        window.speechSynthesis.speak(u);
+      } catch (e) {
+        finish();
+      }
+    }
+    next();
+  }
+
+  function readControls(p, body) {
+    var tools = el('div', 'read-tools');
+    var btn = el('button', 'btn', t('app.readPassage'));
+    btn.type = 'button';
+    btn.setAttribute('data-read-passage', '');
+    var status = el('span', 'read-status');
+    status.setAttribute('data-read-status', '');
+    status.setAttribute('aria-live', 'polite');
+    var reading = false;
+    btn.addEventListener('click', function () {
+      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+        status.textContent = t('app.noSpeech');
+        return;
+      }
+      if (reading) {
+        stopSpeech();
+        reading = false;
+        btn.textContent = t('app.readPassage');
+        status.textContent = '';
+        return;
+      }
+      reading = true;
+      btn.textContent = t('app.stopRead');
+      status.textContent = t('app.readStatus', { i: 1, n: splitPassageSentences(p.text).length });
+      readPassage(p, body, function () {
+        reading = false;
+        btn.textContent = t('app.readPassage');
+        status.textContent = t('app.readDone');
+      });
+    });
+    tools.appendChild(btn);
+    tools.appendChild(status);
+    return tools;
+  }
+
   function ttsBtn(text) {
     var b = el('button', 'tts-btn', '🔊');
     b.type = 'button';
@@ -788,9 +1106,14 @@
     );
     wrap.appendChild(head);
 
-    var body = el('div', 'passage-text');
-    body.textContent = p.text;
+    var pop = makeWordPop();
+    var body = buildPassageBody(p, function (word, sentence) {
+      showWordCard(pop, word, sentence);
+    });
+    wrap.appendChild(readControls(p, body));
+    wrap.appendChild(el('p', 'reading-hint', t('app.tapWordHint')));
     wrap.appendChild(body);
+    wrap.appendChild(pop);
     var nb = notesBlock(p);
     if (nb) wrap.appendChild(nb);
     var tb = translationBlock(p);
@@ -1079,9 +1402,13 @@
     /* 重練時可以即時睇返篇文章，唔使跳走。 */
     var det = el('details', 'passage-details');
     det.appendChild(el('summary', null, t('app.showPassage')));
-    var body = el('div', 'passage-text');
-    body.textContent = p.text;
+    var pop = makeWordPop();
+    var body = buildPassageBody(p, function (word, sentence) {
+      showWordCard(pop, word, sentence);
+    });
     det.appendChild(body);
+    det.appendChild(readControls(p, body));
+    det.appendChild(pop);
     wrap.appendChild(det);
 
     var qbox = el('section', 'question');
@@ -1421,6 +1748,7 @@
   }
 
   function render() {
+    stopSpeech();
     if (state.view === 'home') return renderHome();
     if (state.view === 'read') return renderPassage();
     if (state.view === 'review') return renderReview();
