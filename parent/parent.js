@@ -17,7 +17,7 @@
 
   var DICT = {
     title: ['家長總覽', '家長總覽', 'Parent overview'],
-    sub: ['四個 app 嘅本機進度', '四個 app 的本機進度', 'Local progress across the apps'],
+    sub: ['五個 app 嘅本機進度', '五個 app 的本機進度', 'Local progress across the apps'],
     loading: ['讀取進度中…', '讀取進度中…', 'Loading progress…'],
     error: ['讀唔到 app 清單。', '讀不到 app 清單。', 'Could not load the app list.'],
     retry: ['再試', '再試', 'Retry'],
@@ -211,11 +211,32 @@
     return stats;
   }
 
+  function adWordlab() {
+    var stats = emptyStats();
+    var prog = safeParse('wordlab/progress/v1', null);
+    if (!prog || typeof prog !== 'object') return stats;
+    Object.keys(prog).forEach(function (id) {
+      var row = prog[id];
+      if (!row || typeof row !== 'object') return;
+      var tries = Number(row.tries) || 0;
+      var correct = Number(row.correct) || 0;
+      stats.attempts += tries;
+      stats.graded += tries;
+      stats.correct += correct;
+      if (typeof row.last === 'string') {
+        var at = Date.parse(row.last);
+        if (isFinite(at) && at > stats.lastAt) stats.lastAt = at;
+      }
+    });
+    return stats;
+  }
+
   function adapterFor(name) {
     if (name === 'dictalab') return Promise.resolve(adDictalab());
     if (name === 'mathslab') return Promise.resolve(adMathslab());
     if (name === 'reading') return adReading();
     if (name === 'sentence') return Promise.resolve(adSentence());
+    if (name === 'wordlab') return Promise.resolve(adWordlab());
     return Promise.resolve(emptyStats());
   }
 

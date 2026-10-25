@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>香港小學練習 App — 讀默 · 數練</title>
+    <title>香港小學練習 App — 讀默 · 數練 · 詞語星球</title>
     <meta
       name="description"
-      content="讀默（中英文默書）同數練（小學數學）—— 離線都用得，毋須帳號、沒有廣告、不會上傳你的資料。"
+      content="讀默、數練、閱讀理解、句子重組、詞語星球 —— 五個小學練習 app，離線都用得；毋須帳號、沒有廣告、不會上傳你的資料。"
     />
     <link rel="icon" href="icons/dictalab.png" />
     <link rel="apple-touch-icon" href="icons/dictalab.png" />
@@ -14,10 +14,10 @@
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="香港小學練習 App" />
-    <meta property="og:title" content="香港小學練習 App — 讀默 · 數練" />
+    <meta property="og:title" content="香港小學練習 App — 讀默 · 數練 · 詞語星球" />
     <meta
       property="og:description"
-      content="讀默（中英文默書）同數練（小學數學）—— 離線都用得，毋須帳號、沒有廣告、不會上傳你的資料。"
+      content="讀默、數練、閱讀理解、句子重組、詞語星球 —— 五個小學練習 app，離線都用得；毋須帳號、沒有廣告、不會上傳你的資料。"
     />
     <meta property="og:url" content="https://seraphine55555.github.io/" />
     <meta property="og:image" content="https://seraphine55555.github.io/og.png" />
@@ -407,6 +407,93 @@
             </div>
           </div>
         </article>
+
+        <article class="app">
+          <img src="icons/wordlab.png" alt="" width="56" height="56" />
+          <div class="body">
+            <h3>詞語星球 WordLab</h3>
+            <p class="tag" data-i18n="wl.tag"></p>
+            <p class="desc" data-i18n-html="wl.desc"></p>
+            <div class="actions">
+              <a class="btn primary" href="wordlab/" data-i18n="wl.cta"></a>
+            </div>
+            <div class="social" data-app="wordlab" hidden>
+              <div class="social-row">
+                <button class="btn slim like" type="button" data-like aria-pressed="false" hidden>
+                  <span class="heart" aria-hidden="true">♡</span>
+                  <span class="like-count" data-like-count>0</span>
+                  <span class="sr-only" data-i18n="social.like"></span>
+                </button>
+                <button class="btn slim" type="button" data-share data-i18n="social.share"></button>
+                <button
+                  class="btn slim"
+                  type="button"
+                  data-comments-toggle
+                  aria-expanded="false"
+                  aria-controls="comments-wordlab"
+                  hidden
+                >
+                  <span data-i18n="social.comments"></span>
+                  <span class="comment-count" data-comment-count hidden></span>
+                </button>
+              </div>
+              <div class="comments" id="comments-wordlab" data-comments hidden>
+                <ul class="comment-list" data-comment-list></ul>
+                <p class="tiny muted" data-comments-empty data-i18n="social.empty" hidden></p>
+                <form data-comment-form>
+                  <label class="sr-only" for="comment-input-wordlab" data-i18n="social.formLabel"></label>
+                  <textarea
+                    id="comment-input-wordlab"
+                    data-comment-input
+                    maxlength="300"
+                    rows="2"
+                    data-i18n-placeholder="social.placeholder"
+                    data-i18n-aria="social.formLabel"
+                  ></textarea>
+                  <div class="social-row">
+                    <button class="btn primary" type="submit" data-comment-send data-i18n="social.send"></button>
+                    <span class="tiny" role="status" data-comment-status></span>
+                  </div>
+                </form>
+                <p class="tiny muted" data-i18n-html="social.privacy"></p>
+              </div>
+            </div>
+            <div class="shots">
+              <img
+                src="shots/wordlab-1-home.webp"
+                data-i18n-alt="wl.shot1"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                src="shots/wordlab-2-flash.webp"
+                data-i18n-alt="wl.shot2"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                src="shots/wordlab-3-quiz.webp"
+                data-i18n-alt="wl.shot3"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                src="shots/wordlab-4-match.webp"
+                data-i18n-alt="wl.shot4"
+                width="280"
+                height="612"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </div>
+        </article>
       </section>
 
       <h2 data-i18n="claims.h2"></h2>
@@ -521,9 +608,9 @@
             'Primary School Practice Apps for Hong Kong',
           ],
           'hero.lede1': [
-            '讀默、數練、閱讀理解、句子重組 —— 四個練習 app。',
-            '讀默、數練、閱讀理解、句子重組 —— 四個練習應用程式。',
-            'DictaLab, MathsLab, Reading Lab and Sentence Lab — four practice apps.',
+            '讀默、數練、閱讀理解、句子重組、詞語星球 —— 五個練習 app。',
+            '讀默、數練、閱讀理解、句子重組、詞語星球 —— 五個練習應用程式。',
+            'DictaLab, MathsLab, Reading Lab, Sentence Lab and WordLab — five practice apps.',
           ],
           'hero.parent': ['家長總覽', '家長總覽', 'Parent overview'],
           'hero.lede2': [
@@ -672,6 +759,38 @@
             '句子改錯模式：點出錯字，再揀正確寫法',
             '句子改錯模式：點出錯字，再選正確寫法',
             'Sentence Lab error hunt: tap the wrong word, then pick the correct form',
+          ],
+
+          'wl.tag': [
+            '小學 1–6 年級中英生字',
+            '小學 1–6 年級中英生字',
+            'Primary 1–6 bilingual vocabulary',
+          ],
+          'wl.desc': [
+            '48 個雙語概念，英文同中文方向分開學。字卡、6 對配對、4 選 1 快問快答；每次答題自動安排 1/3/7/14/30 日後重練，進度同連續日數只存喺呢部機。',
+            '48 個雙語概念，英文與中文方向分開學。字卡、6 對配對、4 選 1 快問快答；每次答題自動安排 1/3/7/14/30 日後重練，進度與連續日數只存在這台裝置。',
+            '48 bilingual ideas, with separate English and Chinese directions. Flashcards, a 6-pair match game and a 4-choice quiz; every answer schedules the next review in 1/3/7/14/30 days. Progress and streaks stay on this device.',
+          ],
+          'wl.cta': ['開啟詞語星球', '開啟詞語星球', 'Open WordLab'],
+          'wl.shot1': [
+            '詞語星球主頁：學習方向、今日任務同進度',
+            '詞語星球主頁：學習方向、今日任務與進度',
+            'WordLab home: learning direction, today’s mission and progress',
+          ],
+          'wl.shot2': [
+            '字卡模式：睇英文詞，揭中文意思同例句',
+            '字卡模式：看英文詞，揭中文意思與例句',
+            'WordLab flashcards: see an English word, reveal its Chinese meaning and example',
+          ],
+          'wl.shot3': [
+            '快問快答：4 選 1，答啱有綠色回饋',
+            '快問快答：4 選 1，答對有綠色回饋',
+            'WordLab quick quiz: four choices with green feedback for a correct answer',
+          ],
+          'wl.shot4': [
+            '配對模式：6 對詞語同意思，考反應同記憶',
+            '配對模式：6 對詞語與意思，考反應和記憶',
+            'WordLab match: six word–meaning pairs for speed and memory',
           ],
 
           'claims.h2': ['你可以自己驗證嘅事', '你可以自行驗證的事', 'What you can check yourself'],

@@ -3,8 +3,16 @@
   "apps": [
     {
       "id": "dictalab",
-      "name": { "yue": "讀默", "zh": "讀默", "en": "DictaLab" },
-      "tag": { "yue": "中文默書", "zh": "中文默書", "en": "Chinese dictation" },
+      "name": {
+        "yue": "讀默",
+        "zh": "讀默",
+        "en": "DictaLab"
+      },
+      "tag": {
+        "yue": "中文默書",
+        "zh": "中文默書",
+        "en": "Chinese dictation"
+      },
       "href": "dictalab/",
       "icon": "icons/dictalab.png",
       "adapter": "dictalab",
@@ -12,8 +20,16 @@
     },
     {
       "id": "mathslab",
-      "name": { "yue": "數練", "zh": "數練", "en": "MathsLab" },
-      "tag": { "yue": "數學練習", "zh": "數學練習", "en": "Maths practice" },
+      "name": {
+        "yue": "數練",
+        "zh": "數練",
+        "en": "MathsLab"
+      },
+      "tag": {
+        "yue": "數學練習",
+        "zh": "數學練習",
+        "en": "Maths practice"
+      },
       "href": "mathslab/",
       "icon": "icons/mathslab.png",
       "adapter": "mathslab",
@@ -21,8 +37,16 @@
     },
     {
       "id": "reading",
-      "name": { "yue": "閱讀理解", "zh": "閱讀理解", "en": "Reading Lab" },
-      "tag": { "yue": "英文閱讀", "zh": "英文閱讀", "en": "English reading" },
+      "name": {
+        "yue": "閱讀理解",
+        "zh": "閱讀理解",
+        "en": "Reading Lab"
+      },
+      "tag": {
+        "yue": "英文閱讀",
+        "zh": "英文閱讀",
+        "en": "English reading"
+      },
       "href": "reading/",
       "icon": "icons/reading.png",
       "adapter": "reading",
@@ -30,11 +54,36 @@
     },
     {
       "id": "sentence",
-      "name": { "yue": "句子重組", "zh": "句子重組", "en": "Sentence Lab" },
-      "tag": { "yue": "英文句子", "zh": "英文句子", "en": "English sentences" },
+      "name": {
+        "yue": "句子重組",
+        "zh": "句子重組",
+        "en": "Sentence Lab"
+      },
+      "tag": {
+        "yue": "英文句子",
+        "zh": "英文句子",
+        "en": "English sentences"
+      },
       "href": "sentence/",
       "icon": "icons/sentence.png",
       "adapter": "sentence",
+      "events": true
+    },
+    {
+      "id": "wordlab",
+      "name": {
+        "yue": "詞語星球",
+        "zh": "詞語星球",
+        "en": "WordLab"
+      },
+      "tag": {
+        "yue": "中英生字",
+        "zh": "中英生字",
+        "en": "Bilingual vocabulary"
+      },
+      "href": "wordlab/",
+      "icon": "icons/wordlab.png",
+      "adapter": "wordlab",
       "events": true
     }
   ]

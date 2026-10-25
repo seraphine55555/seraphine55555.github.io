@@ -1,3 +1,4 @@
+-- 2026-10-25：再加詞語星球（wordlab）；本段已包含 reading／sentence／wordlab。
 -- 2026-10-24：門戶加咗閱讀理解（reading）同句子重組（sentence），
 -- 但原本 app_likes / app_comments 嘅 app_slug check 只准 dictalab / mathslab，
 -- 所以新 app 嘅讚好／留言會被資料庫拒絕（實測 like_app 回 unknown app_slug、
@@ -12,16 +13,16 @@
 alter table public.app_likes drop constraint if exists app_likes_app_slug_check;
 alter table public.app_likes
   add constraint app_likes_app_slug_check
-  check (app_slug in ('dictalab', 'mathslab', 'reading', 'sentence'));
+  check (app_slug in ('dictalab', 'mathslab', 'reading', 'sentence', 'wordlab'));
 
 insert into public.app_likes (app_slug, count)
-values ('reading', 0), ('sentence', 0)
+values ('reading', 0), ('sentence', 0), ('wordlab', 0)
 on conflict (app_slug) do nothing;
 
 alter table public.app_comments drop constraint if exists app_comments_app_slug_check;
 alter table public.app_comments
   add constraint app_comments_app_slug_check
-  check (app_slug in ('dictalab', 'mathslab', 'reading', 'sentence'));
+  check (app_slug in ('dictalab', 'mathslab', 'reading', 'sentence', 'wordlab'));
 
 -- 若果之前有舊 policy 寫死兩個 slug，順手更新（policy 名同 social.sql 一致）。
 drop policy if exists "comments insertable" on public.app_comments;
@@ -30,5 +31,5 @@ create policy "comments insertable"
   with check (
     hidden = false
     and char_length(body) between 1 and 300
-    and app_slug in ('dictalab', 'mathslab', 'reading', 'sentence')
+    and app_slug in ('dictalab', 'mathslab', 'reading', 'sentence', 'wordlab')
   );
