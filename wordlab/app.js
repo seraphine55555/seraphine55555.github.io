@@ -78,7 +78,7 @@
     sourceDict: ['字典', '字典', 'Dictionary'],
     sourceCuratedBadge: ['精選', '精選', 'Curated'],
     sourceDictBadge: ['字典', '字典', 'Dictionary'],
-    sourceNote: ['精選 96 個有人手例句；字典層另有 {n} 個常用字有首批例句，其餘未有例句。', '精選 96 個有人手例句；字典層另有 {n} 個常用字有首批例句，其餘未有例句。', '96 curated entries have examples; {n} other dictionary entries have Batch 1 examples; the rest do not.'],
+    sourceNote: ['精選 96 個有人手例句；字典層另有 {n} 個常用字有例句，其餘未有例句。', '精選 96 個有人手例句；字典層另有 {n} 個常用字有例句，其餘未有例句。', '96 curated entries have examples; {n} other dictionary entries also have examples; the rest do not.'],
     exampleBadge: ['例句', '例句', 'Example'],
     resetFilters: ['清除篩選', '清除篩選', 'Clear filters'],
     noFiltered: ['呢個組合暫時冇生字；試下清除篩選。', '這個組合暫時沒有生字；試試清除篩選。', 'No words in this combination — try clearing the filters.'],
