@@ -14,6 +14,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-1',
     level: 'P4',
+    tag: 'concession',
     kernels: ['It was raining.', 'We went hiking.'],
     connector: 'Although',
     options: [
@@ -29,6 +30,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-2',
     level: 'P4',
+    tag: 'time',
     fixed: true,
     kernels: ['The boy finished his homework.', 'He was tired.'],
     connector: 'After',
@@ -44,6 +46,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-3',
     level: 'P4',
+    tag: 'relative',
     fixed: true,
     kernels: ['The book is due today.', 'You borrowed it from the library.'],
     connector: 'which',
@@ -59,6 +62,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-4',
     level: 'P4',
+    tag: 'relative',
     fixed: true,
     kernels: ['The girl is my cousin.', 'She won the race.'],
     connector: 'who',
@@ -74,6 +78,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-5',
     level: 'P4',
+    tag: 'time',
     fixed: true,
     kernels: ['You must finish your homework.', 'You can watch TV.'],
     connector: 'before',
@@ -89,6 +94,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p4-6',
     level: 'P4',
+    tag: 'result',
     fixed: true,
     kernels: ['It was very cold.', 'We stayed indoors.'],
     connector: 'so',
@@ -104,6 +110,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p5-1',
     level: 'P5',
+    tag: 'condition',
     kernels: ['I had more time.', 'I would practise the violin.'],
     connector: 'If',
     options: [
@@ -119,6 +126,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p5-2',
     level: 'P5',
+    tag: 'cause',
     kernels: ['She was late.', 'The bus broke down.'],
     connector: 'because',
     options: [
@@ -134,6 +142,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p5-3',
     level: 'P5',
+    tag: 'result',
     fixed: true,
     kernels: ['The film was boring.', 'We left early.'],
     connector: 'so',
@@ -149,6 +158,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p5-4',
     level: 'P5',
+    tag: 'cause',
     kernels: ['He studied hard.', 'He passed the exam.'],
     connector: 'Because',
     options: [
@@ -164,6 +174,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p5-5',
     level: 'P5',
+    tag: 'condition',
     kernels: ['You can borrow my book.', 'You return it tomorrow.'],
     connector: 'as long as',
     options: [
@@ -179,6 +190,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p5-6',
     level: 'P5',
+    tag: 'cause',
     kernels: ['She has lived here.', 'She was a child.'],
     connector: 'since',
     options: [
@@ -194,6 +206,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p6-1',
     level: 'P6',
+    tag: 'addition',
     fixed: true,
     kernels: ['He finished the race.', 'He broke the record.'],
     connector: 'Not only',
@@ -209,6 +222,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p6-2',
     level: 'P6',
+    tag: 'concession',
     kernels: ['The train was delayed.', 'We still arrived on time.'],
     connector: 'Although',
     options: [
@@ -224,6 +238,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p6-3',
     level: 'P6',
+    tag: 'cause',
     kernels: ['He felt dizzy.', 'He had not eaten.'],
     connector: 'because',
     options: [
@@ -239,6 +254,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p6-4',
     level: 'P6',
+    tag: 'comparison',
     fixed: true,
     kernels: ['The more you read.', 'The more you learn.'],
     connector: 'The more',
@@ -254,6 +270,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p6-5',
     level: 'P6',
+    tag: 'time',
     kernels: ['She did not realise the danger.', 'She opened the door.'],
     connector: 'until',
     options: [
@@ -269,6 +286,7 @@ window.SENTENCE_COMBINE = [
   {
     id: 'c-p6-6',
     level: 'P6',
+    tag: 'relative',
     fixed: true,
     kernels: ['It is important.', 'We protect the environment.'],
     connector: 'that',

@@ -12,6 +12,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p4-1',
     level: 'P4',
+    tag: 'agreement',
     tokens: ['She', 'go', 'to', 'school', 'by', 'bus', 'every', 'day'],
     wrong: 1,
     fixes: ['goes', 'going', 'went'],
@@ -21,6 +22,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p4-2',
     level: 'P4',
+    tag: 'agreement',
     tokens: ['There', 'is', 'many', 'books', 'on', 'the', 'shelf'],
     wrong: 1,
     fixes: ['are', 'was', 'be'],
@@ -30,6 +32,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p4-3',
     level: 'P4',
+    tag: 'agreement',
     tokens: ['He', "don't", 'like', 'carrots'],
     wrong: 1,
     fixes: ["doesn't", 'not', "didn't"],
@@ -39,6 +42,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p5-1',
     level: 'P5',
+    tag: 'agreement',
     tokens: ['The', 'children', 'was', 'playing', 'in', 'the', 'park'],
     wrong: 2,
     fixes: ['were', 'is', 'been'],
@@ -48,6 +52,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p5-2',
     level: 'P5',
+    tag: 'tense',
     tokens: ['I', 'have', 'saw', 'that', 'film', 'before'],
     wrong: 2,
     fixes: ['seen', 'see', 'seeing'],
@@ -57,6 +62,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p5-3',
     level: 'P5',
+    tag: 'preposition',
     tokens: ['We', 'have', 'been', 'friends', 'since', 'ten', 'years'],
     wrong: 4,
     fixes: ['for', 'from', 'at'],
@@ -66,6 +72,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p6-1',
     level: 'P6',
+    tag: 'agreement',
     tokens: ['Neither', 'of', 'the', 'boys', 'were', 'ready'],
     wrong: 4,
     fixes: ['was', 'are', 'be'],
@@ -75,6 +82,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p6-2',
     level: 'P6',
+    tag: 'agreement',
     tokens: ['The', 'news', 'are', 'very', 'good', 'today'],
     wrong: 2,
     fixes: ['is', 'be', 'were'],
@@ -84,6 +92,7 @@ window.SENTENCE_ERRORS = [
   {
     id: 'e-p6-3',
     level: 'P6',
+    tag: 'subjunctive',
     tokens: ['She', 'suggested', 'that', 'he', 'goes', 'home', 'early'],
     wrong: 4,
     fixes: ['go', 'went', 'going'],

@@ -466,6 +466,101 @@ h1 {
   border-radius: 99px;
 }
 
+/* 文法地圖：點一個 tag 就只練嗰類（2026-10-25）。 */
+.grammar-panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 10px 12px;
+  margin: 0 0 12px;
+}
+
+.grammar-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.grammar-title {
+  font-size: 14px;
+}
+
+.grammar-hint {
+  margin: 2px 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.grammar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 6px;
+}
+
+.tag-chip {
+  appearance: none;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tag-chip-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.tag-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tag-star {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.tag-pct {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.tag-bar {
+  display: block;
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.tag-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+}
+
+.tag-chip.is-on {
+  border-color: var(--accent);
+  background: rgba(246, 168, 37, 0.1);
+}
+
+.tag-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .kernels-panel .kernel {
   font-family: var(--serif);
   font-size: 18px;

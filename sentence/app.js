@@ -91,6 +91,25 @@
     smartLearning: ['學習中', '學習中', 'Learning'],
     smartRefining: ['精煉中', '精煉中', 'Refining'],
     smartChallenge: ['挑戰區', '挑戰區', 'Challenge zone'],
+    grammarTitle: ['文法地圖', '文法地圖', 'Grammar map'],
+    grammarHint: ['點一個文法重點，集中練你最弱嘅一類。', '點一個文法重點，集中練你最弱的一類。', 'Tap a grammar focus to practise your weakest type.'],
+    grammarAll: ['全部', '全部', 'All'],
+    grammarPct: ['{n}%', '{n}%', '{n}%'],
+    grammarMastered: ['已掌握 {n} / {m}', '已掌握 {n} / {m}', 'Mastered {n} / {m}'],
+    grammarNoData: ['未有記錄，練一題就會亮起。', '未有記錄，練一題就會亮起。', 'No data yet — answer one to light it up.'],
+    tagConcession: ['讓步', '讓步', 'Concession'],
+    tagTime: ['時間', '時間', 'Time'],
+    tagRelative: ['關係子句', '關係子句', 'Relative clause'],
+    tagResult: ['結果', '結果', 'Result'],
+    tagCondition: ['條件', '條件', 'Condition'],
+    tagCause: ['原因', '原因', 'Cause'],
+    tagAddition: ['遞進', '遞進', 'Addition'],
+    tagComparison: ['比較', '比較', 'Comparison'],
+    tagAgreement: ['主謂一致', '主謂一致', 'Agreement'],
+    tagTense: ['時態', '時態', 'Tense'],
+    tagPreposition: ['介詞', '介詞', 'Preposition'],
+    tagSubjunctive: ['虛擬語氣', '虛擬語氣', 'Subjunctive'],
+    tagEmpty: ['呢個文法重點喺呢個年級未有題目。', '這個文法重點在這個年級未有題目。', 'No questions for this grammar focus at this level.'],
     altCorrect: [
       '正確！呢個次序都合文法。另一個寫法：',
       '正確！這個次序也合文法。另一個寫法：',
@@ -198,6 +217,11 @@
   var errorStartedAt = 0;
   var reviewQueue = null;
   var reviewPos = 0;
+  var tagFilter = null;
+  var TAG_KEYS = {
+    combine: ['concession', 'time', 'relative', 'result', 'condition', 'cause', 'addition', 'comparison'],
+    error: ['agreement', 'tense', 'preposition', 'subjunctive'],
+  };
   var streak = { last: '', n: 0 };
   try {
     var ss = JSON.parse(localStorage.getItem(SKEY) || '{}');
@@ -211,11 +235,54 @@
     return n;
   }
 
-  function filtered() {
+  function baseList() {
     var base = mode === 'combine' ? COMBINE : mode === 'error' ? ERRORS : BANK;
     return base.filter(function (s) {
       return grade === 'all' || s.level === grade;
     });
+  }
+
+  function filtered() {
+    var list = baseList();
+    if (!tagFilter) return list;
+    return list.filter(function (s) {
+      return s.tag === tagFilter;
+    });
+  }
+
+  function tagName(tag) {
+    return t('tag' + tag.charAt(0).toUpperCase() + tag.slice(1));
+  }
+
+  /** 由每個 item 嘅真實答題紀錄加總，冇另開一份容易走樣嘅統計。 */
+  function tagStats() {
+    var keys = TAG_KEYS[mode] || [];
+    var list = baseList();
+    return keys
+      .filter(function (tag) {
+        return list.some(function (s) {
+          return s.tag === tag;
+        });
+      })
+      .map(function (tag) {
+        var tries = 0;
+        var correct = 0;
+        list.forEach(function (s) {
+          if (s.tag !== tag) return;
+          var r = progress[s.id];
+          if (!r) return;
+          tries += r.tries || 0;
+          correct += r.correct || 0;
+        });
+        var pct = tries ? Math.round((correct / tries) * 100) : 0;
+        return {
+          tag: tag,
+          tries: tries,
+          correct: correct,
+          pct: pct,
+          mastered: tries >= 3 && pct >= 80,
+        };
+      });
   }
 
   function mastery(id) {
@@ -424,6 +491,65 @@
     return renderHome();
   }
 
+  function grammarMap() {
+    var panel = el('section', 'grammar-panel');
+    var head = el('div', 'grammar-head');
+    head.appendChild(el('strong', 'grammar-title', t('grammarTitle')));
+    var stats = tagStats();
+    var mastered = stats.filter(function (st) {
+      return st.mastered;
+    }).length;
+    head.appendChild(el('span', 'tiny muted', t('grammarMastered', { n: mastered, m: stats.length })));
+    panel.appendChild(head);
+    panel.appendChild(el('p', 'grammar-hint', t('grammarHint')));
+
+    var grid = el('div', 'grammar-grid');
+    var all = el('button', 'tag-chip' + (!tagFilter ? ' is-on' : ''), t('grammarAll'));
+    all.type = 'button';
+    all.setAttribute('data-tag', 'all');
+    all.setAttribute('aria-pressed', tagFilter ? 'false' : 'true');
+    all.addEventListener('click', function () {
+      tagFilter = null;
+      render();
+    });
+    grid.appendChild(all);
+
+    if (!stats.length) {
+      panel.appendChild(el('p', 'tiny muted', t('grammarNoData')));
+      return panel;
+    }
+
+    stats.forEach(function (st) {
+      var chip = el('button', 'tag-chip' + (tagFilter === st.tag ? ' is-on' : ''));
+      chip.type = 'button';
+      chip.setAttribute('data-tag', st.tag);
+      chip.setAttribute('aria-pressed', tagFilter === st.tag ? 'true' : 'false');
+      var top = el('span', 'tag-chip-top');
+      top.appendChild(el('span', 'tag-name', tagName(st.tag)));
+      if (st.mastered) {
+        var star = el('span', 'tag-star', '★');
+        star.setAttribute('aria-label', t('mSolid'));
+        top.appendChild(star);
+      }
+      chip.appendChild(top);
+      chip.appendChild(
+        el('span', 'tag-pct', st.tries ? t('grammarPct', { n: st.pct }) : '—')
+      );
+      var bar = el('span', 'tag-bar');
+      var fill = el('span', 'tag-bar-fill');
+      fill.style.width = st.pct + '%';
+      bar.appendChild(fill);
+      chip.appendChild(bar);
+      chip.addEventListener('click', function () {
+        tagFilter = tagFilter === st.tag ? null : st.tag;
+        render();
+      });
+      grid.appendChild(chip);
+    });
+    panel.appendChild(grid);
+    return panel;
+  }
+
   function renderHome() {
     app.replaceChildren();
     app.appendChild(
@@ -451,6 +577,7 @@
         combine = null;
         errorItem = null;
         reviewQueue = null;
+        tagFilter = null;
         if (mode !== 'scramble' && grade === 'P3') {
           grade = 'all';
           try {
@@ -496,6 +623,7 @@
       b.setAttribute('aria-pressed', grade === g ? 'true' : 'false');
       b.addEventListener('click', function () {
         grade = g;
+        tagFilter = null;
         try {
           localStorage.setItem(GKEY, g);
         } catch (e) {}
@@ -504,6 +632,8 @@
       row.appendChild(b);
     });
     app.appendChild(row);
+
+    if (mode !== 'scramble') app.appendChild(grammarMap());
 
     var list = filtered();
     app.appendChild(el('p', 'progress-line', t('progress', { done: doneCount(list), total: list.length })));
@@ -519,7 +649,7 @@
     }
 
     if (!list.length) {
-      app.appendChild(el('div', 'empty', t('empty')));
+      app.appendChild(el('div', 'empty', tagFilter ? t('tagEmpty') : t('empty')));
       return;
     }
 
@@ -548,7 +678,7 @@
           : mode === 'error'
             ? t('errorMeta', { n: s.tokens.length })
             : t('words', { n: s.tokens.length });
-      body.appendChild(el('p', 'meta', metaText + (done ? ' · ✓' : '')));
+      body.appendChild(el('p', 'meta', metaText + (s.tag ? ' · ' + tagName(s.tag) : '') + (done ? ' · ✓' : '')));
       body.appendChild(el('span', 'badge badge-' + m.key, t(mlabel[m.key])));
       var bar = el('div', 'mastery-bar');
       bar.setAttribute('role', 'img');
