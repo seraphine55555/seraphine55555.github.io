@@ -13,6 +13,15 @@
   var DATA = (Array.isArray(window.WORDLAB_DATA) ? window.WORDLAB_DATA : []).concat(
     Array.isArray(window.WORDLAB_BULK) ? window.WORDLAB_BULK : []
   );
+  var EXTRA_EXAMPLES = window.WORDLAB_EXAMPLES || {};
+  DATA.forEach(function (w) {
+    var extra = EXTRA_EXAMPLES[String(w.en || '').toLowerCase()];
+    if (extra && !w.exEn && extra.exEn && extra.exZh) {
+      w.exEn = extra.exEn;
+      w.exZh = extra.exZh;
+      w.exampleSource = extra.source || 'WordLab';
+    }
+  });
   window.WORDLAB_ALL = DATA;
   var LANG_KEY = 'wordlab/lang';
   var SUBJECT_KEY = 'wordlab/subject';
@@ -65,11 +74,12 @@
     band3: ['挑戰', '挑戰', 'Challenge'],
     sourceTitle: ['來源', '來源', 'Source'],
     sourceAll: ['全部', '全部', 'All'],
-    sourceCurated: ['精選（有例句）', '精選（有例句）', 'Curated (with examples)'],
-    sourceDict: ['字典（無例句）', '字典（無例句）', 'Dictionary (no examples)'],
+    sourceCurated: ['精選', '精選', 'Curated'],
+    sourceDict: ['字典', '字典', 'Dictionary'],
     sourceCuratedBadge: ['精選', '精選', 'Curated'],
     sourceDictBadge: ['字典', '字典', 'Dictionary'],
-    sourceNote: ['精選 96 個有人手例句；字典 4,904 個只有中文釋義，未有例句。', '精選 96 個有人手例句；字典 4,904 個只有中文釋義，未有例句。', '96 curated entries have examples; 4,904 dictionary entries have Chinese glosses but no examples.'],
+    sourceNote: ['精選 96 個有人手例句；字典層另有 {n} 個常用字有首批例句，其餘未有例句。', '精選 96 個有人手例句；字典層另有 {n} 個常用字有首批例句，其餘未有例句。', '96 curated entries have examples; {n} other dictionary entries have Batch 1 examples; the rest do not.'],
+    exampleBadge: ['例句', '例句', 'Example'],
     resetFilters: ['清除篩選', '清除篩選', 'Clear filters'],
     noFiltered: ['呢個組合暫時冇生字；試下清除篩選。', '這個組合暫時沒有生字；試試清除篩選。', 'No words in this combination — try clearing the filters.'],
     progressTitle: ['我的進度', '我的進度', 'My progress'],
@@ -604,7 +614,8 @@
       sourceRow.appendChild(b);
     });
     filterPanel.appendChild(sourceRow);
-    filterPanel.appendChild(el('p', 'filter-note', t('needNote') + ' ' + t('sourceNote')));
+    var packedExamples = DATA.filter(function (w) { return w.source === 'ECDICT' && w.exEn && w.exZh; }).length;
+    filterPanel.appendChild(el('p', 'filter-note', t('needNote') + ' ' + t('sourceNote').replace('{n}', String(packedExamples))));
     app.appendChild(filterPanel);
 
     var prog = el('section', 'panel progress-panel');
@@ -794,6 +805,7 @@
         wordSource(w) === 'curated' ? t('sourceCuratedBadge') : t('sourceDictBadge')
       )
     );
+    if (w.exEn) meta.appendChild(el('span', 'badge example', t('exampleBadge')));
     if (isNew(w)) meta.appendChild(el('span', 'badge new', t('newBadge')));
     else if (isDue(w)) meta.appendChild(el('span', 'badge due', t('dueBadge')));
     else if (isKnown(w)) meta.appendChild(el('span', 'badge known', t('knownBadge')));
@@ -876,6 +888,7 @@
         wordSource(w) === 'curated' ? t('sourceCuratedBadge') : t('sourceDictBadge')
       )
     );
+    if (w.exEn) qmeta.appendChild(el('span', 'badge example', t('exampleBadge')));
     card.appendChild(qmeta);
 
     var options = el('div', 'options');

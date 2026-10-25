@@ -442,6 +442,11 @@ a {
   color: #c4b5fd;
 }
 
+.badge.example {
+  color: var(--accent);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
 .badge.ipa {
   color: var(--muted);
   font-family: var(--serif);
