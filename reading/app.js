@@ -793,6 +793,11 @@
       if (!w || !w.en) return;
       addGloss(w.en, { word: w.en, ipa: '', pos: '', zh: w.zh || '', eg: w.exEn || '' });
     });
+    /* 最後補上 345 個常用字；notes／WordLab 已收錄嘅字保留原本（有 IPA）解釋。 */
+    var extra = window.READING_GLOSSARY || {};
+    Object.keys(extra).forEach(function (k) {
+      addGloss(k, { word: k, ipa: '', pos: '', zh: extra[k], eg: '' });
+    });
   })();
 
   function lookupWord(raw) {

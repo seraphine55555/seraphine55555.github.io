@@ -11,7 +11,7 @@
  *
  * ⚠️ 部署時如果有新增檔案，記得加入 ASSETS，否則第一次離線會 fetch 失敗。
  */
-const CACHE = 'reading-v2';
+const CACHE = 'reading-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -20,6 +20,7 @@ const ASSETS = [
   './passages.js',
   './notes.js',
   './short.js',
+  './glossary.js',
   '../wordlab/data.js',
   './manifest.webmanifest',
   './icon-192.png',
