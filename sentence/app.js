@@ -15,6 +15,7 @@
   var MKEY = 'sentence/mode';
   var SKEY = 'sentence/streak';
   var SCORE_KEY = 'sentence/score';
+  var CHALLENGE_KEY = 'sentence/challenge/';
   var LANGS = ['yue', 'zh', 'en'];
   var GRADES = ['all', 'P3', 'P4', 'P5', 'P6'];
   var SRS_DAYS = [1, 3, 7, 14, 30];
@@ -109,6 +110,13 @@
     tagTense: ['時態', '時態', 'Tense'],
     tagPreposition: ['介詞', '介詞', 'Preposition'],
     tagSubjunctive: ['虛擬語氣', '虛擬語氣', 'Subjunctive'],
+    weakTitle: ['每日弱項 3 題', '每日弱項 3 題', 'Daily weak-spot 3'],
+    weakStart: ['⚡ 開始今日弱項 3 題', '⚡ 開始今日弱項 3 題', '⚡ Start today’s weak-spot 3'],
+    weakContinue: ['⚡ 繼續今日弱項（{done}/{n}）', '⚡ 繼續今日弱項（{done}/{n}）', '⚡ Continue today’s weak-spot ({done}/{n})'],
+    weakDone: ['今日弱項完成！', '今日弱項完成！', 'Today’s weak-spot done!'],
+    weakBanner: ['⚡ 今日弱項 {i} / {n}', '⚡ 今日弱項 {i} / {n}', '⚡ Today’s weak-spot {i} / {n}'],
+    weakHint: ['由最低正確率嘅文法重點抽 3 題；做完會亮星。', '由最低正確率的文法重點抽 3 題；做完會亮星。', 'Picks 3 questions from your lowest-accuracy grammar focus; finish it to light up the star.'],
+    weakNo: ['未夠紀錄，先做幾題就會識揀。', '未夠紀錄，先做幾題就會識揀。', 'Not enough history yet — answer a few first.'],
     tagEmpty: ['呢個文法重點喺呢個年級未有題目。', '這個文法重點在這個年級未有題目。', 'No questions for this grammar focus at this level.'],
     altCorrect: [
       '正確！呢個次序都合文法。另一個寫法：',
@@ -217,6 +225,8 @@
   var errorStartedAt = 0;
   var reviewQueue = null;
   var reviewPos = 0;
+  var challenge = null;
+  var challengeActive = false;
   var tagFilter = null;
   var TAG_KEYS = {
     combine: ['concession', 'time', 'relative', 'result', 'condition', 'cause', 'addition', 'comparison'],
@@ -227,6 +237,7 @@
     var ss = JSON.parse(localStorage.getItem(SKEY) || '{}');
     if (ss && typeof ss.n === 'number') streak = { last: ss.last || '', n: ss.n };
   } catch (e) {}
+  challenge = loadChallenge();
 
   function el(tag, cls, text) {
     var n = document.createElement(tag);
@@ -318,6 +329,10 @@
     rec.last = new Date().toISOString();
     progress[id] = rec;
     saveProgress();
+    if (challengeActive && challenge && challenge.ids.indexOf(id) >= 0 && challenge.done.indexOf(id) < 0) {
+      challenge.done.push(id);
+      saveChallenge();
+    }
     bumpStreak();
     bumpScore(ok);
   }
@@ -334,6 +349,7 @@
     if (!keepQueue) {
       reviewQueue = null;
       reviewPos = 0;
+      challengeActive = false;
     }
     if (mode === 'combine') startCombine(id);
     else if (mode === 'error') startError(id);
@@ -358,6 +374,7 @@
       return true;
     }
     reviewQueue = null;
+    challengeActive = false;
     view = 'home';
     current = null;
     combine = null;
@@ -491,6 +508,107 @@
     return renderHome();
   }
 
+  function loadChallenge() {
+    try {
+      var c = JSON.parse(localStorage.getItem(CHALLENGE_KEY + mode) || 'null');
+      if (
+        c &&
+        c.date === localDay() &&
+        c.mode === mode &&
+        Array.isArray(c.ids) &&
+        Array.isArray(c.done)
+      ) {
+        return c;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function saveChallenge() {
+    try {
+      if (challenge) localStorage.setItem(CHALLENGE_KEY + mode, JSON.stringify(challenge));
+    } catch (e) {}
+  }
+
+  /** 由最低正確率嘅 tag 抽 3 題；同日嘅 ids 會固定，唔會每次 refresh 都換。 */
+  function pickWeakIds(n) {
+    var list = baseList();
+    if (!list.length) return [];
+    var stats = tagStats().slice().sort(function (a, b) {
+      return a.pct - b.pct || a.tries - b.tries;
+    });
+    var chosen = [];
+    stats.forEach(function (st) {
+      if (chosen.length >= n) return;
+      var candidates = list
+        .filter(function (s) {
+          return s.tag === st.tag && chosen.indexOf(s.id) < 0;
+        })
+        .sort(function (a, b) {
+          var ra = progress[a.id];
+          var rb = progress[b.id];
+          return (ra ? ra.tries : 0) - (rb ? rb.tries : 0);
+        });
+      if (candidates.length) chosen.push(candidates[0].id);
+    });
+    list.forEach(function (s) {
+      if (chosen.length < n && chosen.indexOf(s.id) < 0) chosen.push(s.id);
+    });
+    return chosen.slice(0, n);
+  }
+
+  function startWeakChallenge() {
+    if (!challenge || challenge.date !== localDay() || challenge.mode !== mode) {
+      var ids = pickWeakIds(3);
+      if (!ids.length) return;
+      challenge = { date: localDay(), mode: mode, ids: ids, done: [] };
+      saveChallenge();
+    }
+    var remaining = challenge.ids.filter(function (id) {
+      return challenge.done.indexOf(id) < 0;
+    });
+    if (!remaining.length) {
+      render();
+      return;
+    }
+    tagFilter = null;
+    challengeActive = true;
+    reviewQueue = remaining;
+    reviewPos = 0;
+    startItem(remaining[0], true);
+  }
+
+  function challengePanel() {
+    if (mode === 'scramble') return null;
+    var panel = el('section', 'weak-panel');
+    var head = el('div', 'weak-head');
+    head.appendChild(el('strong', 'weak-title', t('weakTitle')));
+    panel.appendChild(head);
+    var complete = challenge && challenge.ids.length > 0 && challenge.done.length >= challenge.ids.length;
+    if (complete) {
+      panel.appendChild(el('p', 'weak-done', '★ ' + t('weakDone')));
+      return panel;
+    }
+    panel.appendChild(el('p', 'weak-hint', t('weakHint')));
+    var btn = el('button', 'btn primary weak-btn');
+    btn.type = 'button';
+    btn.setAttribute('data-weak', '');
+    if (challenge && challenge.ids.length) {
+      btn.textContent = t('weakContinue', { done: challenge.done.length, n: challenge.ids.length });
+    } else {
+      btn.textContent = t('weakStart');
+    }
+    btn.addEventListener('click', startWeakChallenge);
+    panel.appendChild(btn);
+    return panel;
+  }
+
+  function challengeBanner() {
+    if (!challengeActive || !challenge || !challenge.ids.length) return null;
+    var i = Math.min(challenge.done.length + 1, challenge.ids.length);
+    return el('p', 'challenge-banner', t('weakBanner', { i: i, n: challenge.ids.length }));
+  }
+
   function grammarMap() {
     var panel = el('section', 'grammar-panel');
     var head = el('div', 'grammar-head');
@@ -578,6 +696,8 @@
         errorItem = null;
         reviewQueue = null;
         tagFilter = null;
+        challenge = loadChallenge();
+        challengeActive = false;
         if (mode !== 'scramble' && grade === 'P3') {
           grade = 'all';
           try {
@@ -633,7 +753,11 @@
     });
     app.appendChild(row);
 
-    if (mode !== 'scramble') app.appendChild(grammarMap());
+    if (mode !== 'scramble') {
+      app.appendChild(grammarMap());
+      var weak = challengePanel();
+      if (weak) app.appendChild(weak);
+    }
 
     var list = filtered();
     app.appendChild(el('p', 'progress-line', t('progress', { done: doneCount(list), total: list.length })));
@@ -722,6 +846,8 @@
     top.appendChild(back);
     top.appendChild(el('span', 'counter', t('counter', { i: at + 1, n: list.length })));
     app.appendChild(top);
+    var challengeNote = challengeBanner();
+    if (challengeNote) app.appendChild(challengeNote);
 
     app.appendChild(el('p', 'prompt', t('errorPrompt')));
 
@@ -854,6 +980,8 @@
     top.appendChild(back);
     top.appendChild(el('span', 'counter', t('counter', { i: at + 1, n: list.length })));
     app.appendChild(top);
+    var challengeNote = challengeBanner();
+    if (challengeNote) app.appendChild(challengeNote);
 
     app.appendChild(el('p', 'prompt', t('combinePrompt')));
 
@@ -1047,6 +1175,8 @@
     top.appendChild(back);
     top.appendChild(el('span', 'counter', t('counter', { i: at + 1, n: list.length })));
     app.appendChild(top);
+    var challengeNote = challengeBanner();
+    if (challengeNote) app.appendChild(challengeNote);
 
     app.appendChild(el('p', 'prompt', t('prompt')));
 
