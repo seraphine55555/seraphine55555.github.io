@@ -406,6 +406,98 @@ body {
   margin: 6px 0 14px;
 }
 
+/* 2026-10-26：家長文章工作室。 */
+.studio-entry {
+  margin: 0 0 14px;
+}
+
+.studio-page .lede {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.studio-form {
+  margin: 18px 0 26px;
+  padding: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.studio-label {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.studio-input,
+.studio-textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--card-soft);
+  color: var(--ink);
+  font: inherit;
+}
+
+.studio-textarea {
+  min-height: 180px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.studio-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.studio-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.studio-error {
+  min-height: 20px;
+  margin: 0 0 8px;
+  color: var(--bad);
+  font-size: 12px;
+}
+
+.custom-tag {
+  display: inline-block;
+  margin-top: 5px;
+  color: var(--accent);
+  border-color: rgba(246, 168, 37, 0.5);
+}
+
+.custom-note {
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  border: 1px solid rgba(246, 168, 37, 0.35);
+  border-radius: 10px;
+  color: var(--muted);
+  background: rgba(246, 168, 37, 0.07);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+@media (max-width: 430px) {
+  .studio-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .studio-page .studio-form {
+    padding: 12px;
+  }
+}
+
 .passage-header h1 {
   margin: 0 0 4px;
   font-size: clamp(23px, 4.2vw, 30px);

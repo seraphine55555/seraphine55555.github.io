@@ -1,4 +1,4 @@
-/*
+﻿/*
  * 閱讀理解 Service Worker（2026-10-18）
  *
  * 目的：令「離線可用」由口號變成事實（L1 斷網 reload、L2 安裝後冷啟）。
@@ -11,7 +11,7 @@
  *
  * ⚠️ 部署時如果有新增檔案，記得加入 ASSETS，否則第一次離線會 fetch 失敗。
  */
-const CACHE = 'reading-v3';
+const CACHE = 'reading-v4';
 const ASSETS = [
   './',
   './index.html',

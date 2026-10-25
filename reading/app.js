@@ -11,6 +11,11 @@
   'use strict';
 
   var PASSAGES = window.READING_PASSAGES || [];
+  var CUSTOM_KEY = 'reading/custom/v1';
+  var customPassages = loadCustomPassages();
+  customPassages.forEach(function (p) {
+    PASSAGES.push(p);
+  });
   var NOTES = window.READING_NOTES || {};
   var SHORT = window.READING_SHORT || {};
   var STORE_KEY = 'reading/answers';
@@ -185,6 +190,45 @@
     ],
     'app.answered': ['已答 {n}／{total}', '已答 {n}／{total}', '{n} of {total} answered'],
     'app.pickFirst': ['先揀一個答案。', '先選一個答案。', 'Choose an answer first.'],
+    'studio.open': ['✍️ 家長輸入文章', '✍️ 家長輸入文章', '✍️ Add a parent article'],
+    'studio.title': ['家長文章工作室', '家長文章工作室', 'Parent article studio'],
+    'studio.lede': [
+      '貼一篇英文文章，app 會自動抽出 5 題字詞填空題；文章同題目只存喺呢部機。',
+      '貼一篇英文文章，app 會自動抽出 5 題字詞填空題；文章和題目只存在這台裝置。',
+      'Paste an English article; the app makes five word-in-context questions. Everything stays on this device.',
+    ],
+    'studio.privacy': [
+      '唔會上傳、唔會呼叫 AI；自動題只係字詞填空，唔會假裝係理解題。',
+      '不會上傳、不會呼叫 AI；自動題只是字詞填空，不會假裝是理解題。',
+      'No upload and no AI call. The generated questions are word-in-context items, not comprehension questions.',
+    ],
+    'studio.name': ['文章標題', '文章標題', 'Article title'],
+    'studio.level': ['年級', '年級', 'Level'],
+    'studio.kind': ['文體', '文體', 'Text type'],
+    'studio.text': ['英文文章', '英文文章', 'English article'],
+    'studio.placeholder': [
+      '貼一篇短文（最少 40 個英文字）…',
+      '貼一篇短文（最少 40 個英文字）…',
+      'Paste a short article (at least 40 English words)…',
+    ],
+    'studio.submit': ['儲存並自動出題', '儲存並自動出題', 'Save and generate questions'],
+    'studio.cancel': ['取消', '取消', 'Cancel'],
+    'studio.delete': ['刪除', '刪除', 'Delete'],
+    'studio.confirm': ['刪除呢篇家長文章？', '刪除這篇家長文章？', 'Delete this parent article?'],
+    'studio.short': ['文章太短：最少要 40 個英文字。', '文章太短：最少要 40 個英文字。', 'Too short: at least 40 English words.'],
+    'studio.noWords': [
+      '自動出題需要至少 3 個字典有收錄嘅字；試下寫長啲，或用更常見嘅字。',
+      '自動出題需要至少 3 個字典有收錄的字；試著寫長一點，或用更常見的字。',
+      'Auto-generation needs at least 3 dictionary words; try a longer article or more common words.',
+    ],
+    'studio.customBadge': ['家長文章', '家長文章', 'Parent article'],
+    'studio.customNote': [
+      '呢篇係家長輸入；題目由 app 自動抽出字詞填空，唔係人手寫嘅理解題。點字同朗讀仍然可用。',
+      '這篇是家長輸入；題目由 app 自動抽出字詞填空，不是人手寫的理解題。點字和朗讀仍可用。',
+      'This is a parent article. The questions are auto-generated word-in-context items, not hand-written comprehension questions. Word look-up and read-aloud still work.',
+    ],
+    'studio.autoType': ['字詞填空', '字詞填空', 'Word-in-context'],
+    'kind.custom': ['家長文章', '家長文章', 'Parent article'],
     'kind.story': ['故事', '故事', 'Story'],
     'kind.report': ['說明文', '說明文', 'Report'],
     'kind.notice': ['告示', '告示', 'Notice'],
@@ -214,6 +258,140 @@
       });
     }
     return out;
+  }
+
+  function loadCustomPassages() {
+    try {
+      var raw = localStorage.getItem(CUSTOM_KEY);
+      if (!raw) return [];
+      var list = JSON.parse(raw);
+      if (!Array.isArray(list)) return [];
+      return list.filter(function (p) {
+        return (
+          p &&
+          p.custom === true &&
+          typeof p.id === 'string' &&
+          typeof p.title === 'string' &&
+          typeof p.text === 'string' &&
+          Array.isArray(p.questions) &&
+          p.questions.length >= 1
+        );
+      });
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveCustomPassages() {
+    var list = PASSAGES.filter(function (p) {
+      return p.custom === true;
+    }).map(function (p) {
+      return {
+        id: p.id,
+        title: p.title,
+        level: p.level,
+        kind: p.kind,
+        words: p.words,
+        text: p.text,
+        questions: p.questions,
+        custom: true,
+      };
+    });
+    try {
+      localStorage.setItem(CUSTOM_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  function shuffled(list) {
+    var arr = list.slice();
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function countEnglishWords(text) {
+    var m = String(text || '').match(/[A-Za-z]+(?:['’][A-Za-z]+)*/g);
+    return m ? m.length : 0;
+  }
+
+  function blankWordInSentence(sentence, word) {
+    var escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    try {
+      return sentence.replace(new RegExp('\\b' + escaped + '\\b', 'i'), '____');
+    } catch (e) {
+      return sentence;
+    }
+  }
+
+  /* 只生成「字詞填空」：用字典解釋＋同一句 context。
+     呢個唔係理解題；app 唔會假裝 AI 識出主旨／推論。 */
+  function makeClozeQuestions(text, max) {
+    var sentences = splitPassageSentences(text);
+    var candidates = [];
+    var seen = {};
+    sentences.forEach(function (sentence) {
+      if (sentence.length < 12 || sentence.length > 260) return;
+      var words = sentence.match(/[A-Za-z]+(?:['’][A-Za-z]+)*/g) || [];
+      words.forEach(function (word) {
+        var lower = word.toLowerCase();
+        if (word.length < 3 || seen[lower]) return;
+        if (
+          [
+            'the', 'and', 'but', 'for', 'with', 'that', 'this', 'from', 'have', 'has',
+            'was', 'were', 'are', 'you', 'your', 'his', 'her', 'our', 'their', 'they',
+            'them', 'then', 'than', 'there', 'here', 'what', 'when', 'where', 'which',
+            'who', 'why', 'how', 'not', 'can', 'will', 'would', 'could', 'should',
+            'about', 'into', 'over', 'under', 'after', 'before', 'because', 'very',
+          ].indexOf(lower) >= 0
+        ) return;
+        var info = lookupWord(word);
+        if (!info || !info.zh) return;
+        seen[lower] = true;
+        candidates.push({ sentence: sentence, word: word, info: info });
+      });
+    });
+    if (candidates.length < 3) return [];
+    var pool = Object.keys(GLOSSARY).filter(function (k) {
+      return /^[A-Za-z]+$/.test(k) && k.length >= 3 && GLOSSARY[k].zh;
+    });
+    var picked = shuffled(candidates).slice(0, max);
+    var questions = [];
+    picked.forEach(function (c) {
+      var blanked = blankWordInSentence(c.sentence, c.word);
+      var distractors = shuffled(pool.filter(function (k) {
+        return k.toLowerCase() !== c.word.toLowerCase();
+      })).slice(0, 3);
+      if (distractors.length < 3) {
+        sentences.forEach(function (s) {
+          (s.match(/[A-Za-z]+(?:['’][A-Za-z]+)*/g) || []).forEach(function (w) {
+            if (distractors.length >= 3) return;
+            if (w.length >= 3 && w.toLowerCase() !== c.word.toLowerCase() && distractors.indexOf(w) < 0) {
+              distractors.push(w);
+            }
+          });
+        });
+      }
+      var options = shuffled([c.word].concat(distractors.slice(0, 3)));
+      var answer = options.indexOf(c.word);
+      var why = options.map(function (o, i) {
+        if (i === answer) {
+          return '正確。' + '“' + c.word + '” 在這個句子的意思是「' + c.info.zh + '」。';
+        }
+        return '這個字不適合這個空格；再讀一次句子前後文。';
+      });
+      questions.push({
+        type: 'vocab',
+        q: 'Which word completes this sentence? "' + blanked + '"',
+        options: options,
+        answer: answer,
+        why: why,
+      });
+    });
+    return questions;
   }
 
   function loadAnswers() {
@@ -476,6 +654,17 @@
     var note = el('p', 'trial-note', t('app.note'));
     wrap.appendChild(note);
 
+    /* 2026-10-26：家長文章工作室（本機；自動字詞題）。 */
+    var studioEntry = el('div', 'studio-entry');
+    var studioBtn = el('button', 'btn ghost', t('studio.open'));
+    studioBtn.type = 'button';
+    studioBtn.addEventListener('click', function () {
+      state.view = 'studio';
+      render();
+    });
+    studioEntry.appendChild(studioBtn);
+    wrap.appendChild(studioEntry);
+
     /* 年級選擇：同數練一樣，先揀年級再揀篇章。 */
     var gradeRow = el('div', 'grade-row');
     gradeRow.setAttribute('role', 'group');
@@ -611,6 +800,7 @@
       meta.textContent =
         t('app.level') + ' ' + p.level + ' · ' + stars(p) + ' · ' + t('kind.' + p.kind) + ' · ' + p.words + ' ' + t('app.words');
       head.appendChild(meta);
+      if (p.custom) head.appendChild(el('span', 'tag custom-tag', t('studio.customBadge')));
       li.appendChild(head);
 
       var score = scoreOf(p);
@@ -629,6 +819,15 @@
         startPassage(p.id);
       });
       row.appendChild(btn);
+      if (p.custom) {
+        var delBtn = el('button', 'btn slim ghost', '🗑 ' + t('studio.delete'));
+        delBtn.type = 'button';
+        delBtn.setAttribute('data-custom-delete', p.id);
+        delBtn.addEventListener('click', function () {
+          if (window.confirm(t('studio.confirm'))) deleteCustomPassage(p.id);
+        });
+        row.appendChild(delBtn);
+      }
       li.appendChild(row);
       list.appendChild(li);
     });
@@ -1081,6 +1280,152 @@
     return det;
   }
 
+  function deleteCustomPassage(id) {
+    for (var i = PASSAGES.length - 1; i >= 0; i--) {
+      if (PASSAGES[i].id === id && PASSAGES[i].custom) PASSAGES.splice(i, 1);
+    }
+    saveCustomPassages();
+    try {
+      delete answers[id];
+      saveAnswers(answers);
+      Object.keys(srs).forEach(function (k) {
+        if (k.indexOf(id + ':') === 0) delete srs[k];
+      });
+      saveSrs();
+    } catch (e) {}
+    state.view = 'home';
+    render();
+  }
+
+  function renderStudio() {
+    var wrap = el('section', 'studio-page');
+    var top = el('div', 'reading-top');
+    var back = el('button', 'btn ghost', '← ' + t('app.back'));
+    back.type = 'button';
+    back.addEventListener('click', function () {
+      state.view = 'home';
+      render();
+    });
+    top.appendChild(back);
+    wrap.appendChild(top);
+
+    var head = el('header', 'passage-header');
+    head.appendChild(el('h1', null, t('studio.title')));
+    head.appendChild(el('p', 'lede', t('studio.lede')));
+    head.appendChild(el('p', 'tiny muted', t('studio.privacy')));
+    wrap.appendChild(head);
+
+    var form = el('form', 'studio-form');
+    form.setAttribute('novalidate', 'novalidate');
+
+    var titleLabel = el('label', 'studio-label');
+    titleLabel.appendChild(document.createTextNode(t('studio.name')));
+    var titleInput = document.createElement('input');
+    titleInput.className = 'studio-input';
+    titleInput.type = 'text';
+    titleInput.maxLength = 120;
+    titleInput.setAttribute('data-studio-title', '');
+    titleInput.required = true;
+    titleLabel.appendChild(titleInput);
+    form.appendChild(titleLabel);
+
+    var row = el('div', 'studio-row');
+    var levelLabel = el('label', 'studio-label');
+    levelLabel.appendChild(document.createTextNode(t('studio.level')));
+    var levelSel = document.createElement('select');
+    levelSel.className = 'studio-input';
+    levelSel.setAttribute('data-studio-level', '');
+    ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].forEach(function (g) {
+      var o = document.createElement('option');
+      o.value = g;
+      o.textContent = g;
+      if (g === 'P3') o.selected = true;
+      levelSel.appendChild(o);
+    });
+    levelLabel.appendChild(levelSel);
+    row.appendChild(levelLabel);
+
+    var kindLabel = el('label', 'studio-label');
+    kindLabel.appendChild(document.createTextNode(t('studio.kind')));
+    var kindSel = document.createElement('select');
+    kindSel.className = 'studio-input';
+    kindSel.setAttribute('data-studio-kind', '');
+    ['story', 'report', 'notice', 'letter', 'custom'].forEach(function (k) {
+      var o = document.createElement('option');
+      o.value = k;
+      o.textContent = t('kind.' + k);
+      kindSel.appendChild(o);
+    });
+    kindLabel.appendChild(kindSel);
+    row.appendChild(kindLabel);
+    form.appendChild(row);
+
+    var textLabel = el('label', 'studio-label');
+    textLabel.appendChild(document.createTextNode(t('studio.text')));
+    var ta = document.createElement('textarea');
+    ta.className = 'studio-textarea';
+    ta.rows = 10;
+    ta.maxLength = 8000;
+    ta.placeholder = t('studio.placeholder');
+    ta.setAttribute('data-studio-text', '');
+    ta.required = true;
+    textLabel.appendChild(ta);
+    form.appendChild(textLabel);
+
+    var error = el('p', 'studio-error');
+    error.setAttribute('role', 'alert');
+    form.appendChild(error);
+
+    var actions = el('div', 'studio-actions');
+    var submit = el('button', 'btn primary', t('studio.submit'));
+    submit.type = 'submit';
+    actions.appendChild(submit);
+    var cancel = el('button', 'btn ghost', t('studio.cancel'));
+    cancel.type = 'button';
+    cancel.addEventListener('click', function () {
+      state.view = 'home';
+      render();
+    });
+    actions.appendChild(cancel);
+    form.appendChild(actions);
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var title = titleInput.value.trim();
+      var text = ta.value.trim();
+      if (!title || countEnglishWords(text) < 40) {
+        error.textContent = t('studio.short');
+        return;
+      }
+      var questions = makeClozeQuestions(text, 5);
+      if (questions.length < 3) {
+        error.textContent = t('studio.noWords');
+        return;
+      }
+      var id = 'custom-' + Date.now().toString(36);
+      var p = {
+        id: id,
+        title: title,
+        level: levelSel.value,
+        kind: kindSel.value,
+        words: countEnglishWords(text),
+        text: text,
+        questions: questions,
+        custom: true,
+      };
+      PASSAGES.push(p);
+      saveCustomPassages();
+      state.passageId = id;
+      state.qIndex = 0;
+      state.picked = null;
+      state.view = 'read';
+      render();
+    });
+
+    wrap.appendChild(form);
+    root.replaceChildren(wrap);
+  }
+
   function renderPassage() {
     var p = passageById(state.passageId);
     if (!p) return renderHome();
@@ -1112,6 +1457,7 @@
       el('p', 'meta', p.level + ' · ' + stars(p) + ' · ' + t('kind.' + p.kind) + ' · ' + p.words + ' ' + t('app.words'))
     );
     wrap.appendChild(head);
+    if (p.custom) wrap.appendChild(el('p', 'custom-note', t('studio.customNote')));
 
     var pop = makeWordPop();
     var body = buildPassageBody(p, function (word, sentence) {
@@ -1758,6 +2104,7 @@
     stopSpeech();
     if (state.view === 'home') return renderHome();
     if (state.view === 'read') return renderPassage();
+    if (state.view === 'studio') return renderStudio();
     if (state.view === 'review') return renderReview();
     if (state.view === 'reviewDone') return renderReviewDone();
     if (state.view === 'result') return renderResult();
