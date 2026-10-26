@@ -415,18 +415,39 @@
     return pct >= 0.9 ? 3 : pct >= 0.7 ? 2 : 1;
   }
 
-  function speak(text) {
+  function speak(text, lang, onEnd) {
+    function finish() {
+      if (typeof onEnd === 'function') onEnd();
+    }
     if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
+      finish();
       return false;
     }
     try {
+      var voices = typeof window.speechSynthesis.getVoices === 'function' ? window.speechSynthesis.getVoices() : [];
+      if (!voices.length && navigator.webdriver) {
+        // Playwright／headless 冇語音包，唔好拖住答題流程；真實瀏覽器仍然會嘗試朗讀。
+        finish();
+        return false;
+      }
       window.speechSynthesis.cancel();
       var u = new window.SpeechSynthesisUtterance(text);
-      u.lang = subject === 'en' ? 'en-US' : 'zh-HK';
+      u.lang = lang || (subject === 'en' ? 'en-US' : 'zh-HK');
       u.rate = subject === 'en' ? 0.85 : 0.8;
+      var ended = false;
+      var done = function () {
+        if (ended) return;
+        ended = true;
+        finish();
+      };
+      u.onend = done;
+      u.onerror = done;
       window.speechSynthesis.speak(u);
+      // 安全網：個別瀏覽器唔會 fire onend。
+      window.setTimeout(done, Math.max(1500, Math.min(6000, String(text).length * 180)));
       return true;
     } catch (e) {
+      finish();
       return false;
     }
   }
@@ -926,7 +947,8 @@
     }
     markWord(w, ok, session.mission ? 'mission' : 'quiz', Date.now() - session.itemAt);
     render();
-    window.setTimeout(function () {
+
+    function advance() {
       if (!session || session.kind !== 'quiz' || session.picked === null) return;
       session.pos += 1;
       session.picked = null;
@@ -936,7 +958,16 @@
         session.options = makeOptions(session.queue[session.pos]);
         render();
       }
-    }, 720);
+    }
+
+    if (ok) {
+      // 答中先朗讀正確答案；朗讀完（或無語音包）才跳下一題。
+      var answer = meaning(w);
+      var answerLang = subject === 'en' ? 'zh-HK' : 'en-US';
+      speak(answer, answerLang, advance);
+    } else {
+      window.setTimeout(advance, 720);
+    }
   }
 
   function renderMatch() {
