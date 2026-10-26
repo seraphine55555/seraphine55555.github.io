@@ -76,7 +76,7 @@
   "reduce": { "exEn": "We reduce waste at school.", "exZh": "我們在學校減少浪費。", "source": "WordLab" },
   "accept": { "exEn": "I accept your gift.", "exZh": "我接受你的禮物。", "source": "WordLab" },
   "prepare": { "exEn": "We prepare for the test.", "exZh": "我們為測驗做準備。", "source": "WordLab" },
-  "wonder": { "exEn": "I wonder why the sky is blue.", "exZh": "我想知道天空為何是藍色。", "source": "WordLab" },
+  "wonder": { "exEn": "I wonder why the sky is blue.", "exZh": "我想知道天空為何是藍色。", "zh": "想知道", "source": "WordLab" },
   "fail": { "exEn": "Do not be afraid to fail.", "exZh": "不要害怕失敗。", "source": "WordLab" },
   "discuss": { "exEn": "We discuss the story in class.", "exZh": "我們在課堂討論故事。", "source": "WordLab" },
   "guess": { "exEn": "Can you guess my age?", "exZh": "你可以猜我的年齡嗎？", "source": "WordLab" },

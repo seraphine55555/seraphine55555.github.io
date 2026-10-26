@@ -22,7 +22,7 @@
   "exam": { "exEn": "We have an exam on Friday.", "exZh": "我們星期五有考試。", "source": "WordLab" },
   "desk": { "exEn": "My desk is tidy.", "exZh": "我的書桌很整潔。", "source": "WordLab" },
   "chair": { "exEn": "This chair is too small.", "exZh": "這張椅子太小。", "source": "WordLab" },
-  "board": { "exEn": "The teacher writes on the board.", "exZh": "老師在黑板上寫字。", "source": "WordLab" },
+  "board": { "exEn": "The teacher writes on the board.", "exZh": "老師在黑板上寫字。", "zh": "黑板", "source": "WordLab" },
   "classroom": { "exEn": "Our classroom is bright.", "exZh": "我們的課室很明亮。", "source": "WordLab" },
   "park": { "exEn": "We play in the park after school.", "exZh": "我們放學後在公園玩。", "source": "WordLab" },
   "subject": { "exEn": "My favourite subject is science.", "exZh": "我最喜歡的科目是科學。", "source": "WordLab" },

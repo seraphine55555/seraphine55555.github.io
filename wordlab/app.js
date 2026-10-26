@@ -19,6 +19,7 @@
     if (extra && !w.exEn && extra.exEn && extra.exZh) {
       w.exEn = extra.exEn;
       w.exZh = extra.exZh;
+      if (extra.zh) w.zh = extra.zh;
       w.exampleSource = extra.source || 'WordLab';
     }
   });
