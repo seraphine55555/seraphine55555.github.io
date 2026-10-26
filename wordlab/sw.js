@@ -2,7 +2,7 @@
  * Network-first：有網時攞最新，斷網時用快取；導航請求 fallback 去 index.html。
  * 只快取本站靜態檔，冇第三方。
  */
-const CACHE = 'wordlab-v13';
+const CACHE = 'wordlab-v14';
 const ASSETS = [
   './',
   './index.html',
@@ -15,6 +15,7 @@ const ASSETS = [
   './examples-pack4.js',
   './examples-pack5.js',
   './examples-pack6.js',
+  './examples-pack7.js',
   './app.js',
   './manifest.webmanifest',
 ];
