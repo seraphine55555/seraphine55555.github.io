@@ -14,6 +14,7 @@
     Array.isArray(window.WORDLAB_BULK) ? window.WORDLAB_BULK : []
   );
   var EXTRA_EXAMPLES = window.WORDLAB_EXAMPLES || {};
+  var EXTRA_SENSES = window.WORDLAB_SENSES || {};
   DATA.forEach(function (w) {
     var extra = EXTRA_EXAMPLES[String(w.en || '').toLowerCase()];
     if (extra && !w.exEn && extra.exEn && extra.exZh) {
@@ -21,6 +22,10 @@
       w.exZh = extra.exZh;
       if (extra.zh) w.zh = extra.zh;
       w.exampleSource = extra.source || 'WordLab';
+    }
+    var more = EXTRA_SENSES[String(w.en || '').toLowerCase()];
+    if (more && Array.isArray(more.senses) && more.senses.length) {
+      w.extraSenses = more.senses;
     }
   });
   window.WORDLAB_ALL = DATA;
@@ -81,6 +86,8 @@
     sourceDictBadge: ['字典', '字典', 'Dictionary'],
     sourceNote: ['精選 96 個有人手例句；字典層另有 {n} 個常用字有例句，其餘未有例句。', '精選 96 個有人手例句；字典層另有 {n} 個常用字有例句，其餘未有例句。', '96 curated entries have examples; {n} other dictionary entries also have examples; the rest do not.'],
     exampleBadge: ['例句', '例句', 'Example'],
+    multiSenseBadge: ['多義', '多義', 'Multi-meaning'],
+    otherMeanings: ['另一個意思', '另一個意思', 'Another meaning'],
     resetFilters: ['清除篩選', '清除篩選', 'Clear filters'],
     noFiltered: ['呢個組合暫時冇生字；試下清除篩選。', '這個組合暫時沒有生字；試試清除篩選。', 'No words in this combination — try clearing the filters.'],
     progressTitle: ['我的進度', '我的進度', 'My progress'],
@@ -803,6 +810,20 @@
     render();
   }
 
+  function appendExtraSenses(card, w) {
+    if (!w.extraSenses || !w.extraSenses.length) return;
+    var box = el('div', 'extra-senses');
+    box.appendChild(el('p', 'answer-label', t('otherMeanings')));
+    w.extraSenses.forEach(function (sense) {
+      var item = el('div', 'extra-sense');
+      item.appendChild(el('p', 'extra-zh', sense.zh));
+      if (sense.exEn) item.appendChild(el('p', 'extra-ex', sense.exEn));
+      if (sense.exZh) item.appendChild(el('p', 'extra-ex-zh', sense.exZh));
+      box.appendChild(item);
+    });
+    card.appendChild(box);
+  }
+
   function renderFlash() {
     if (!session || !session.queue.length) {
       view = 'home';
@@ -828,6 +849,7 @@
       )
     );
     if (w.exEn) meta.appendChild(el('span', 'badge example', t('exampleBadge')));
+    if (w.extraSenses && w.extraSenses.length) meta.appendChild(el('span', 'badge multi', t('multiSenseBadge')));
     if (isNew(w)) meta.appendChild(el('span', 'badge new', t('newBadge')));
     else if (isDue(w)) meta.appendChild(el('span', 'badge due', t('dueBadge')));
     else if (isKnown(w)) meta.appendChild(el('span', 'badge known', t('knownBadge')));
@@ -851,6 +873,7 @@
       } else {
         answer.appendChild(el('p', 'tiny muted', t('exampleMissing')));
       }
+      appendExtraSenses(answer, w);
       card.appendChild(answer);
     }
     app.appendChild(card);
@@ -911,6 +934,7 @@
       )
     );
     if (w.exEn) qmeta.appendChild(el('span', 'badge example', t('exampleBadge')));
+    if (w.extraSenses && w.extraSenses.length) qmeta.appendChild(el('span', 'badge multi', t('multiSenseBadge')));
     card.appendChild(qmeta);
 
     var options = el('div', 'options');
@@ -929,6 +953,7 @@
     if (session.picked !== null) {
       var ok = session.options[session.picked] === meaning(w);
       card.appendChild(el('p', 'feedback ' + (ok ? 'ok' : 'bad'), ok ? t('correct') : t('wrong')));
+      appendExtraSenses(card, w);
     }
     app.appendChild(card);
   }

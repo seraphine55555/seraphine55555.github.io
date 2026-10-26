@@ -80,7 +80,7 @@
   "lemon": { "exEn": "The lemon is sour.", "exZh": "檸檬很酸。", "source": "WordLab" },
   "strawberry": { "exEn": "I like strawberry ice cream.", "exZh": "我喜歡草莓雪糕。", "source": "WordLab" },
   "climb": { "exEn": "We climb the stairs.", "exZh": "我們爬樓梯。", "source": "WordLab" },
-  "fly": { "exEn": "Birds can fly.", "exZh": "鳥會飛。", "source": "WordLab" },
+  "fly": { "exEn": "Birds can fly.", "exZh": "鳥會飛。", "zh": "飛", "source": "WordLab" },
   "wash": { "exEn": "Wash your hands before eating.", "exZh": "吃飯前洗手。", "source": "WordLab" },
   "laugh": { "exEn": "The joke made us laugh.", "exZh": "這個笑話令我們大笑。", "source": "WordLab" },
   "smile": { "exEn": "She has a big smile.", "exZh": "她笑容燦爛。", "source": "WordLab" },
@@ -91,12 +91,12 @@
   "visit": { "exEn": "We visit Grandma on Sunday.", "exZh": "我們星期天探望奶奶。", "source": "WordLab" },
   "share": { "exEn": "Please share your toys.", "exZh": "請分享你的玩具。", "source": "WordLab" },
   "count": { "exEn": "Can you count to ten?", "exZh": "你可以數到十嗎？", "source": "WordLab" },
-  "cold": { "exEn": "The water is cold.", "exZh": "水很冷。", "source": "WordLab" },
+  "cold": { "exEn": "The water is cold.", "exZh": "水很冷。", "zh": "冷的", "source": "WordLab" },
   "warm": { "exEn": "The sun makes us warm.", "exZh": "太陽令我們溫暖。", "source": "WordLab" },
   "wet": { "exEn": "My shoes are wet.", "exZh": "我的鞋子濕了。", "source": "WordLab" },
   "dry": { "exEn": "The towel is dry.", "exZh": "毛巾是乾的。", "source": "WordLab" },
   "safe": { "exEn": "This place is safe.", "exZh": "這個地方很安全。", "source": "WordLab" },
-  "kind": { "exEn": "She is kind to everyone.", "exZh": "她對每個人都很友善。", "source": "WordLab" },
+  "kind": { "exEn": "She is kind to everyone.", "exZh": "她對每個人都很友善。", "zh": "善良的", "source": "WordLab" },
   "busy": { "exEn": "Dad is busy today.", "exZh": "爸爸今天很忙。", "source": "WordLab" },
   "ready": { "exEn": "Are you ready to go?", "exZh": "你準備好出發了嗎？", "source": "WordLab" }
 });

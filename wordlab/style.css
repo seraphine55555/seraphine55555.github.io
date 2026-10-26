@@ -679,6 +679,11 @@ a {
   color: var(--good);
 }
 
+.badge.multi {
+  border-color: rgba(192, 132, 252, 0.55);
+  color: #d8b4fe;
+}
+
 .reveal-btn {
   width: 100%;
   min-height: 50px;
@@ -716,6 +721,42 @@ a {
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 13px;
+}
+
+.extra-senses {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.extra-senses .answer-label {
+  margin-top: 0;
+}
+
+.extra-sense + .extra-sense {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.extra-zh {
+  margin: 0;
+  color: #d8b4fe;
+  font-family: var(--serif);
+  font-size: 18px;
+}
+
+.extra-ex {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.extra-ex-zh {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .answer-actions {

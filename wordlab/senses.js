@@ -1,0 +1,22 @@
+﻿window.WORDLAB_SENSES = {
+  "bank": { "senses": [{ "zh": "河岸", "exEn": "We sat on the river bank.", "exZh": "我們坐在河岸上。" }] },
+  "book": { "senses": [{ "zh": "預訂", "exEn": "I book a table for dinner.", "exZh": "我預訂了一張晚餐桌。" }] },
+  "run": { "senses": [{ "zh": "經營", "exEn": "She runs a small shop.", "exZh": "她經營一間小店。" }] },
+  "watch": { "senses": [{ "zh": "手錶", "exEn": "My watch is new.", "exZh": "我的手錶是新的。" }] },
+  "play": { "senses": [{ "zh": "戲劇", "exEn": "We saw a play at school.", "exZh": "我們在學校看了一齣戲劇。" }] },
+  "light": { "senses": [{ "zh": "輕的", "exEn": "The bag is light.", "exZh": "這個袋很輕。" }] },
+  "match": { "senses": [{ "zh": "火柴", "exEn": "Use a match to light the candle.", "exZh": "用火柴點蠟燭。" }] },
+  "fly": { "senses": [{ "zh": "蒼蠅", "exEn": "A fly is on the food.", "exZh": "一隻蒼蠅在食物上。" }] },
+  "fish": { "senses": [{ "zh": "釣魚", "exEn": "We fish in the river.", "exZh": "我們在河裡釣魚。" }] },
+  "clean": { "senses": [{ "zh": "清潔", "exEn": "Please clean the table.", "exZh": "請清潔桌子。" }] },
+  "open": { "senses": [{ "zh": "公開的", "exEn": "The meeting is open to all.", "exZh": "會議公開給所有人。" }] },
+  "close": { "senses": [{ "zh": "近的", "exEn": "The shop is close to my home.", "exZh": "商店離我家很近。" }] },
+  "hard": { "senses": [{ "zh": "困難", "exEn": "This question is hard.", "exZh": "這條問題很難。" }] },
+  "kind": { "senses": [{ "zh": "種類", "exEn": "What kind of fruit do you like?", "exZh": "你喜歡哪種水果？" }] },
+  "fair": { "senses": [{ "zh": "展覽會", "exEn": "We went to the book fair.", "exZh": "我們去了書展。" }] },
+  "firm": { "senses": [{ "zh": "公司", "exEn": "He works for a small firm.", "exZh": "他在一間小公司工作。" }] },
+  "cold": { "senses": [{ "zh": "感冒", "exEn": "I have a cold.", "exZh": "我感冒了。" }] },
+  "hot": { "senses": [{ "zh": "辣的", "exEn": "The curry is hot.", "exZh": "咖喱很辣。" }] },
+  "sweet": { "senses": [{ "zh": "可愛的", "exEn": "What a sweet puppy!", "exZh": "多可愛的小狗！" }] },
+  "sound": { "senses": [{ "zh": "聽起來", "exEn": "That sounds good.", "exZh": "那聽起來不錯。" }] }
+};

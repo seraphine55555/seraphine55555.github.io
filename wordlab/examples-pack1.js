@@ -11,7 +11,7 @@ window.WORDLAB_EXAMPLES = {
   "company": { "exEn": "My father works for a company.", "exZh": "我爸爸在一間公司工作。", "source": "WordLab" },
   "system": { "exEn": "The school has a computer system.", "exZh": "學校有一個電腦系統。", "source": "WordLab" },
   "question": { "exEn": "May I ask a question?", "exZh": "我可以問一個問題嗎？", "source": "WordLab" },
-  "play": { "exEn": "The children play in the park.", "exZh": "孩子們在公園玩耍。", "source": "WordLab" },
+  "play": { "exEn": "The children play in the park.", "exZh": "孩子們在公園玩耍。", "zh": "玩耍", "source": "WordLab" },
   "government": { "exEn": "The government builds public parks.", "exZh": "政府興建公共公園。", "source": "WordLab" },
   "night": { "exEn": "The stars shine at night.", "exZh": "星星在晚上閃耀。", "source": "WordLab" },
   "point": { "exEn": "This point is important.", "exZh": "這一點很重要。", "source": "WordLab" },
