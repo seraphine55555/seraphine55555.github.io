@@ -961,12 +961,15 @@
     }
 
     if (ok) {
-      // 答中先朗讀正確答案；朗讀完（或無語音包）才跳下一題。
+      // 答中先朗讀正確答案；朗讀完再停 1 秒才跳下一題。
       var answer = meaning(w);
       var answerLang = subject === 'en' ? 'zh-HK' : 'en-US';
-      speak(answer, answerLang, advance);
+      speak(answer, answerLang, function () {
+        window.setTimeout(advance, 1000);
+      });
     } else {
-      window.setTimeout(advance, 720);
+      // 答錯保留原本 720ms 回饋，再加 1 秒才跳題。
+      window.setTimeout(advance, 1720);
     }
   }
 
