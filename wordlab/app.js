@@ -1083,9 +1083,9 @@
     }
 
     if (ok) {
-      // 答中先朗讀正確答案；朗讀完再停 1 秒才跳下一題。
-      var answer = meaning(w);
-      var answerLang = subject === 'en' ? 'zh-HK' : 'en-US';
+      // 答中先朗讀英文生字；朗讀完再停 1 秒才跳下一題。
+      var answer = w.en;
+      var answerLang = 'en-US';
       speak(answer, answerLang, function () {
         window.setTimeout(advance, 1000);
       });
