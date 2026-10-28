@@ -16,6 +16,8 @@
   var EXTRA_EXAMPLES = window.WORDLAB_EXAMPLES || {};
   var EXTRA_SENSES = window.WORDLAB_SENSES || {};
   var EXTRA_TYPES = window.WORDLAB_TYPES || {};
+  var BLOCKED = new Set((window.WORDLAB_BLOCKED || []).map(function (w) { return String(w).toLowerCase(); }));
+  DATA = DATA.filter(function (w) { return !BLOCKED.has(String(w.en || '').toLowerCase()); });
   var TYPE_ORDER = ['noun', 'verb', 'adj', 'adv', 'function', 'number', 'other'];
   DATA.forEach(function (w) {
     var extra = EXTRA_EXAMPLES[String(w.en || '').toLowerCase()];
@@ -92,7 +94,7 @@
     sourceDict: ['字典', '字典', 'Dictionary'],
     sourceCuratedBadge: ['精選', '精選', 'Curated'],
     sourceDictBadge: ['字典', '字典', 'Dictionary'],
-    sourceNote: ['精選 96 個有人手例句；字典層另有 {n} 個常用字有例句，其餘未有例句。', '精選 96 個有人手例句；字典層另有 {n} 個常用字有例句，其餘未有例句。', '96 curated entries have examples; {n} other dictionary entries also have examples; the rest do not.'],
+    sourceNote: ['精選 96 個有人手例句；字典層另有 {n} 個常用字有人手例句。', '精選 96 個有人手例句；字典層另有 {n} 個常用字有人手例句。', '96 curated entries have examples; {n} other dictionary entries also have examples.'],
     typeTitle: ['類型', '類型', 'Type'],
     typeAll: ['全部', '全部', 'All'],
     typeNoun: ['名詞', '名詞', 'Noun'],
