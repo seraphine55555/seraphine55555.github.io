@@ -54,7 +54,7 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "electronic": { "exEn": "I use an electronic game.", "exZh": "我用電子遊戲。", "source": "WordLab" },
   "elementary": { "exEn": "This is an elementary school.", "exZh": "這是小學。", "source": "WordLab" },
   "elite": { "exEn": "The elite team wins.", "exZh": "精英隊獲勝。", "source": "WordLab" },
-  "elizabeth": { "exEn": "Elizabeth is my friend.", "exZh": "伊麗莎白是我的朋友。", "source": "WordLab" },
+  "lorry": {"exEn":"A lorry is carrying boxes to the shop.","exZh":"一輛貨車正把箱子運到商店。","source":"WordLab"},
   "elsewhere": { "exEn": "Look elsewhere.", "exZh": "看其他地方。", "source": "WordLab" },
   "embrace": { "exEn": "They embrace warmly.", "exZh": "他們熱情擁抱。", "source": "WordLab" },
   "emotion": { "exEn": "He shows his emotion.", "exZh": "他表現情感。", "source": "WordLab" },

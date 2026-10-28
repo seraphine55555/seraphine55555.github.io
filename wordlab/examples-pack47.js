@@ -9,7 +9,7 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "tray": { "exEn": "The tray is full.", "exZh": "托盤滿了。", "source": "WordLab" },
   "treasure": { "exEn": "The treasure is gold.", "exZh": "寶藏是黃金。", "source": "WordLab" },
   "tremble": { "exEn": "Her hands tremble.", "exZh": "她的手顫抖。", "source": "WordLab" },
-  "trent": { "exEn": "Trent is my friend.", "exZh": "特倫特是我的朋友。", "source": "WordLab" },
+  "noticeable": {"exEn":"There is a noticeable change in the room.","exZh":"房間裡有明顯的改變。","source":"WordLab"},
   "tribal": { "exEn": "The tribal dance is old.", "exZh": "部落舞蹈很古老。", "source": "WordLab" },
   "tribute": { "exEn": "The song is a tribute.", "exZh": "歌曲是致敬。", "source": "WordLab" },
   "trillion": { "exEn": "A trillion is very large.", "exZh": "一兆非常大。", "source": "WordLab" },
@@ -94,9 +94,9 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "widen": { "exEn": "Widen the road.", "exZh": "擴闊道路。", "source": "WordLab" },
   "widow": { "exEn": "The widow lives alone.", "exZh": "寡婦獨自生活。", "source": "WordLab" },
   "wildly": { "exEn": "The crowd cheers wildly.", "exZh": "人群狂熱歡呼。", "source": "WordLab" },
-  "willie": { "exEn": "Willie is my friend.", "exZh": "威利是我的朋友。", "source": "WordLab" },
+  "enquiry": {"exEn":"We made an enquiry about the tickets.","exZh":"我們就門票作出了查詢。","source":"WordLab"},
   "willingness": { "exEn": "She shows willingness.", "exZh": "她表現意願。", "source": "WordLab" },
-  "windsor": { "exEn": "Windsor is a town.", "exZh": "溫莎是一個城鎮。", "source": "WordLab" },
+  "pity": {"exEn":"I felt pity for the lost dog.","exZh":"我對走失的狗感到同情。","source":"WordLab"},
   "wireless": { "exEn": "The wireless mouse is new.", "exZh": "無線滑鼠是新的。", "source": "WordLab" },
   "wit": { "exEn": "Her wit is sharp.", "exZh": "她的機智很敏銳。", "source": "WordLab" }
 });

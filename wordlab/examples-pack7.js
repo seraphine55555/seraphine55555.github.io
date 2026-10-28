@@ -26,7 +26,7 @@
   "musician": { "exEn": "The musician plays the piano.", "exZh": "音樂家彈鋼琴。", "source": "WordLab" },
   "actor": { "exEn": "The actor is on stage.", "exZh": "演員在舞台上。", "source": "WordLab" },
   "dancer": { "exEn": "The dancer moves gracefully.", "exZh": "舞蹈員優雅地移動。", "source": "WordLab" },
-  "gym": { "exEn": "We exercise at the gym.", "exZh": "我們在健身房運動。", "source": "WordLab" },
+  "gym": {"exEn":"We exercise at the gym.","exZh":"我們在體育館運動。","source":"WordLab"},
   "pool": { "exEn": "The children swim in the pool.", "exZh": "孩子們在泳池游泳。", "source": "WordLab" },
   "stadium": { "exEn": "The match is at the stadium.", "exZh": "比賽在體育場舉行。", "source": "WordLab" },
   "theatre": { "exEn": "We watch a play at the theatre.", "exZh": "我們在劇院看話劇。", "source": "WordLab" },

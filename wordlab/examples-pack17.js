@@ -49,7 +49,7 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "generate": { "exEn": "The sun generates heat.", "exZh": "太陽產生熱。", "source": "WordLab" },
   "guide": { "exEn": "The guide shows us the way.", "exZh": "導遊給我們指路。", "source": "WordLab" },
   "hardly": { "exEn": "I can hardly hear you.", "exZh": "我幾乎聽不到你。", "source": "WordLab" },
-  "ian": { "exEn": "Ian is my friend.", "exZh": "伊恩是我的朋友。", "source": "WordLab" },
+  "passport": {"exEn":"Please show me your passport.","exZh":"請把你的護照給我看。","source":"WordLab"},
   "importance": { "exEn": "The importance of sleep is great.", "exZh": "睡眠的重要性很大。", "source": "WordLab" },
   "impossible": { "exEn": "It is impossible to fly.", "exZh": "飛是不可能的。", "source": "WordLab" },
   "increasingly": { "exEn": "The city is increasingly busy.", "exZh": "城市越來越繁忙。", "source": "WordLab" },

@@ -28,7 +28,7 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "surround": { "exEn": "Trees surround the house.", "exZh": "樹木圍繞房子。", "source": "WordLab" },
   "theater": { "exEn": "We go to the theater.", "exZh": "我們去戲院。", "source": "WordLab" },
   "theme": { "exEn": "The theme of the party is animals.", "exZh": "派對主題是動物。", "source": "WordLab" },
-  "tom": { "exEn": "Tom is my friend.", "exZh": "湯姆是我的朋友。", "source": "WordLab" },
+  "cannot": {"exEn":"I cannot swim yet.","exZh":"我還不能游泳。","source":"WordLab"},
   "traffic": { "exEn": "The traffic is heavy.", "exZh": "交通很繁忙。", "source": "WordLab" },
   "trail": { "exEn": "We walk on the trail.", "exZh": "我們走在小徑上。", "source": "WordLab" },
   "trend": { "exEn": "The trend is changing.", "exZh": "趨勢在改變。", "source": "WordLab" },
@@ -94,9 +94,9 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "significantly": { "exEn": "The price rises significantly.", "exZh": "價格顯著上升。", "source": "WordLab" },
   "silence": { "exEn": "The room is in silence.", "exZh": "房間很安靜。", "source": "WordLab" },
   "somewhat": { "exEn": "The test is somewhat hard.", "exZh": "測試有點難。", "source": "WordLab" },
-  "stephen": { "exEn": "Stephen is my friend.", "exZh": "斯蒂芬是我的朋友。", "source": "WordLab" },
+  "timetable": {"exEn":"Check the timetable for the next train.","exZh":"查看下一班火車的時間表。","source":"WordLab"},
   "tank": { "exEn": "The water tank is full.", "exZh": "水箱滿了。", "source": "WordLab" },
   "telephone": { "exEn": "The telephone is ringing.", "exZh": "電話在響。", "source": "WordLab" },
-  "tony": { "exEn": "Tony is my friend.", "exZh": "托尼是我的朋友。", "source": "WordLab" },
+  "cheaply": {"exEn":"We bought the books cheaply.","exZh":"我們便宜地買了這些書。","source":"WordLab"},
   "topic": { "exEn": "The topic is animals.", "exZh": "話題是動物。", "source": "WordLab" }
 });
