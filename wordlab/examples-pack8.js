@@ -65,7 +65,7 @@
   "exercise": { "exEn": "We do an exercise in class.", "exZh": "我們在課堂做練習。", "zh": "練習", "source": "WordLab" },
   "grade": { "exEn": "She is in Grade Three.", "exZh": "她讀三年級。", "zh": "年級", "source": "WordLab" },
   "mark": { "exEn": "I got a good mark.", "exZh": "我得到好成績。", "zh": "分數", "source": "WordLab" },
-  "score": { "exEn": "The score is two to one.", "exZh": "比分是二比一。", "source": "WordLab" },
+  "score": {"exEn":"The score is two to one.","exZh":"比分是二比一。","source":"WordLab","zh":"比分"},
   "pupil": { "exEn": "Every pupil has a book.", "exZh": "每個學生都有一本書。", "source": "WordLab" },
   "term": { "exEn": "The new term starts today.", "exZh": "新學期今天開始。", "zh": "學期", "source": "WordLab" },
   "semester": { "exEn": "We have a test this semester.", "exZh": "我們這學期有測驗。", "source": "WordLab" },

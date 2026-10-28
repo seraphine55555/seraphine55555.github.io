@@ -873,7 +873,7 @@ window.WORDLAB_BULK = [
   {"id": "bulk-0863", "grade": "P2", "band": 1, "need": "must", "en": "heavy", "zh": "重的", "source": "ECDICT", "ipa": "'hevi"},
   {"id": "bulk-0864", "grade": "P2", "band": 1, "need": "must", "en": "bag", "zh": "袋子", "source": "ECDICT", "ipa": "bæg"},
   {"id": "bulk-0865", "grade": "P2", "band": 1, "need": "must", "en": "heat", "zh": "熱", "source": "ECDICT", "ipa": "hi:t"},
-  {"id": "bulk-0866", "grade": "P2", "band": 1, "need": "must", "en": "york", "zh": "約克郡", "source": "ECDICT", "ipa": "jɔ:k"},
+  {"id":"bulk-0866","grade":"P2","band":1,"need":"must","en":"yogurt","zh":"乳酪","source":"ECDICT","ipa":"ˈjɒɡət"},
   {"id": "bulk-0867", "grade": "P2", "band": 1, "need": "must", "en": "marriage", "zh": "婚姻", "source": "ECDICT", "ipa": "'mæridʒ"},
   {"id": "bulk-0868", "grade": "P2", "band": 1, "need": "must", "en": "tough", "zh": "惡棍", "source": "ECDICT", "ipa": "tʌf"},
   {"id": "bulk-0869", "grade": "P2", "band": 1, "need": "must", "en": "sing", "zh": "唱", "source": "ECDICT", "ipa": "siŋ"},

@@ -20,7 +20,7 @@
   "concentrate": { "exEn": "Concentrate on your book.", "exZh": "專心看書。", "zh": "專心", "source": "WordLab" },
   "confirm": { "exEn": "Please confirm the date.", "exZh": "請確認日期。", "zh": "確認", "source": "WordLab" },
   "connect": { "exEn": "Connect the two wires.", "exZh": "連接兩條電線。", "source": "WordLab" },
-  "contain": { "exEn": "This box can contain toys.", "exZh": "這個盒可以裝玩具。", "source": "WordLab" },
+  "contain": {"exEn":"This box can contain toys.","exZh":"這個盒可以裝玩具。","source":"WordLab","zh":"容納"},
   "copy": { "exEn": "Copy this sentence.", "exZh": "抄寫這個句子。", "zh": "抄寫", "source": "WordLab" },
   "correct": { "exEn": "Correct your mistakes.", "exZh": "改正你的錯誤。", "zh": "改正", "source": "WordLab" },
   "crash": { "exEn": "Cars crash on this road.", "exZh": "汽車在這條路上撞擊。", "zh": "撞擊", "source": "WordLab" },
@@ -66,7 +66,7 @@
   "post": { "exEn": "Post the letter.", "exZh": "把信寄出。", "zh": "郵寄", "source": "WordLab" },
   "pray": { "exEn": "We pray for peace.", "exZh": "我們祈禱和平。", "source": "WordLab" },
   "prefer": { "exEn": "I prefer tea.", "exZh": "我較喜歡茶。", "zh": "較喜歡", "source": "WordLab" },
-  "present": { "exEn": "Present your work.", "exZh": "展示你的作品。", "zh": "呈現", "source": "WordLab" },
+  "present": {"exEn":"Present your work.","exZh":"展示你的作品。","zh":"展示","source":"WordLab"},
   "press": { "exEn": "Press the button.", "exZh": "按下按鈕。", "zh": "按", "source": "WordLab" },
   "pretend": { "exEn": "Do not pretend to be sick.", "exZh": "不要假裝生病。", "source": "WordLab" },
   "prevent": { "exEn": "Wash your hands to prevent illness.", "exZh": "洗手預防疾病。", "source": "WordLab" },
@@ -96,7 +96,7 @@
   "solve": { "exEn": "We can solve the problem.", "exZh": "我們可以解決問題。", "source": "WordLab" },
   "steal": { "exEn": "Do not steal.", "exZh": "不要偷竊。", "zh": "偷竊", "source": "WordLab" },
   "succeed": { "exEn": "You will succeed.", "exZh": "你會成功。", "source": "WordLab" },
-  "suffer": { "exEn": "Plants can suffer without water.", "exZh": "植物缺水會受苦。", "source": "WordLab" },
+  "suffer": {"exEn":"Plants can suffer without water.","exZh":"植物缺水會受苦。","source":"WordLab","zh":"受苦"},
   "supply": { "exEn": "They supply water.", "exZh": "他們供應水。", "zh": "供應", "source": "WordLab" },
   "suppose": { "exEn": "I suppose you are right.", "exZh": "我猜想你是對的。", "source": "WordLab" }
 });

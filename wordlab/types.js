@@ -4990,7 +4990,7 @@ window.WORDLAB_TYPES = {
   "yet": ["adv", "function"],
   "yield": ["noun", "verb"],
   "yo": ["other"],
-  "york": ["noun"],
+  "yogurt": ["noun"],
   "you": ["function"],
   "young": ["noun", "adj"],
   "youngster": ["noun"],
