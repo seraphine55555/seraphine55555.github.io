@@ -1,6 +1,6 @@
 ﻿window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "tongue": { "exEn": "My tongue is red.", "exZh": "我的舌頭是紅色的。", "source": "WordLab" },
-  "lip": { "exEn": "She has a cut on her lip.", "exZh": "她的嘴唇割傷了。", "source": "WordLab" },
+  "lip": {"exEn":"She has a cut on her lip.","exZh":"她的嘴唇割傷了。","source":"WordLab","zh":"嘴唇"},
   "cheek": { "exEn": "He has a red cheek.", "exZh": "他的臉頰紅了。", "source": "WordLab" },
   "chin": { "exEn": "Rest your chin on your hand.", "exZh": "把下巴靠在手上。", "source": "WordLab" },
   "forehead": { "exEn": "She has a fever; touch her forehead.", "exZh": "她發燒了，摸摸她的額頭。", "source": "WordLab" },
@@ -81,7 +81,7 @@
   "march": { "exEn": "The children march in a line.", "exZh": "孩子們排隊前進。", "zh": "行進", "source": "WordLab" },
   "race": { "exEn": "We race to the tree.", "exZh": "我們跑到樹那裡比賽。", "zh": "比賽", "source": "WordLab" },
   "pat": { "exEn": "Pat the dog gently.", "exZh": "輕輕拍狗。", "source": "WordLab" },
-  "feed": { "exEn": "Please feed the fish.", "exZh": "請餵魚。", "source": "WordLab" },
+  "feed": {"exEn":"Please feed the fish.","exZh":"請餵魚。","source":"WordLab","zh":"餵"},
   "repeat": { "exEn": "Please repeat after me.", "exZh": "請跟我重複。", "source": "WordLab" },
   "spell": { "exEn": "Can you spell your name?", "exZh": "你會拼你的名字嗎？", "zh": "拼寫", "source": "WordLab" },
   "match": { "exEn": "This is a good match.", "exZh": "這是一場好比賽。", "source": "WordLab" },

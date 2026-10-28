@@ -33,7 +33,7 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "learn": { "exEn": "We learn Chinese at school.", "exZh": "我們在學校學中文。", "source": "WordLab" },
   "teach": { "exEn": "My aunt will teach us to draw.", "exZh": "我姨姨會教我們畫畫。", "source": "WordLab" },
   "eat": {"exEn":"We eat fruit after lunch.","exZh":"我們午餐後吃水果。","source":"WordLab","zh":"吃"},
-  "drink": { "exEn": "Please drink some water.", "exZh": "請喝點水。", "source": "WordLab" },
+  "drink": {"exEn":"Please drink some water.","exZh":"請喝點水。","source":"WordLab","zh":"喝"},
   "sleep": { "exEn": "Babies sleep a lot.", "exZh": "嬰兒睡得很多。", "source": "WordLab" },
   "sit": { "exEn": "Please sit on the chair.", "exZh": "請坐在椅子上。", "source": "WordLab" },
   "stand": { "exEn": "Please stand behind the line.", "exZh": "請站在線後面。", "source": "WordLab" },

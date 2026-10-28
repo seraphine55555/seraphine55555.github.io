@@ -1,8 +1,8 @@
 window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "trust": { "exEn": "I trust my friend.", "exZh": "我信任朋友。", "source": "WordLab" },
   "typical": { "exEn": "This is a typical day.", "exZh": "這是典型的一天。", "source": "WordLab" },
-  "user": { "exEn": "The user reads the guide.", "exZh": "用戶閱讀指南。", "source": "WordLab" },
-  "variable": { "exEn": "The weather is variable.", "exZh": "天氣多變。", "source": "WordLab" },
+  "user": {"exEn":"The user reads the guide.","exZh":"用戶閱讀指南。","source":"WordLab","zh":"用戶"},
+  "variable": {"exEn":"The weather is variable.","exZh":"天氣多變。","source":"WordLab","zh":"多變的"},
   "wing": { "exEn": "The bird moves its wing.", "exZh": "鳥拍動翅膀。", "source": "WordLab" },
   "abandon": { "exEn": "Do not abandon your pet.", "exZh": "不要遺棄寵物。", "source": "WordLab" },
   "accuse": { "exEn": "Do not accuse people without proof.", "exZh": "沒有證據不要指責別人。", "source": "WordLab" },
