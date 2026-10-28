@@ -428,6 +428,70 @@ a {
   font-size: 11px;
 }
 
+.tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 3px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+  cursor: help;
+  vertical-align: 1px;
+}
+
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  display: none;
+  width: max-content;
+  max-width: min(240px, 70vw);
+  padding: 8px 10px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  border-radius: 10px;
+  background: #0b1220;
+  color: #eaf0ff;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+.tip:hover::after,
+.tip:focus::after {
+  display: block;
+}
+
+.metric {
+  position: relative;
+}
+
+.metric .tip {
+  display: inline-flex;
+  margin: 2px 0 0;
+}
+
+.metric .tip::after {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+
+.metric:last-child .tip::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 .filter-note {
   margin: 8px 0 0;
   color: var(--muted);

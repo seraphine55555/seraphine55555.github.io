@@ -113,6 +113,13 @@
     progressTitle: ['我的進度', '我的進度', 'My progress'],
     knownOf: ['已掌握 {n} / {m}', '已掌握 {n} / {m}', '{n} / {m} mastered'],
     progressScope: ['已套用篩選：目前 {m} 個 · 全站 {n} 個', '已套用篩選：目前 {m} 個 · 全站 {n} 個', 'Filtered: {m} shown · {n} total'],
+    needTip: ['must 最早要識；should 校內常見；rare 較少用；bonus 進階增潤。', 'must 最早要識；should 校內常見；rare 較少用；bonus 進階增潤。', 'must = earliest priority; should = common at school; rare = less common; bonus = enrichment.'],
+    bandTip: ['獨立難度，唔係年級：1 基礎、2 進階、3 挑戰。', '獨立難度，不是年級：1 基礎、2 進階、3 挑戰。', 'Independent difficulty, not grade: 1 basic, 2 developing, 3 challenge.'],
+    typeTip: ['詞性由字典標記抽取；一個字可以有多個類型。', '詞性由字典標記抽取；一個字可以有多個類型。', 'Part of speech from dictionary tags; a word can have several types.'],
+    sourceTip: ['精選＝96 個人手概念；字典＝ECDICT 詞庫。', '精選＝96 個人手概念；字典＝ECDICT 詞庫。', 'Curated = 96 hand-written concepts; Dictionary = ECDICT word bank.'],
+    knownTip: ['連續答對 3 次或以上，才算已掌握。', '連續答對 3 次或以上，才算已掌握。', 'A word is mastered after 3 correct answers in a row.'],
+    dueTip: ['按間隔重練（SRS）到期、今日應該再練的字。', '按間隔重練（SRS）到期、今日應該再練的字。', 'Words due today under the spaced-repetition schedule.'],
+    streakTip: ['連續有練習的日子；今日未練會顯示現有連續日數，唔係「未開始」。', '連續有練習的日子；今日未練會顯示現有連續日數，不是「未開始」。', 'Consecutive practice days; if you have not practised today, it still shows your current streak.'],
     clearScope: ['清除篩選', '清除篩選', 'Clear filters'],
     showingOf: ['顯示 {n} / {m} 個', '顯示 {n} / {m} 個', '{n} / {m} shown'],
     dueLabel: ['{n} 個到期', '{n} 個到期', '{n} due'],
@@ -290,6 +297,15 @@
 
   function bandName(value) {
     return value === 1 ? t('band1') : value === 2 ? t('band2') : t('band3');
+  }
+
+  function tipIcon(text) {
+    var icon = el('span', 'tip', '?');
+    icon.setAttribute('tabindex', '0');
+    icon.setAttribute('role', 'note');
+    icon.setAttribute('aria-label', text);
+    icon.setAttribute('data-tip', text);
+    return icon;
   }
 
   function typeText(w) {
@@ -623,6 +639,7 @@
     var filterPanel = el('section', 'panel filter-panel');
     var filterHead = el('div', 'panel-head');
     filterHead.appendChild(el('h2', '', t('needTitle')));
+    filterHead.appendChild(tipIcon(t('needTip')));
     filterHead.appendChild(el('span', 'pill', t('showingOf', { n: list.length, m: gradeWords().length })));
     filterPanel.appendChild(filterHead);
     var needRow = el('div', 'filter-chips');
@@ -645,6 +662,7 @@
 
     var bandHead = el('div', 'filter-subhead');
     bandHead.appendChild(el('span', 'filter-label', t('bandTitle')));
+    bandHead.appendChild(tipIcon(t('bandTip')));
     filterPanel.appendChild(bandHead);
     var bandRow = el('div', 'filter-chips');
     [
@@ -665,6 +683,7 @@
 
     var typeHead = el('div', 'filter-subhead');
     typeHead.appendChild(el('span', 'filter-label', t('typeTitle')));
+    typeHead.appendChild(tipIcon(t('typeTip')));
     filterPanel.appendChild(typeHead);
     var typeSelect = el('select', 'filter-select');
     typeSelect.setAttribute('data-type-select', '');
@@ -690,6 +709,7 @@
 
     var sourceHead = el('div', 'filter-subhead');
     sourceHead.appendChild(el('span', 'filter-label', t('sourceTitle')));
+    sourceHead.appendChild(tipIcon(t('sourceTip')));
     filterPanel.appendChild(sourceHead);
     var sourceRow = el('div', 'filter-chips');
     [
@@ -730,14 +750,17 @@
     bar.appendChild(fill);
     prog.appendChild(bar);
     var metrics = el('div', 'metrics');
+    var streakDays = currentStreak();
     [
-      { k: t('knownBadge'), v: String(st.known) },
-      { k: t('dueBadge'), v: String(st.due) },
-      { k: t('streakNone'), v: '🔥 ' + currentStreak() },
+      { k: t('knownBadge'), v: String(st.known), tip: t('knownTip') },
+      { k: t('dueBadge'), v: String(st.due), tip: t('dueTip') },
+      { k: streakDays ? t('streakLabel', { n: streakDays }) : t('streakNone'), v: '🔥 ' + streakDays, tip: t('streakTip') },
     ].forEach(function (m) {
       var box = el('div', 'metric');
       box.appendChild(el('strong', '', m.v));
-      box.appendChild(el('span', '', m.k));
+      var label = el('span', '', m.k);
+      box.appendChild(label);
+      box.appendChild(tipIcon(m.tip));
       metrics.appendChild(box);
     });
     prog.appendChild(metrics);
