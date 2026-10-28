@@ -411,6 +411,12 @@ a {
   color: var(--ink);
   font: inherit;
   font-size: 13px;
+  color-scheme: dark;
+}
+
+.filter-select option {
+  background: #16233d;
+  color: #eaf0ff;
 }
 
 .filter-subhead {
