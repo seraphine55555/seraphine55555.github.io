@@ -73,7 +73,7 @@
   "tomato": { "exEn": "The tomato is red.", "exZh": "番茄是紅色的。", "source": "WordLab" },
   "carrot": { "exEn": "The carrot is orange.", "exZh": "紅蘿蔔是橙色的。", "source": "WordLab" },
   "candy": { "exEn": "Too much candy is not good.", "exZh": "太多糖果不好。", "source": "WordLab" },
-  "cookie": { "exEn": "This cookie is sweet.", "exZh": "這塊曲奇很甜。", "source": "WordLab" },
+  "cookie": {"exEn":"This cookie is sweet.","exZh":"這塊曲奇很甜。","source":"WordLab","zh":"曲奇"},
   "chocolate": { "exEn": "I like hot chocolate.", "exZh": "我喜歡熱朱古力。", "source": "WordLab" },
   "honey": { "exEn": "Bees make honey.", "exZh": "蜜蜂製造蜂蜜。", "source": "WordLab" },
   "grape": { "exEn": "The grape is small and sweet.", "exZh": "葡萄又小又甜。", "source": "WordLab" },

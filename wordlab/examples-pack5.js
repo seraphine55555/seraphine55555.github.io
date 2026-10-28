@@ -13,7 +13,7 @@
   "shoe": { "exEn": "My shoe is wet.", "exZh": "我的鞋濕了。", "source": "WordLab" },
   "sock": { "exEn": "I lost one sock.", "exZh": "我丟了一隻襪子。", "source": "WordLab" },
   "coat": { "exEn": "Put on your coat; it is cold.", "exZh": "穿上外套，天氣很冷。", "source": "WordLab" },
-  "jeans": { "exEn": "These jeans are new.", "exZh": "這條牛仔褲是新的。", "source": "WordLab" },
+  "jeans": {"exEn":"These jeans are new.","exZh":"這條牛仔褲是新的。","source":"WordLab","zh":"牛仔褲"},
   "skirt": { "exEn": "Her skirt is pink.", "exZh": "她的裙子是粉紅色的。", "source": "WordLab" },
   "sofa": { "exEn": "We sit on the sofa.", "exZh": "我們坐在沙發上。", "source": "WordLab" },
   "lamp": { "exEn": "The lamp is on the desk.", "exZh": "燈在書桌上。", "source": "WordLab" },
@@ -50,7 +50,7 @@
   "luck": { "exEn": "Good luck with your test.", "exZh": "祝你測驗好運。", "source": "WordLab" },
   "truth": { "exEn": "Please tell me the truth.", "exZh": "請告訴我真相。", "source": "WordLab" },
   "peace": { "exEn": "We want peace in the world.", "exZh": "我們希望世界和平。", "source": "WordLab" },
-  "joy": { "exEn": "The children jumped with joy.", "exZh": "孩子們高興得跳起來。", "source": "WordLab" },
+  "joy": {"exEn":"The children jumped with joy.","exZh":"孩子們高興得跳起來。","source":"WordLab","zh":"高興"},
   "worry": { "exEn": "Do not worry about the test.", "exZh": "不要擔心測驗。", "source": "WordLab" },
   "hold": {"exEn":"Hold my hand.","exZh":"牽著我的手。","source":"WordLab","zh":"握住"},
   "drop": {"exEn":"Do not drop the glass.","exZh":"不要把玻璃杯掉下。","source":"WordLab","zh":"掉下"},
@@ -98,5 +98,5 @@
   "spider": { "exEn": "The spider makes a web.", "exZh": "蜘蛛結網。", "source": "WordLab" },
   "sweep": {"exEn":"I sweep the floor.","exZh":"我掃地。","source":"WordLab","zh":"打掃"},
   "wipe": { "exEn": "Please wipe the table.", "exZh": "請抹桌子。", "source": "WordLab" },
-  "fold": { "exEn": "Fold your clothes.", "exZh": "把衣服摺好。", "source": "WordLab" }
+  "fold": {"exEn":"Fold your clothes.","exZh":"把衣服摺好。","source":"WordLab","zh":"摺"}
 });

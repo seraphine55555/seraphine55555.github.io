@@ -56,7 +56,7 @@
   "bottle": { "exEn": "The bottle is on the table.", "exZh": "瓶子在桌上。", "source": "WordLab" },
   "stove": { "exEn": "The pot is on the stove.", "exZh": "鍋子在爐上。", "source": "WordLab" },
   "tap": { "exEn": "Turn off the tap.", "exZh": "關掉水龍頭。", "zh": "水龍頭", "source": "WordLab" },
-  "shower": { "exEn": "I take a shower every morning.", "exZh": "我每天早上洗澡。", "zh": "淋浴", "source": "WordLab" },
+  "shower": {"exEn":"I take a shower every morning.","exZh":"我每天早上洗澡。","zh":"洗澡","source":"WordLab"},
   "toilet": { "exEn": "The toilet is clean.", "exZh": "廁所很乾淨。", "source": "WordLab" },
   "take": { "exEn": "Please take one card.", "exZh": "請拿一張卡。", "source": "WordLab" },
   "use": { "exEn": "I use a pencil to write.", "exZh": "我用鉛筆寫字。", "source": "WordLab" },
