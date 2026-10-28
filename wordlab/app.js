@@ -288,6 +288,12 @@
     return value === 1 ? t('band1') : value === 2 ? t('band2') : t('band3');
   }
 
+  function typeText(w) {
+    return (w.types || ['other']).map(function (type) {
+      return t('type' + type.charAt(0).toUpperCase() + type.slice(1));
+    }).join(' · ');
+  }
+
   function filterCounts() {
     var words = gradeWords();
     var byNeed = { all: words.length, must: 0, should: 0, rare: 0, bonus: 0 };
@@ -890,6 +896,7 @@
     if (w.ipa) meta.appendChild(el('span', 'badge ipa', w.ipa));
     meta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
     meta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
+    meta.appendChild(el('span', 'badge type', typeText(w)));
     meta.appendChild(
       el(
         'span',
@@ -975,6 +982,7 @@
     if (w.ipa) qmeta.appendChild(el('span', 'badge ipa', w.ipa));
     qmeta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
     qmeta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
+    qmeta.appendChild(el('span', 'badge type', typeText(w)));
     qmeta.appendChild(
       el(
         'span',
