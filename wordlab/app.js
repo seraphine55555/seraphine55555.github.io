@@ -15,6 +15,8 @@
   );
   var EXTRA_EXAMPLES = window.WORDLAB_EXAMPLES || {};
   var EXTRA_SENSES = window.WORDLAB_SENSES || {};
+  var EXTRA_TYPES = window.WORDLAB_TYPES || {};
+  var TYPE_ORDER = ['noun', 'verb', 'adj', 'adv', 'function', 'number', 'other'];
   DATA.forEach(function (w) {
     var extra = EXTRA_EXAMPLES[String(w.en || '').toLowerCase()];
     if (extra && !w.exEn && extra.exEn && extra.exZh) {
@@ -27,6 +29,11 @@
     if (more && Array.isArray(more.senses) && more.senses.length) {
       w.extraSenses = more.senses;
     }
+    var typeRow = EXTRA_TYPES[String(w.en || '').toLowerCase()];
+    w.types = TYPE_ORDER.filter(function (type) {
+      return Array.isArray(typeRow) && typeRow.indexOf(type) >= 0;
+    });
+    if (!w.types.length) w.types = ['other'];
   });
   window.WORDLAB_ALL = DATA;
   var LANG_KEY = 'wordlab/lang';
@@ -35,6 +42,7 @@
   var NEED_KEY = 'wordlab/need';
   var BAND_KEY = 'wordlab/band';
   var SOURCE_KEY = 'wordlab/source';
+  var TYPE_KEY = 'wordlab/type';
   var PROG_KEY = 'wordlab/progress/v1';
   var STREAK_KEY = 'wordlab/streak';
   var STEPS = [1, 3, 7, 14, 30];
@@ -85,6 +93,16 @@
     sourceCuratedBadge: ['精選', '精選', 'Curated'],
     sourceDictBadge: ['字典', '字典', 'Dictionary'],
     sourceNote: ['精選 96 個有人手例句；字典層另有 {n} 個常用字有例句，其餘未有例句。', '精選 96 個有人手例句；字典層另有 {n} 個常用字有例句，其餘未有例句。', '96 curated entries have examples; {n} other dictionary entries also have examples; the rest do not.'],
+    typeTitle: ['類型', '類型', 'Type'],
+    typeAll: ['全部', '全部', 'All'],
+    typeNoun: ['名詞', '名詞', 'Noun'],
+    typeVerb: ['動詞', '動詞', 'Verb'],
+    typeAdj: ['形容詞', '形容詞', 'Adjective'],
+    typeAdv: ['副詞', '副詞', 'Adverb'],
+    typeFunction: ['功能詞', '功能詞', 'Function word'],
+    typeNumber: ['數字', '數字', 'Number'],
+    typeOther: ['其他', '其他', 'Other'],
+    typeNote: ['詞性由字典標記抽取；一個字可以有多個類型。', '詞性由字典標記抽取；一個字可以有多個類型。', 'Types are derived from dictionary tags; a word can have more than one.'],
     exampleBadge: ['例句', '例句', 'Example'],
     multiSenseBadge: ['多義', '多義', 'Multi-meaning'],
     otherMeanings: ['另一個意思', '另一個意思', 'Another meaning'],
@@ -222,6 +240,8 @@
   if (['all', 'must', 'should', 'rare', 'bonus'].indexOf(need) < 0) need = 'all';
   var sourceFilter = load(SOURCE_KEY, 'all');
   if (['all', 'curated', 'dictionary'].indexOf(sourceFilter) < 0) sourceFilter = 'all';
+  var typeFilter = load(TYPE_KEY, 'all');
+  if (typeFilter !== 'all' && TYPE_ORDER.indexOf(typeFilter) < 0) typeFilter = 'all';
   var band = load(BAND_KEY, 'all');
   if (band !== 'all' && [1, 2, 3].indexOf(Number(band)) < 0) band = 'all';
   if (band !== 'all') band = Number(band);
@@ -249,7 +269,8 @@
       var okNeed = need === 'all' || w.need === need;
       var okBand = band === 'all' || Number(w.band) === band;
       var okSource = sourceFilter === 'all' || wordSource(w) === sourceFilter;
-      return okNeed && okBand && okSource;
+      var okType = typeFilter === 'all' || (w.types || []).indexOf(typeFilter) >= 0;
+      return okNeed && okBand && okSource && okType;
     });
   }
 
@@ -272,12 +293,15 @@
     var byNeed = { all: words.length, must: 0, should: 0, rare: 0, bonus: 0 };
     var byBand = { all: words.length, 1: 0, 2: 0, 3: 0 };
     var bySource = { all: words.length, curated: 0, dictionary: 0 };
+    var byType = { all: words.length };
+    TYPE_ORDER.forEach(function (type) { byType[type] = 0; });
     words.forEach(function (w) {
       if (byNeed[w.need] !== undefined) byNeed[w.need] += 1;
       if (byBand[Number(w.band)] !== undefined) byBand[Number(w.band)] += 1;
       bySource[wordSource(w)] += 1;
+      (w.types || []).forEach(function (type) { if (byType[type] !== undefined) byType[type] += 1; });
     });
-    return { need: byNeed, band: byBand, source: bySource };
+    return { need: byNeed, band: byBand, source: bySource, type: byType };
   }
 
   function term(w) {
@@ -624,6 +648,31 @@
       bandRow.appendChild(b);
     });
     filterPanel.appendChild(bandRow);
+
+    var typeHead = el('div', 'filter-subhead');
+    typeHead.appendChild(el('span', 'filter-label', t('typeTitle')));
+    filterPanel.appendChild(typeHead);
+    var typeSelect = el('select', 'filter-select');
+    typeSelect.setAttribute('data-type-select', '');
+    typeSelect.setAttribute('aria-label', t('typeTitle'));
+    [{ v: 'all', label: t('typeAll') }].concat(TYPE_ORDER.map(function (type) {
+      return { v: type, label: t('type' + type.charAt(0).toUpperCase() + type.slice(1)) };
+    })).forEach(function (o) {
+      var opt = el('option', '', o.label + ' · ' + counts.type[o.v]);
+      opt.value = o.v;
+      typeSelect.appendChild(opt);
+    });
+    typeSelect.value = typeFilter;
+    typeSelect.addEventListener('change', function () {
+      typeFilter = typeSelect.value;
+      save(TYPE_KEY, typeFilter);
+      view = 'home';
+      session = null;
+      lastResult = null;
+      render();
+    });
+    filterPanel.appendChild(typeSelect);
+    filterPanel.appendChild(el('p', 'filter-note', t('typeNote')));
 
     var sourceHead = el('div', 'filter-subhead');
     sourceHead.appendChild(el('span', 'filter-label', t('sourceTitle')));
@@ -1198,9 +1247,11 @@
       need = 'all';
       band = 'all';
       sourceFilter = 'all';
+      typeFilter = 'all';
       save(NEED_KEY, need);
       save(BAND_KEY, band);
       save(SOURCE_KEY, sourceFilter);
+      save(TYPE_KEY, typeFilter);
       view = 'home';
       session = null;
       lastResult = null;

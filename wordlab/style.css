@@ -401,6 +401,18 @@ a {
   background: rgba(167, 139, 250, 0.12);
 }
 
+.filter-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
 .filter-subhead {
   margin: 10px 0 6px;
 }
