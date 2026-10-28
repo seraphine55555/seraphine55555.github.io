@@ -118,7 +118,7 @@
     typeTip: ['詞性由字典標記抽取；一個字可以有多個類型。', '詞性由字典標記抽取；一個字可以有多個類型。', 'Part of speech from dictionary tags; a word can have several types.'],
     sourceTip: ['精選＝96 個人手概念；字典＝ECDICT 詞庫。', '精選＝96 個人手概念；字典＝ECDICT 詞庫。', 'Curated = 96 hand-written concepts; Dictionary = ECDICT word bank.'],
     knownTip: ['連續答對 3 次或以上，才算已掌握。', '連續答對 3 次或以上，才算已掌握。', 'A word is mastered after 3 correct answers in a row.'],
-    dueTip: ['按間隔重練（SRS）到期、今日應該再練的字。', '按間隔重練（SRS）到期、今日應該再練的字。', 'Words due today under the spaced-repetition schedule.'],
+    dueTip: ['新字（未練過）＋已到期重練嘅字；第一次打開可以等於全站字數。', '新字（未練過）＋已到期重練的字；第一次打開可以等於全站字數。', 'New words plus reviews that are due; on first visit this can equal the whole word bank.'],
     streakTip: ['連續有練習的日子；今日未練會顯示現有連續日數，唔係「未開始」。', '連續有練習的日子；今日未練會顯示現有連續日數，不是「未開始」。', 'Consecutive practice days; if you have not practised today, it still shows your current streak.'],
     clearScope: ['清除篩選', '清除篩選', 'Clear filters'],
     showingOf: ['顯示 {n} / {m} 個', '顯示 {n} / {m} 個', '{n} / {m} shown'],
