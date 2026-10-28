@@ -500,6 +500,28 @@ a {
   border-color: rgba(167, 139, 250, 0.4);
 }
 
+.progress-scope {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.link-btn {
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .progress-bar {
   height: 9px;
   border-radius: 999px;

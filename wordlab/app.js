@@ -112,6 +112,8 @@
     noFiltered: ['呢個組合暫時冇生字；試下清除篩選。', '這個組合暫時沒有生字；試試清除篩選。', 'No words in this combination — try clearing the filters.'],
     progressTitle: ['我的進度', '我的進度', 'My progress'],
     knownOf: ['已掌握 {n} / {m}', '已掌握 {n} / {m}', '{n} / {m} mastered'],
+    progressScope: ['已套用篩選：目前 {m} 個 · 全站 {n} 個', '已套用篩選：目前 {m} 個 · 全站 {n} 個', 'Filtered: {m} shown · {n} total'],
+    clearScope: ['清除篩選', '清除篩選', 'Clear filters'],
     showingOf: ['顯示 {n} / {m} 個', '顯示 {n} / {m} 個', '{n} / {m} shown'],
     dueLabel: ['{n} 個到期', '{n} 個到期', '{n} due'],
     streakLabel: ['連續 {n} 日', '連續 {n} 日', '{n}-day streak'],
@@ -415,6 +417,10 @@
     return value === 'must' ? 0 : value === 'should' ? 1 : value === 'rare' ? 2 : 3;
   }
 
+  function filtersActive() {
+    return grade !== 'all' || need !== 'all' || band !== 'all' || sourceFilter !== 'all' || typeFilter !== 'all';
+  }
+
   function stats() {
     var list = currentWords();
     var known = 0;
@@ -709,6 +715,15 @@
     progHead.appendChild(el('h2', '', t('progressTitle')));
     progHead.appendChild(el('span', 'pill', t('knownOf', { n: st.known, m: st.total })));
     prog.appendChild(progHead);
+    if (filtersActive()) {
+      var scope = el('p', 'progress-scope');
+      scope.appendChild(el('span', '', t('progressScope', { n: DATA.length, m: st.total })));
+      var clearScope = el('button', 'link-btn', t('clearScope'));
+      clearScope.type = 'button';
+      clearScope.setAttribute('data-reset-filters', '');
+      scope.appendChild(clearScope);
+      prog.appendChild(scope);
+    }
     var bar = el('div', 'progress-bar');
     var fill = el('div', 'progress-fill');
     fill.style.width = (st.total ? Math.round((st.known / st.total) * 100) : 0) + '%';
