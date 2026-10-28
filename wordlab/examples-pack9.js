@@ -29,7 +29,7 @@
   "decrease": { "exEn": "The number will decrease.", "exZh": "數量會減少。", "source": "WordLab" },
   "deliver": {"exEn":"They deliver the parcel.","exZh":"他們送包裹。","source":"WordLab","zh":"送"},
   "depend": {"exEn":"We depend on water.","exZh":"我們依賴水。","source":"WordLab","zh":"依賴"},
-  "deserve": { "exEn": "You deserve a prize.", "exZh": "你值得得到獎品。", "source": "WordLab" },
+  "deserve": {"exEn":"You deserve a prize.","exZh":"你值得得到獎品。","source":"WordLab","zh":"值得"},
   "destroy": { "exEn": "Do not destroy the sandcastle.", "exZh": "不要破壞沙堡。", "source": "WordLab" },
   "disagree": { "exEn": "I disagree with you.", "exZh": "我不同意你。", "zh": "不同意", "source": "WordLab" },
   "disappear": { "exEn": "The sun will disappear.", "exZh": "太陽會消失。", "source": "WordLab" },
@@ -98,5 +98,5 @@
   "succeed": { "exEn": "You will succeed.", "exZh": "你會成功。", "source": "WordLab" },
   "suffer": {"exEn":"Plants can suffer without water.","exZh":"植物缺水會受苦。","source":"WordLab","zh":"受苦"},
   "supply": { "exEn": "They supply water.", "exZh": "他們供應水。", "zh": "供應", "source": "WordLab" },
-  "suppose": { "exEn": "I suppose you are right.", "exZh": "我猜想你是對的。", "source": "WordLab" }
+  "suppose": {"exEn":"I suppose you are right.","exZh":"我猜想你是對的。","source":"WordLab","zh":"猜想"}
 });

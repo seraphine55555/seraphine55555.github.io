@@ -45,7 +45,7 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "beneath": { "exEn": "The coin is beneath the chair.", "exZh": "硬幣在椅下。", "source": "WordLab" },
   "beside": { "exEn": "Sit beside me.", "exZh": "坐在我旁邊。", "source": "WordLab" },
   "towards": { "exEn": "He runs towards the gate.", "exZh": "他跑向大門。", "source": "WordLab" },
-  "plus": { "exEn": "Two plus three is five.", "exZh": "二加三等於五。", "source": "WordLab" },
+  "plus": {"exEn":"Two plus three is five.","exZh":"二加三等於五。","source":"WordLab","zh":"加"},
   "twenty": { "exEn": "Twenty students join.", "exZh": "二十名學生參加。", "source": "WordLab" },
   "shall": { "exEn": "Shall we go now?", "exZh": "我們現在去好嗎？", "source": "WordLab" },
   "ceo": { "exEn": "The CEO leads the company.", "exZh": "行政總裁領導公司。", "source": "WordLab" },
