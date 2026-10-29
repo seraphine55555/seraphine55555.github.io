@@ -73,7 +73,7 @@
   "pick": { "exEn": "Pick a card.", "exZh": "選一張卡。", "zh": "挑選", "source": "WordLab" },
   "plant": { "exEn": "We plant a tree every year.", "exZh": "我們每年種一棵樹。", "zh": "種植", "source": "WordLab" },
   "afraid": { "exEn": "I am afraid of thunder.", "exZh": "我害怕打雷。", "source": "WordLab" },
-  "calm": { "exEn": "Please stay calm.", "exZh": "請保持冷靜。", "source": "WordLab" },
+  "calm": {"exEn":"Please stay calm.","exZh":"請保持冷靜。","source":"WordLab","zh":"冷靜"},
   "gentle": { "exEn": "Be gentle with the kitten.", "exZh": "對小貓要溫柔。", "source": "WordLab" },
   "wild": {"exEn":"We saw a wild rabbit.","exZh":"我們看見一隻野兔。","source":"WordLab","zh":"野生的"},
   "deep": { "exEn": "The lake is deep.", "exZh": "湖水很深。", "source": "WordLab" },

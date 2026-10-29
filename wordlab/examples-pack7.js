@@ -13,7 +13,7 @@
   "healthy": { "exEn": "Fruit is a healthy snack.", "exZh": "水果是健康的零食。", "source": "WordLab" },
   "sick": { "exEn": "He is sick today.", "exZh": "他今天生病了。", "source": "WordLab" },
   "asleep": {"exEn":"The baby is asleep.","exZh":"嬰兒睡著了。","source":"WordLab","zh":"睡著的"},
-  "awake": { "exEn": "I am awake early.", "exZh": "我很早就醒了。", "source": "WordLab" },
+  "awake": {"exEn":"I am awake early.","exZh":"我很早就醒了。","source":"WordLab","zh":"醒著的"},
   "temperature": { "exEn": "The temperature is high today.", "exZh": "今天氣溫很高。", "source": "WordLab" },
   "pilot": {"exEn":"The pilot flies the plane.","exZh":"機師駕駛飛機。","source":"WordLab","zh":"機師"},
   "sailor": { "exEn": "The sailor works on a ship.", "exZh": "水手在船上工作。", "source": "WordLab" },

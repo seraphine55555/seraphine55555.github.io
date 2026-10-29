@@ -66,7 +66,7 @@
   "difficult": { "exEn": "This question is difficult.", "exZh": "這個問題很難。", "source": "WordLab" },
   "simple": { "exEn": "The game is simple.", "exZh": "這個遊戲很簡單。", "source": "WordLab" },
   "interesting": { "exEn": "The book is interesting.", "exZh": "這本書很有趣。", "source": "WordLab" },
-  "boring": { "exEn": "The film is boring.", "exZh": "這部電影很沉悶。", "source": "WordLab" },
+  "boring": {"exEn":"The film is boring.","exZh":"這部電影很沉悶。","source":"WordLab","zh":"沉悶的"},
   "funny": {"exEn":"The story is funny.","exZh":"這個故事很有趣。","source":"WordLab","zh":"有趣的"},
   "heavy": { "exEn": "The box is heavy.", "exZh": "這個盒子很重。", "source": "WordLab" },
   "soft": { "exEn": "The pillow is soft.", "exZh": "枕頭很軟。", "source": "WordLab" },

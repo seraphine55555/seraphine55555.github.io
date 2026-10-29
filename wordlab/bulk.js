@@ -4695,7 +4695,7 @@ window.WORDLAB_BULK = [
   {"id":"bulk-4685","grade":"P6","band":3,"need":"bonus","en":"offence","zh":"罪行","source":"ECDICT","ipa":"ә'fens"},
   {"id": "bulk-4686", "grade": "P6", "band": 3, "need": "bonus", "en": "prey", "zh": "被掠食者", "source": "ECDICT", "ipa": "prei"},
   {"id": "bulk-4687", "grade": "P6", "band": 3, "need": "bonus", "en": "audit", "zh": "審計", "source": "ECDICT", "ipa": "'ɒ:dit"},
-  {"id": "bulk-4688", "grade": "P6", "band": 3, "need": "bonus", "en": "chapman", "zh": "流動商販", "source": "ECDICT", "ipa": "'tʃæpmәn"},
+  {"id":"bulk-4688","grade":"P6","band":3,"need":"bonus","en":"chimney","zh":"煙囪","source":"ECDICT","ipa":"ˈtʃɪmni"},
   {"id": "bulk-4689", "grade": "P6", "band": 3, "need": "bonus", "en": "bump", "zh": "撞擊", "source": "ECDICT", "ipa": "bʌmp"},
   {"id":"bulk-4690","grade":"P6","band":3,"need":"bonus","en":"packaging","zh":"包裝","source":"ECDICT","ipa":"'pækidʒiŋ"},
   {"id": "bulk-4691", "grade": "P6", "band": 3, "need": "bonus", "en": "peculiar", "zh": "奇特的", "source": "ECDICT", "ipa": "pi'kju:ljә"},

@@ -707,7 +707,7 @@ window.WORDLAB_TYPES = {
   "change": ["noun", "verb"],
   "channel": ["noun", "verb"],
   "chaos": ["noun"],
-  "chapman": ["noun"],
+  "chimney": ["noun"],
   "chapter": ["noun"],
   "character": ["noun"],
   "characterise": ["verb"],
