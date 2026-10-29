@@ -54,7 +54,7 @@
   "fork": { "exEn": "Use a fork to eat.", "exZh": "用叉子吃。", "source": "WordLab" },
   "knife": { "exEn": "The knife is sharp.", "exZh": "刀很鋒利。", "source": "WordLab" },
   "bottle": { "exEn": "The bottle is on the table.", "exZh": "瓶子在桌上。", "source": "WordLab" },
-  "stove": { "exEn": "The pot is on the stove.", "exZh": "鍋子在爐上。", "source": "WordLab" },
+  "stove": {"exEn":"The pot is on the stove.","exZh":"鍋子在爐上。","source":"WordLab","zh":"爐"},
   "tap": { "exEn": "Turn off the tap.", "exZh": "關掉水龍頭。", "zh": "水龍頭", "source": "WordLab" },
   "shower": {"exEn":"I take a shower every morning.","exZh":"我每天早上洗澡。","zh":"洗澡","source":"WordLab"},
   "toilet": { "exEn": "The toilet is clean.", "exZh": "廁所很乾淨。", "source": "WordLab" },

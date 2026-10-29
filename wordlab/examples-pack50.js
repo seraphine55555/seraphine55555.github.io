@@ -74,14 +74,14 @@ window.WORDLAB_EXAMPLES = Object.assign(window.WORDLAB_EXAMPLES || {}, {
   "eighth": { "exEn": "August is the eighth month.", "exZh": "八月是第八個月。", "source": "WordLab" },
   "uh": { "exEn": "Uh, I am not sure.", "exZh": "嗯，我不確定。", "source": "WordLab" },
   "twentieth": { "exEn": "This is the twentieth page.", "exZh": "這是第二十頁。", "source": "WordLab" },
-  "till": { "exEn": "Wait till noon.", "exZh": "等到中午。", "source": "WordLab" },
+  "till": {"exEn":"Wait till noon.","exZh":"等到中午。","source":"WordLab","zh":"等"},
   "ninth": { "exEn": "September is the ninth month.", "exZh": "九月是第九個月。", "source": "WordLab" },
   "nineteenth": { "exEn": "It is the nineteenth day.", "exZh": "這是第十九天。", "source": "WordLab" },
   "sixteen": { "exEn": "Sixteen candles are on the cake.", "exZh": "蛋糕上有十六支蠟燭。", "source": "WordLab" },
   "theirs": { "exEn": "The house is theirs.", "exZh": "房子是他們的。", "source": "WordLab" },
   "eighteen": { "exEn": "Eighteen students join the trip.", "exZh": "十八名學生參加旅行。", "source": "WordLab" },
   "fourteen": { "exEn": "Fourteen days make two weeks.", "exZh": "十四天構成兩週。", "source": "WordLab" },
-  "yo": { "exEn": "Yo, wait for me!", "exZh": "喂，等等我！", "source": "WordLab" },
+  "yo": {"exEn":"Yo, wait for me!","exZh":"喂，等等我！","source":"WordLab","zh":"喂"},
   "sixty": { "exEn": "Sixty minutes make an hour.", "exZh": "六十分鐘構成一小時。", "source": "WordLab" },
   "thirteen": { "exEn": "Thirteen people are here.", "exZh": "十三人在這裡。", "source": "WordLab" }
 });

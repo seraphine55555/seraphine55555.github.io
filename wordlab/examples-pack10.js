@@ -52,7 +52,7 @@
   "gate": { "exEn": "The gate is open.", "exZh": "大門是開著的。", "source": "WordLab" },
   "fence": { "exEn": "The fence is white.", "exZh": "圍欄是白色的。", "source": "WordLab" },
   "garage": { "exEn": "The car is in the garage.", "exZh": "車在車庫裡。", "source": "WordLab" },
-  "shed": { "exEn": "The tools are in the shed.", "exZh": "工具在棚屋裡。", "source": "WordLab" },
+  "shed": {"exEn":"The tools are in the shed.","exZh":"工具在棚屋裡。","source":"WordLab","zh":"棚屋"},
   "bench": {"exEn":"We sit on the bench.","exZh":"我們坐在長椅上。","source":"WordLab","zh":"長椅"},
   "mat": { "exEn": "The mat is at the door.", "exZh": "墊子放在門口。", "source": "WordLab" },
   "blind": { "exEn": "Please open the blind.", "exZh": "請打開窗簾。", "zh": "窗簾", "source": "WordLab" },

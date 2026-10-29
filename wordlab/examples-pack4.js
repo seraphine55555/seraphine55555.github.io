@@ -86,7 +86,7 @@
   "kick": { "exEn": "Kick the ball to me.", "exZh": "把球踢給我。", "source": "WordLab" },
   "bounce": {"exEn":"The ball can bounce.","exZh":"球會彈起。","source":"WordLab","zh":"彈起"},
   "roll": {"exEn":"Roll the ball to me.","exZh":"把球滾給我。","source":"WordLab","zh":"滾"},
-  "skip": { "exEn": "The children skip together.", "exZh": "孩子們一起跳繩。", "source": "WordLab" },
+  "skip": {"exEn":"The children skip together.","exZh":"孩子們一起跳繩。","source":"WordLab","zh":"跳繩"},
   "hop": { "exEn": "The rabbit can hop.", "exZh": "兔子會跳。", "source": "WordLab" },
   "whisper": { "exEn": "Please whisper in the library.", "exZh": "在圖書館請輕聲說話。", "source": "WordLab" },
   "shout": { "exEn": "Do not shout in class.", "exZh": "上課時不要大叫。", "source": "WordLab" },
