@@ -863,6 +863,37 @@ a {
   font-size: 12px;
 }
 
+.phrases {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.phrases .answer-label {
+  margin-top: 0;
+}
+
+.phrase + .phrase {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.phrase-p {
+  margin: 0;
+  color: #93c5fd;
+  font-family: var(--serif);
+  font-size: 17px;
+}
+
+.phrase-zh {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .answer-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

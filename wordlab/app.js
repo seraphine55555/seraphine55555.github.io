@@ -15,6 +15,7 @@
   );
   var EXTRA_EXAMPLES = window.WORDLAB_EXAMPLES || {};
   var EXTRA_SENSES = window.WORDLAB_SENSES || {};
+  var EXTRA_PHRASES = window.WORDLAB_PHRASES || {};
   var EXTRA_TYPES = window.WORDLAB_TYPES || {};
   var BLOCKED = new Set((window.WORDLAB_BLOCKED || []).map(function (w) { return String(w).toLowerCase(); }));
   DATA = DATA.filter(function (w) { return !BLOCKED.has(String(w.en || '').toLowerCase()); });
@@ -30,6 +31,10 @@
     var more = EXTRA_SENSES[String(w.en || '').toLowerCase()];
     if (more && Array.isArray(more.senses) && more.senses.length) {
       w.extraSenses = more.senses;
+    }
+    var phrases = EXTRA_PHRASES[String(w.en || '').toLowerCase()];
+    if (Array.isArray(phrases) && phrases.length) {
+      w.phrases = phrases;
     }
     var typeRow = EXTRA_TYPES[String(w.en || '').toLowerCase()];
     w.types = TYPE_ORDER.filter(function (type) {
@@ -108,6 +113,7 @@
     exampleBadge: ['例句', '例句', 'Example'],
     multiSenseBadge: ['多義', '多義', 'Multi-meaning'],
     otherMeanings: ['另一個意思', '另一個意思', 'Another meaning'],
+    phrasesLabel: ['常用配搭', '常用配搭', 'Common phrases'],
     resetFilters: ['清除篩選', '清除篩選', 'Clear filters'],
     noFiltered: ['呢個組合暫時冇生字；試下清除篩選。', '這個組合暫時沒有生字；試試清除篩選。', 'No words in this combination — try clearing the filters.'],
     progressTitle: ['我的進度', '我的進度', 'My progress'],
@@ -919,6 +925,21 @@
     card.appendChild(box);
   }
 
+  function appendPhrases(card, w) {
+    if (!w.phrases || !w.phrases.length) return;
+    var box = el('div', 'phrases');
+    box.appendChild(el('p', 'answer-label', t('phrasesLabel')));
+    w.phrases.forEach(function (ph) {
+      var item = el('div', 'phrase');
+      item.appendChild(el('p', 'phrase-p', ph.p));
+      item.appendChild(el('p', 'phrase-zh', ph.zh));
+      if (ph.exEn) item.appendChild(el('p', 'extra-ex', ph.exEn));
+      if (ph.exZh) item.appendChild(el('p', 'extra-ex-zh', ph.exZh));
+      box.appendChild(item);
+    });
+    card.appendChild(box);
+  }
+
   function renderFlash() {
     if (!session || !session.queue.length) {
       view = 'home';
@@ -970,6 +991,7 @@
         answer.appendChild(el('p', 'tiny muted', t('exampleMissing')));
       }
       appendExtraSenses(answer, w);
+      appendPhrases(answer, w);
       card.appendChild(answer);
     }
     app.appendChild(card);
@@ -1051,6 +1073,7 @@
       var ok = session.options[session.picked] === meaning(w);
       card.appendChild(el('p', 'feedback ' + (ok ? 'ok' : 'bad'), ok ? t('correct') : t('wrong')));
       appendExtraSenses(card, w);
+      appendPhrases(card, w);
     }
     app.appendChild(card);
   }
@@ -1379,5 +1402,15 @@
     }
   });
 
-  render();
+  function openDeepLink() {
+    var match = /(?:^#|&)word=([^&]+)/.exec(location.hash || '');
+    if (!match) return false;
+    var wanted = decodeURIComponent(match[1]).toLowerCase();
+    var row = DATA.find(function (w) { return String(w.en || '').toLowerCase() === wanted; });
+    if (!row) return false;
+    startFlash([row]);
+    return true;
+  }
+
+  if (!openDeepLink()) render();
 })();
