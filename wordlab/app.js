@@ -869,6 +869,48 @@
       app.appendChild(weakBox);
     }
 
+    /* 2026-11-01：把玩法卡搬上嚟（今日任務／錯題卡之後、進度同篩選之前）。
+       之前玩法卡排喺進度＋五個篩選面板之後，390×844 手機要捲 1.4 屏才撳到「開始」；
+       而家第一個玩法卡喺首屏內。 */
+    var modesHead = el('h2', 'modes-title', t('modesTitle'));
+    app.appendChild(modesHead);
+    var modes = el('section', 'modes');
+    [
+      { v: 'flash', icon: '🃏', name: t('modeFlash'), desc: t('modeFlashDesc') },
+      { v: 'match', icon: '🧩', name: t('modeMatch'), desc: t('modeMatchDesc') },
+      { v: 'quiz', icon: '⚡', name: t('modeQuiz'), desc: t('modeQuizDesc') },
+      { v: 'phrase', icon: '🔗', name: t('modePhrase'), desc: t('modePhraseDesc') },
+      { v: 'spell', icon: '⌨️', name: t('modeSpell'), desc: t('modeSpellDesc') },
+      { v: 'sense', icon: '🧠', name: t('modeSense'), desc: t('modeSenseDesc') },
+    ].forEach(function (m) {
+      var card = el('button', 'mode-card');
+      card.type = 'button';
+      card.setAttribute('data-mode', m.v);
+      if (m.v !== 'flash' && list.length < 2) {
+        card.disabled = true;
+        card.classList.add('is-disabled');
+        card.setAttribute('aria-disabled', 'true');
+      }
+      if (m.v === 'phrase' && !list.some(function (w) { return w.phrases && w.phrases.length >= 3; })) {
+        card.disabled = true;
+        card.classList.add('is-disabled');
+        card.setAttribute('aria-disabled', 'true');
+      }
+      if (m.v === 'sense' && !list.some(senseEligible)) {
+        card.disabled = true;
+        card.classList.add('is-disabled');
+        card.setAttribute('aria-disabled', 'true');
+      }
+      card.appendChild(el('span', 'mode-icon', m.icon));
+      var body = el('span', 'mode-body');
+      body.appendChild(el('strong', '', m.name));
+      body.appendChild(el('span', '', m.desc));
+      card.appendChild(body);
+      card.appendChild(el('span', 'mode-arrow', '→'));
+      modes.appendChild(card);
+    });
+    app.appendChild(modes);
+
     var gradeWrap = el('section', 'panel grade-panel');
     var gradeHead = el('div', 'panel-head');
     gradeHead.appendChild(el('h2', '', t('gradeLabel')));
@@ -1033,44 +1075,6 @@
     }
     app.appendChild(prog);
 
-    var modes = el('section', 'modes');
-    var modesHead = el('h2', 'modes-title', t('modesTitle'));
-    app.appendChild(modesHead);
-    [
-      { v: 'flash', icon: '🃏', name: t('modeFlash'), desc: t('modeFlashDesc') },
-      { v: 'match', icon: '🧩', name: t('modeMatch'), desc: t('modeMatchDesc') },
-      { v: 'quiz', icon: '⚡', name: t('modeQuiz'), desc: t('modeQuizDesc') },
-      { v: 'phrase', icon: '🔗', name: t('modePhrase'), desc: t('modePhraseDesc') },
-      { v: 'spell', icon: '⌨️', name: t('modeSpell'), desc: t('modeSpellDesc') },
-      { v: 'sense', icon: '🧠', name: t('modeSense'), desc: t('modeSenseDesc') },
-    ].forEach(function (m) {
-      var card = el('button', 'mode-card');
-      card.type = 'button';
-      card.setAttribute('data-mode', m.v);
-      if (m.v !== 'flash' && list.length < 2) {
-        card.disabled = true;
-        card.classList.add('is-disabled');
-        card.setAttribute('aria-disabled', 'true');
-      }
-      if (m.v === 'phrase' && !list.some(function (w) { return w.phrases && w.phrases.length >= 3; })) {
-        card.disabled = true;
-        card.classList.add('is-disabled');
-        card.setAttribute('aria-disabled', 'true');
-      }
-      if (m.v === 'sense' && !list.some(senseEligible)) {
-        card.disabled = true;
-        card.classList.add('is-disabled');
-        card.setAttribute('aria-disabled', 'true');
-      }
-      card.appendChild(el('span', 'mode-icon', m.icon));
-      var body = el('span', 'mode-body');
-      body.appendChild(el('strong', '', m.name));
-      body.appendChild(el('span', '', m.desc));
-      card.appendChild(body);
-      card.appendChild(el('span', 'mode-arrow', '→'));
-      modes.appendChild(card);
-    });
-    app.appendChild(modes);
     app.appendChild(el('p', 'help-note', t('helpNote')));
   }
 
