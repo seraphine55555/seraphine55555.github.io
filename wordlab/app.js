@@ -16,6 +16,7 @@
   var EXTRA_EXAMPLES = window.WORDLAB_EXAMPLES || {};
   var EXTRA_SENSES = window.WORDLAB_SENSES || {};
   var EXTRA_PHRASES = window.WORDLAB_PHRASES || {};
+  var EXTRA_PHRASES_2 = window.WORDLAB_PHRASES_2 || {};
   var EXTRA_TYPES = window.WORDLAB_TYPES || {};
   var BLOCKED = new Set((window.WORDLAB_BLOCKED || []).map(function (w) { return String(w).toLowerCase(); }));
   DATA = DATA.filter(function (w) { return !BLOCKED.has(String(w.en || '').toLowerCase()); });
@@ -32,9 +33,17 @@
     if (more && Array.isArray(more.senses) && more.senses.length) {
       w.extraSenses = more.senses;
     }
-    var phrases = EXTRA_PHRASES[String(w.en || '').toLowerCase()];
-    if (Array.isArray(phrases) && phrases.length) {
-      w.phrases = phrases;
+    var phraseRows = (EXTRA_PHRASES[String(w.en || '').toLowerCase()] || []).concat(
+      EXTRA_PHRASES_2[String(w.en || '').toLowerCase()] || []
+    );
+    if (phraseRows.length) {
+      var seenPhrase = Object.create(null);
+      w.phrases = phraseRows.filter(function (row) {
+        var key = String((row && row.p) || '');
+        if (!key || seenPhrase[key]) return false;
+        seenPhrase[key] = 1;
+        return true;
+      });
     }
     var typeRow = EXTRA_TYPES[String(w.en || '').toLowerCase()];
     w.types = TYPE_ORDER.filter(function (type) {
@@ -848,7 +857,7 @@
         card.classList.add('is-disabled');
         card.setAttribute('aria-disabled', 'true');
       }
-      if (m.v === 'phrase' && !list.some(function (w) { return w.phrases && w.phrases.length; })) {
+      if (m.v === 'phrase' && !list.some(function (w) { return w.phrases && w.phrases.length >= 3; })) {
         card.disabled = true;
         card.classList.add('is-disabled');
         card.setAttribute('aria-disabled', 'true');
@@ -1186,8 +1195,8 @@
   function startPhrase() {
     var all = [];
     currentWords().forEach(function (w) {
-      // 只收「同一個字有最少兩個配搭」嘅字：確保錯誤選項都係同一個 vocabulary。
-      if (!w.phrases || w.phrases.length < 2) return;
+      // 只收「同一個字有最少三個配搭」嘅字：三個選項全部來自同一個 vocabulary。
+      if (!w.phrases || w.phrases.length < 3) return;
       w.phrases.forEach(function (row) { all.push({ word: w, target: row }); });
     });
     if (!all.length) {

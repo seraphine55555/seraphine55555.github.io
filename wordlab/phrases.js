@@ -10,8 +10,8 @@ window.WORDLAB_PHRASES = {
     {"p":"be afraid of","zh":"害怕","exEn":"He is afraid of dogs.","exZh":"他害怕狗。"}
   ],
   "agree": [
-    {"p":"agree with","zh":"同意","exEn":"I agree with you.","exZh":"我同意你。"},
-    {"p":"agree to","zh":"同意（計劃）","exEn":"She agrees to the plan.","exZh":"她同意這個計劃。"}
+    {"p":"agree with","zh":"同意（某人）","exEn":"I agree with you.","exZh":"我同意你的意見。"},
+    {"p":"agree to","zh":"同意（提議）","exEn":"She agrees to the plan.","exZh":"她同意這個計劃。"}
   ],
   "allow": [
     {"p":"be allowed to","zh":"獲准","exEn":"We are allowed to play outside.","exZh":"我們獲准在外面玩。"},
@@ -25,8 +25,8 @@ window.WORDLAB_PHRASES = {
     {"p":"answer for","zh":"負責","exEn":"You must answer for it.","exZh":"你必須為此負責。"}
   ],
   "arrive": [
-    {"p":"arrive at","zh":"到達","exEn":"We arrive at school at eight.","exZh":"我們八點到達學校。"},
-    {"p":"arrive in","zh":"到達（城市）","exEn":"We arrive in Tokyo tonight.","exZh":"我們今晚到達東京。"}
+    {"p":"arrive at","zh":"到達（地方）","exEn":"We arrive at school at eight.","exZh":"我們八點到達學校。"},
+    {"p":"arrive in","zh":"到達（城市／國家）","exEn":"We arrive in Tokyo tonight.","exZh":"我們今晚到達東京。"}
   ],
   "ask": [
     {"p":"ask for","zh":"要求","exEn":"She asked for help.","exZh":"她要求幫忙。"},
@@ -88,7 +88,7 @@ window.WORDLAB_PHRASES = {
   ],
   "careful": [
     {"p":"be careful","zh":"小心","exEn":"Be careful on the stairs.","exZh":"上樓梯要小心。"},
-    {"p":"be careful of","zh":"小心","exEn":"Be careful of the dog.","exZh":"小心那隻狗。"}
+    {"p":"be careful of","zh":"提防……","exEn":"Be careful of the dog.","exZh":"提防那隻狗。"}
   ],
   "carry": [
     {"p":"carry on","zh":"繼續","exEn":"Carry on with the work.","exZh":"繼續工作。"},
@@ -152,8 +152,8 @@ window.WORDLAB_PHRASES = {
     {"p":"be confident in","zh":"對……有信心","exEn":"He is confident in his answer.","exZh":"他對自己的答案有信心。"}
   ],
   "continue": [
-    {"p":"continue with","zh":"繼續","exEn":"Continue with your work.","exZh":"繼續你的工作。"},
-    {"p":"continue to","zh":"繼續","exEn":"We continue to read.","exZh":"我們繼續閱讀。"}
+    {"p":"continue with","zh":"繼續（原有的事）","exEn":"Continue with your work.","exZh":"繼續做你的工作。"},
+    {"p":"continue to","zh":"繼續（另一件事）","exEn":"We continue to read.","exZh":"我們繼續閱讀。"}
   ],
   "control": [
     {"p":"under control","zh":"受控","exEn":"The fire is under control.","exZh":"火勢已受控。"},
@@ -168,8 +168,8 @@ window.WORDLAB_PHRASES = {
     {"p":"count up","zh":"數算","exEn":"Count up the books.","exZh":"數一數這些書。"}
   ],
   "cover": [
-    {"p":"cover with","zh":"覆蓋","exEn":"Cover the food with a cloth.","exZh":"用布覆蓋食物。"},
-    {"p":"be covered with","zh":"被……覆蓋","exEn":"The road is covered with snow.","exZh":"道路被雪覆蓋。"}
+    {"p":"cover with","zh":"用……蓋住","exEn":"Cover the food with a cloth.","exZh":"用布蓋住食物。"},
+    {"p":"be covered with","zh":"佈滿……","exEn":"The road is covered with snow.","exZh":"道路佈滿雪。"}
   ],
   "cross": [
     {"p":"cross out","zh":"劃掉","exEn":"Cross out the wrong word.","exZh":"劃掉錯的字。"},
@@ -193,8 +193,8 @@ window.WORDLAB_PHRASES = {
     {"p":"deal with","zh":"處理","exEn":"Deal with the problem now.","exZh":"現在處理這個問題。"}
   ],
   "decide": [
-    {"p":"decide on","zh":"決定","exEn":"We decided on a date.","exZh":"我們決定了日期。"},
-    {"p":"decide to","zh":"決定","exEn":"We decide to go.","exZh":"我們決定去。"}
+    {"p":"decide on","zh":"決定（選那一項）","exEn":"We decided on a date.","exZh":"我們決定了日期。"},
+    {"p":"decide to","zh":"決定（去做）","exEn":"We decide to go.","exZh":"我們決定去。"}
   ],
   "depend": [
     {"p":"depend on","zh":"依靠","exEn":"We depend on the sun.","exZh":"我們依靠太陽。"}
@@ -213,8 +213,8 @@ window.WORDLAB_PHRASES = {
     {"p":"discuss with","zh":"討論","exEn":"Discuss it with your friends.","exZh":"和朋友討論。"}
   ],
   "divide": [
-    {"p":"be divided into","zh":"分為","exEn":"The class is divided into groups.","exZh":"全班分為幾組。"},
-    {"p":"divide into","zh":"分為","exEn":"Divide the class into groups.","exZh":"把全班分為幾組。"}
+    {"p":"be divided into","zh":"被分成","exEn":"The class is divided into groups.","exZh":"全班被分成幾組。"},
+    {"p":"divide into","zh":"分成","exEn":"Divide the class into groups.","exZh":"把全班分成幾組。"}
   ],
   "doubt": [
     {"p":"no doubt","zh":"無疑","exEn":"No doubt, she is right.","exZh":"無疑她是對的。"}
@@ -322,8 +322,8 @@ window.WORDLAB_PHRASES = {
     {"p":"focus on","zh":"專注於","exEn":"Focus on your work.","exZh":"專注於你的工作。"}
   ],
   "forget": [
-    {"p":"forget about","zh":"忘記","exEn":"Forget about the mistake.","exZh":"忘記那個錯誤。"},
-    {"p":"forget to","zh":"忘記","exEn":"Do not forget to call.","exZh":"不要忘記打電話。"}
+    {"p":"forget about","zh":"忘記（某事）","exEn":"Forget about the mistake.","exZh":"忘記那個錯誤。"},
+    {"p":"forget to","zh":"忘記去做","exEn":"Do not forget to call.","exZh":"不要忘記打電話。"}
   ],
   "forgive": [
     {"p":"forgive for","zh":"原諒","exEn":"Forgive me for being late.","exZh":"原諒我遲到。"}
@@ -389,16 +389,16 @@ window.WORDLAB_PHRASES = {
     {"p":"hear of","zh":"聽聞","exEn":"I hear of the story.","exZh":"我聽聞過這個故事。"}
   ],
   "help": [
-    {"p":"help with","zh":"幫助","exEn":"She helps with the cleaning.","exZh":"她幫忙清潔。"},
-    {"p":"help out","zh":"幫忙","exEn":"She helps out at home.","exZh":"她在家幫忙。"}
+    {"p":"help with","zh":"幫助（做某事）","exEn":"She helps with the cleaning.","exZh":"她幫忙清潔。"},
+    {"p":"help out","zh":"幫忙（解決困難）","exEn":"She helps out at home.","exZh":"她在家幫忙。"}
   ],
   "hold": [
     {"p":"hold on","zh":"稍等","exEn":"Hold on a moment.","exZh":"稍等一會。"},
     {"p":"hold up","zh":"舉起","exEn":"Hold up your hand.","exZh":"舉起你的手。"}
   ],
   "hope": [
-    {"p":"hope for","zh":"希望","exEn":"We hope for good weather.","exZh":"我們希望有好天氣。"},
-    {"p":"hope to","zh":"希望","exEn":"We hope to win.","exZh":"我們希望贏。"}
+    {"p":"hope for","zh":"希望得到","exEn":"We hope for good weather.","exZh":"我們希望有好天氣。"},
+    {"p":"hope to","zh":"希望去做","exEn":"We hope to win.","exZh":"我們希望贏。"}
   ],
   "hungry": [
     {"p":"be hungry for","zh":"渴望","exEn":"He is hungry for knowledge.","exZh":"他渴望知識。"},
@@ -408,8 +408,8 @@ window.WORDLAB_PHRASES = {
     {"p":"hurry up","zh":"趕快","exEn":"Hurry up or we are late.","exZh":"趕快，否則我們遲到。"}
   ],
   "important": [
-    {"p":"be important to","zh":"對……重要","exEn":"Family is important to me.","exZh":"家庭對我來說很重要。"},
-    {"p":"be important for","zh":"對……重要","exEn":"Sleep is important for health.","exZh":"睡眠對健康很重要。"}
+    {"p":"be important to","zh":"對（某人）重要","exEn":"Family is important to me.","exZh":"家庭對我來說很重要。"},
+    {"p":"be important for","zh":"對（某事）重要","exEn":"Sleep is important for health.","exZh":"睡眠對健康很重要。"}
   ],
   "interest": [
     {"p":"be interested in","zh":"對……有興趣","exEn":"She is interested in science.","exZh":"她對科學有興趣。"},
@@ -431,7 +431,7 @@ window.WORDLAB_PHRASES = {
   ],
   "keep": [
     {"p":"keep on","zh":"繼續","exEn":"Keep on reading.","exZh":"繼續閱讀。"},
-    {"p":"keep up","zh":"保持","exEn":"Keep up the good work.","exZh":"保持良好的工作。"}
+    {"p":"keep up","zh":"跟上（進度）","exEn":"Keep up the good work.","exZh":"繼續保持好表現。"}
   ],
   "kind": [
     {"p":"be kind to","zh":"對……友善","exEn":"Be kind to animals.","exZh":"對動物友善。"},
@@ -505,7 +505,7 @@ window.WORDLAB_PHRASES = {
     {"p":"make up your mind","zh":"下定決心","exEn":"She makes up her mind.","exZh":"她下定決心。"}
   ],
   "miss": [
-    {"p":"miss out","zh":"錯過","exEn":"Do not miss out on the fun.","exZh":"不要錯過樂趣。"},
+    {"p":"miss out","zh":"漏掉（機會）","exEn":"Do not miss out on the chance.","exZh":"不要漏掉這個機會。"},
     {"p":"miss the bus","zh":"錯過巴士","exEn":"Do not miss the bus.","exZh":"不要錯過巴士。"}
   ],
   "mistake": [
@@ -715,7 +715,7 @@ window.WORDLAB_PHRASES = {
   ],
   "think": [
     {"p":"think about","zh":"考慮","exEn":"Think about the answer.","exZh":"考慮一下答案。"},
-    {"p":"think over","zh":"仔細考慮","exEn":"Think it over tonight.","exZh":"今晚仔細考慮。"}
+    {"p":"think over","zh":"再想一想","exEn":"Think it over tonight.","exZh":"今晚再想一想。"}
   ],
   "throw": [
     {"p":"throw away","zh":"丟掉","exEn":"Do not throw away the box.","exZh":"不要丟掉盒子。"}
