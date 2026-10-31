@@ -888,6 +888,14 @@ a {
   font-size: 17px;
 }
 
+.phrase-target {
+  margin: 6px 0 0;
+  color: #d8b4fe;
+  font-family: var(--serif);
+  font-size: 20px;
+  text-align: center;
+}
+
 .phrase-zh {
   margin: 2px 0 0;
   color: var(--muted);

@@ -137,6 +137,10 @@
     modeMatchDesc: ['6 對詞語，考反應同記憶', '6 對詞語，考反應和記憶', '6 pairs — speed and memory'],
     modeQuiz: ['快問快答', '快問快答', 'Quick quiz'],
     modeQuizDesc: ['4 選 1，連對有 combo', '4 選 1，連對有 combo', '4 choices, build a combo'],
+    modePhrase: ['配搭練習', '配搭練習', 'Phrase practice'],
+    modePhraseDesc: ['睇中文義揀正確配搭', '看中文義選正確配搭', 'Pick the right collocation'],
+    phraseHint: ['揀正確配搭', '選正確配搭', 'Choose the correct collocation'],
+    phraseNoData: ['目前篩選下冇常用配搭嘅字；試下清除篩選。', '目前篩選下沒有常用配搭的字；試試清除篩選。', 'No words with phrases in this filter — try clearing filters.'],
     back: ['返回', '返回', 'Back'],
     flip: ['揭意思', '揭意思', 'Reveal'],
     meaning: ['意思', '意思', 'Meaning'],
@@ -528,13 +532,13 @@
     var label = el('span', 'counter');
     if (viewName === 'flash' && session) {
       label.textContent = t('questionOf', { i: Math.min(session.pos + 1, session.queue.length), n: session.queue.length });
-    } else if (viewName === 'quiz' && session) {
+    } else if ((viewName === 'quiz' || viewName === 'phrase') && session) {
       label.textContent = t('questionOf', { i: Math.min(session.pos + 1, session.queue.length), n: session.queue.length });
     } else if (viewName === 'match' && session) {
       label.textContent = t('matchPairs', { n: session.matched, m: session.pairs.length });
     }
     top.appendChild(label);
-    if (session && (viewName === 'flash' || viewName === 'quiz')) {
+    if (session && (viewName === 'flash' || viewName === 'quiz' || viewName === 'phrase')) {
       var listen = el('button', 'btn ghost', '🔊');
       listen.type = 'button';
       listen.setAttribute('data-speak', '');
@@ -779,11 +783,17 @@
       { v: 'flash', icon: '🃏', name: t('modeFlash'), desc: t('modeFlashDesc') },
       { v: 'match', icon: '🧩', name: t('modeMatch'), desc: t('modeMatchDesc') },
       { v: 'quiz', icon: '⚡', name: t('modeQuiz'), desc: t('modeQuizDesc') },
+      { v: 'phrase', icon: '🔗', name: t('modePhrase'), desc: t('modePhraseDesc') },
     ].forEach(function (m) {
       var card = el('button', 'mode-card');
       card.type = 'button';
       card.setAttribute('data-mode', m.v);
       if (m.v !== 'flash' && list.length < 2) {
+        card.disabled = true;
+        card.classList.add('is-disabled');
+        card.setAttribute('aria-disabled', 'true');
+      }
+      if (m.v === 'phrase' && !list.some(function (w) { return w.phrases && w.phrases.length; })) {
         card.disabled = true;
         card.classList.add('is-disabled');
         card.setAttribute('aria-disabled', 'true');
@@ -1118,6 +1128,133 @@
     }
   }
 
+  function startPhrase() {
+    var pool = currentWords().filter(function (w) { return w.phrases && w.phrases.length; });
+    if (!pool.length) {
+      view = 'home';
+      render();
+      return;
+    }
+    var picked = shuffled(pool).slice(0, Math.min(12, pool.length));
+    var items = picked.map(function (w) {
+      var target = w.phrases[Math.floor(Math.random() * w.phrases.length)];
+      return { word: w, target: target };
+    });
+    session = {
+      kind: 'phrase',
+      queue: items,
+      pos: 0,
+      answered: 0,
+      correct: 0,
+      options: makePhraseOptions(items[0], pool),
+      picked: null,
+      combo: 0,
+      startedAt: Date.now(),
+      itemAt: Date.now(),
+      mission: false,
+    };
+    view = 'phrase';
+    render();
+  }
+
+  function makePhraseOptions(item, pool) {
+    var correct = item.target.p;
+    var others = [];
+    item.word.phrases.forEach(function (row) {
+      if (row.p !== correct) others.push(row.p);
+    });
+    var withPhrases = (pool || []).filter(function (w) { return w.phrases && w.phrases.length; });
+    var candidates = shuffled(withPhrases).map(function (w) { return w.phrases[Math.floor(Math.random() * w.phrases.length)].p; });
+    candidates.forEach(function (p) {
+      if (p !== correct && others.indexOf(p) === -1) others.push(p);
+    });
+    var distractors = shuffled(others).slice(0, 2);
+    return shuffled([correct].concat(distractors));
+  }
+
+  function renderPhrase() {
+    if (!session || !session.queue.length) {
+      view = 'home';
+      render();
+      return;
+    }
+    var item = session.queue[session.pos];
+    var w = item.word;
+    app.appendChild(topbarFor('phrase'));
+
+    var card = el('section', 'quiz-card phrase-card');
+    var top = el('div', 'quiz-top');
+    top.appendChild(el('span', 'badge', t('modePhrase')));
+    if (session.combo > 1) top.appendChild(el('span', 'combo', t('combo', { n: session.combo })));
+    card.appendChild(top);
+    card.appendChild(el('p', 'prompt-label', t('phraseHint')));
+    card.appendChild(el('p', 'term', w.en));
+    card.appendChild(el('p', 'phrase-target', item.target.zh));
+
+    var options = el('div', 'options');
+    session.options.forEach(function (opt, i) {
+      var b = el('button', 'option');
+      b.type = 'button';
+      b.setAttribute('data-option', String(i));
+      b.textContent = opt;
+      if (session.picked !== null) {
+        if (opt === item.target.p) b.classList.add('is-correct');
+        else if (i === session.picked) b.classList.add('is-wrong');
+      }
+      options.appendChild(b);
+    });
+    card.appendChild(options);
+    if (session.picked !== null) {
+      var ok = session.options[session.picked] === item.target.p;
+      card.appendChild(el('p', 'feedback ' + (ok ? 'ok' : 'bad'), ok ? t('correct') : t('wrong')));
+      if (item.target.exEn) card.appendChild(el('p', 'extra-ex', item.target.exEn));
+      if (item.target.exZh) card.appendChild(el('p', 'extra-ex-zh', item.target.exZh));
+    }
+    app.appendChild(card);
+  }
+
+  function choosePhrase(index) {
+    if (!session || session.kind !== 'phrase' || session.picked !== null) return;
+    var item = session.queue[session.pos];
+    var ok = session.options[index] === item.target.p;
+    session.picked = index;
+    session.answered += 1;
+    if (ok) {
+      session.correct += 1;
+      session.combo += 1;
+    } else {
+      session.combo = 0;
+    }
+    render();
+
+    function advance() {
+      if (!session || session.kind !== 'phrase' || session.picked === null) return;
+      session.pos += 1;
+      session.picked = null;
+      session.itemAt = Date.now();
+      if (session.pos >= session.queue.length) finishSession();
+      else {
+        session.options = makePhraseOptions(session.queue[session.pos], currentWords());
+        render();
+      }
+    }
+
+    if (ok) {
+      var moved = false;
+      var go = function () {
+        if (moved) return;
+        moved = true;
+        advance();
+      };
+      speak(item.target.p, 'en-US', function () {
+        window.setTimeout(go, 900);
+      });
+      window.setTimeout(go, 2500);
+    } else {
+      window.setTimeout(advance, 1600);
+    }
+  }
+
   function renderMatch() {
     if (!session || !session.pairs.length) {
       view = 'home';
@@ -1204,14 +1341,18 @@
         ? t('modeFlash')
         : lastResult.kind === 'match'
           ? t('modeMatch')
-          : t('modeQuiz');
+          : lastResult.kind === 'phrase'
+            ? t('modePhrase')
+            : t('modeQuiz');
     box.appendChild(el('p', 'result-kicker', lastResult.mission ? t('missionBadge') : kicker));
     var title =
       lastResult.kind === 'flash'
         ? t('resultFlash')
         : lastResult.kind === 'match'
           ? t('resultMatch')
-          : t('resultQuiz');
+          : lastResult.kind === 'phrase'
+            ? t('modePhrase')
+            : t('resultQuiz');
     if (lastResult.mission) title = t('dailyTitle') + ' · ' + title;
     box.appendChild(el('h1', 'result-title', title));
     var stars = el('p', 'result-stars');
@@ -1250,6 +1391,7 @@
     if (view === 'flash') renderFlash();
     else if (view === 'quiz') renderQuiz();
     else if (view === 'match') renderMatch();
+    else if (view === 'phrase') renderPhrase();
     else if (view === 'result') renderResult();
     else renderHome();
     document.documentElement.lang = lang === 'en' ? 'en' : lang === 'yue' ? 'zh-HK' : 'zh-Hant';
@@ -1345,6 +1487,7 @@
       if (mode === 'flash') startFlash();
       else if (mode === 'match') startMatch();
       else if (mode === 'quiz') startQuiz();
+      else if (mode === 'phrase') startPhrase();
       return;
     }
     if (target.hasAttribute('data-reveal')) {
@@ -1367,18 +1510,22 @@
       return;
     }
     if (target.hasAttribute('data-option')) {
-      chooseOption(Number(target.getAttribute('data-option')));
+      if (session && session.kind === 'phrase') choosePhrase(Number(target.getAttribute('data-option')));
+      else chooseOption(Number(target.getAttribute('data-option')));
       return;
     }
     if (target.hasAttribute('data-speak')) {
       if (session) {
         var sw =
-          view === 'quiz' && session.queue
+          (view === 'quiz' || view === 'phrase') && session.queue
             ? session.queue[session.pos]
             : view === 'flash' && session.queue
               ? session.queue[session.pos]
               : null;
-        if (sw) speak(term(sw));
+        if (sw) {
+          if (view === 'phrase' && sw.target) speak(sw.target.p);
+          else speak(term(sw));
+        }
       }
       return;
     }
@@ -1388,6 +1535,7 @@
       if (kind === 'flash') startFlash();
       else if (kind === 'match') startMatch();
       else if (kind === 'quiz') startQuiz();
+      else if (kind === 'phrase') startPhrase();
       else {
         view = 'home';
         render();
