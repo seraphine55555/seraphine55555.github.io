@@ -52,6 +52,7 @@
   var TYPE_KEY = 'wordlab/type';
   var PROG_KEY = 'wordlab/progress/v1';
   var STREAK_KEY = 'wordlab/streak';
+  var PHRASE_KEY = 'wordlab/phrase-progress/v1';
   var STEPS = [1, 3, 7, 14, 30];
 
   var DICT = {
@@ -141,6 +142,7 @@
     modePhraseDesc: ['睇中文義揀正確配搭', '看中文義選正確配搭', 'Pick the right collocation'],
     phraseHint: ['揀正確配搭', '選正確配搭', 'Choose the correct collocation'],
     phraseNoData: ['目前篩選下冇常用配搭嘅字；試下清除篩選。', '目前篩選下沒有常用配搭的字；試試清除篩選。', 'No words with phrases in this filter — try clearing filters.'],
+    phraseStats: ['配搭：已掌握 {k} / {t} 條；今日到期 {d} 條', '配搭：已掌握 {k} / {t} 條；今日到期 {d} 條', 'Phrases: {k} / {t} mastered; {d} due today'],
     back: ['返回', '返回', 'Back'],
     flip: ['揭意思', '揭意思', 'Reveal'],
     meaning: ['意思', '意思', 'Meaning'],
@@ -270,6 +272,8 @@
   if (!progress || typeof progress !== 'object') progress = {};
   var streak = load(STREAK_KEY, { date: '', count: 0 });
   if (!streak || typeof streak !== 'object') streak = { date: '', count: 0 };
+  var phraseProgress = load(PHRASE_KEY, {});
+  if (!phraseProgress || typeof phraseProgress !== 'object') phraseProgress = {};
   var view = 'home';
   var session = null;
   var lastResult = null;
@@ -381,6 +385,53 @@
 
   function saveProgress() {
     save(PROG_KEY, progress);
+  }
+
+  function phraseRecord(p) {
+    var r = phraseProgress[p];
+    return r && typeof r === 'object' ? r : null;
+  }
+
+  function phraseKnown(p) {
+    var r = phraseRecord(p);
+    return !!r && Number(r.step) >= 3;
+  }
+
+  function phraseDue(p) {
+    var r = phraseRecord(p);
+    return !r || !r.due || Number(r.due) <= Date.now();
+  }
+
+  function markPhrase(p, ok) {
+    var r = phraseRecord(p) || { tries: 0, correct: 0, step: 0, due: 0, last: null };
+    r.tries = (Number(r.tries) || 0) + 1;
+    if (ok) {
+      r.correct = (Number(r.correct) || 0) + 1;
+      r.step = Math.min(5, (Number(r.step) || 0) + 1);
+    } else {
+      r.step = 0;
+    }
+    var days = ok ? STEPS[Math.max(0, Math.min(STEPS.length - 1, r.step - 1))] : 0;
+    r.due = Date.now() + days * 86400000;
+    r.last = new Date().toISOString();
+    phraseProgress[p] = r;
+    save(PHRASE_KEY, phraseProgress);
+    logEvent('phrase', ok, 0);
+  }
+
+  function phraseStats() {
+    var total = 0;
+    var known = 0;
+    var due = 0;
+    currentWords().forEach(function (w) {
+      if (!w.phrases || !w.phrases.length) return;
+      w.phrases.forEach(function (row) {
+        total += 1;
+        if (phraseKnown(row.p)) known += 1;
+        if (phraseDue(row.p)) due += 1;
+      });
+    });
+    return { total: total, known: known, due: due };
   }
 
   function bumpStreak() {
@@ -774,6 +825,10 @@
       metrics.appendChild(box);
     });
     prog.appendChild(metrics);
+    var ps = phraseStats();
+    if (ps.total) {
+      prog.appendChild(el('p', 'progress-phrase tiny muted', t('phraseStats', { k: ps.known, t: ps.total, d: ps.due })));
+    }
     app.appendChild(prog);
 
     var modes = el('section', 'modes');
@@ -1129,24 +1184,26 @@
   }
 
   function startPhrase() {
-    var pool = currentWords().filter(function (w) { return w.phrases && w.phrases.length; });
-    if (!pool.length) {
+    var all = [];
+    currentWords().forEach(function (w) {
+      if (!w.phrases || !w.phrases.length) return;
+      w.phrases.forEach(function (row) { all.push({ word: w, target: row }); });
+    });
+    if (!all.length) {
       view = 'home';
       render();
       return;
     }
-    var picked = shuffled(pool).slice(0, Math.min(12, pool.length));
-    var items = picked.map(function (w) {
-      var target = w.phrases[Math.floor(Math.random() * w.phrases.length)];
-      return { word: w, target: target };
-    });
+    var dueItems = all.filter(function (it) { return phraseDue(it.target.p); });
+    var restItems = all.filter(function (it) { return !phraseDue(it.target.p); });
+    var items = shuffled(dueItems).concat(shuffled(restItems)).slice(0, Math.min(12, all.length));
     session = {
       kind: 'phrase',
       queue: items,
       pos: 0,
       answered: 0,
       correct: 0,
-      options: makePhraseOptions(items[0], pool),
+      options: makePhraseOptions(items[0], currentWords()),
       picked: null,
       combo: 0,
       startedAt: Date.now(),
@@ -1219,6 +1276,7 @@
     var ok = session.options[index] === item.target.p;
     session.picked = index;
     session.answered += 1;
+    markPhrase(item.target.p, ok);
     if (ok) {
       session.correct += 1;
       session.combo += 1;
