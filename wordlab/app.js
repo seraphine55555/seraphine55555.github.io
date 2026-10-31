@@ -1186,7 +1186,8 @@
   function startPhrase() {
     var all = [];
     currentWords().forEach(function (w) {
-      if (!w.phrases || !w.phrases.length) return;
+      // 只收「同一個字有最少兩個配搭」嘅字：確保錯誤選項都係同一個 vocabulary。
+      if (!w.phrases || w.phrases.length < 2) return;
       w.phrases.forEach(function (row) { all.push({ word: w, target: row }); });
     });
     if (!all.length) {
@@ -1203,7 +1204,7 @@
       pos: 0,
       answered: 0,
       correct: 0,
-      options: makePhraseOptions(items[0], currentWords()),
+      options: makePhraseOptions(items[0]),
       picked: null,
       combo: 0,
       startedAt: Date.now(),
@@ -1214,16 +1215,11 @@
     render();
   }
 
-  function makePhraseOptions(item, pool) {
+  function makePhraseOptions(item) {
     var correct = item.target.p;
     var others = [];
     item.word.phrases.forEach(function (row) {
       if (row.p !== correct) others.push(row.p);
-    });
-    var withPhrases = (pool || []).filter(function (w) { return w.phrases && w.phrases.length; });
-    var candidates = shuffled(withPhrases).map(function (w) { return w.phrases[Math.floor(Math.random() * w.phrases.length)].p; });
-    candidates.forEach(function (p) {
-      if (p !== correct && others.indexOf(p) === -1) others.push(p);
     });
     var distractors = shuffled(others).slice(0, 2);
     return shuffled([correct].concat(distractors));
@@ -1292,7 +1288,7 @@
       session.itemAt = Date.now();
       if (session.pos >= session.queue.length) finishSession();
       else {
-        session.options = makePhraseOptions(session.queue[session.pos], currentWords());
+        session.options = makePhraseOptions(session.queue[session.pos]);
         render();
       }
     }

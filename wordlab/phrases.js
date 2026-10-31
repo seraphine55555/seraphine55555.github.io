@@ -10,19 +10,23 @@ window.WORDLAB_PHRASES = {
     {"p":"be afraid of","zh":"害怕","exEn":"He is afraid of dogs.","exZh":"他害怕狗。"}
   ],
   "agree": [
-    {"p":"agree with","zh":"同意","exEn":"I agree with you.","exZh":"我同意你。"}
+    {"p":"agree with","zh":"同意","exEn":"I agree with you.","exZh":"我同意你。"},
+    {"p":"agree to","zh":"同意（計劃）","exEn":"She agrees to the plan.","exZh":"她同意這個計劃。"}
   ],
   "allow": [
-    {"p":"be allowed to","zh":"獲准","exEn":"We are allowed to play outside.","exZh":"我們獲准在外面玩。"}
+    {"p":"be allowed to","zh":"獲准","exEn":"We are allowed to play outside.","exZh":"我們獲准在外面玩。"},
+    {"p":"allow in","zh":"允許進入","exEn":"They allow pets in.","exZh":"他們允許寵物進入。"}
   ],
   "angry": [
     {"p":"be angry with","zh":"生氣","exEn":"She is angry with me.","exZh":"她生我的氣。"}
   ],
   "answer": [
-    {"p":"answer the phone","zh":"接電話","exEn":"Please answer the phone.","exZh":"請接電話。"}
+    {"p":"answer the phone","zh":"接電話","exEn":"Please answer the phone.","exZh":"請接電話。"},
+    {"p":"answer for","zh":"負責","exEn":"You must answer for it.","exZh":"你必須為此負責。"}
   ],
   "arrive": [
-    {"p":"arrive at","zh":"到達","exEn":"We arrive at school at eight.","exZh":"我們八點到達學校。"}
+    {"p":"arrive at","zh":"到達","exEn":"We arrive at school at eight.","exZh":"我們八點到達學校。"},
+    {"p":"arrive in","zh":"到達（城市）","exEn":"We arrive in Tokyo tonight.","exZh":"我們今晚到達東京。"}
   ],
   "ask": [
     {"p":"ask for","zh":"要求","exEn":"She asked for help.","exZh":"她要求幫忙。"},
@@ -32,7 +36,8 @@ window.WORDLAB_PHRASES = {
     {"p":"stay awake","zh":"保持清醒","exEn":"I stay awake in class.","exZh":"我上課保持清醒。"}
   ],
   "bad": [
-    {"p":"be bad at","zh":"不擅長","exEn":"He is bad at maths.","exZh":"他不擅長數學。"}
+    {"p":"be bad at","zh":"不擅長","exEn":"He is bad at maths.","exZh":"他不擅長數學。"},
+    {"p":"be bad for","zh":"對……有害","exEn":"Too much sugar is bad for you.","exZh":"太多糖對你有害。"}
   ],
   "bear": [
     {"p":"bear in mind","zh":"記住","exEn":"Bear in mind the school rule.","exZh":"記住校規。"}
@@ -44,10 +49,12 @@ window.WORDLAB_PHRASES = {
     {"p":"before long","zh":"不久","exEn":"Before long, the sun came out.","exZh":"不久，太陽出來了。"}
   ],
   "begin": [
-    {"p":"begin with","zh":"以……開始","exEn":"Begin with the first page.","exZh":"由第一頁開始。"}
+    {"p":"begin with","zh":"以……開始","exEn":"Begin with the first page.","exZh":"由第一頁開始。"},
+    {"p":"begin to","zh":"開始","exEn":"It begins to rain.","exZh":"開始下雨了。"}
   ],
   "believe": [
-    {"p":"believe in","zh":"相信","exEn":"I believe in you.","exZh":"我相信你。"}
+    {"p":"believe in","zh":"相信","exEn":"I believe in you.","exZh":"我相信你。"},
+    {"p":"believe it or not","zh":"信不信由你","exEn":"Believe it or not, she is right.","exZh":"信不信由你，她是對的。"}
   ],
   "belong": [
     {"p":"belong to","zh":"屬於","exEn":"This book belongs to me.","exZh":"這本書屬於我。"}
@@ -72,14 +79,16 @@ window.WORDLAB_PHRASES = {
     {"p":"bring back","zh":"帶回","exEn":"Bring back the books.","exZh":"把書帶回。"}
   ],
   "busy": [
-    {"p":"be busy with","zh":"忙於","exEn":"She is busy with homework.","exZh":"她忙於做功課。"}
+    {"p":"be busy with","zh":"忙於","exEn":"She is busy with homework.","exZh":"她忙於做功課。"},
+    {"p":"be busy doing","zh":"忙於做","exEn":"She is busy reading.","exZh":"她忙於閱讀。"}
   ],
   "call": [
     {"p":"call back","zh":"回電","exEn":"I will call back later.","exZh":"我稍後回電。"},
     {"p":"call off","zh":"取消","exEn":"They called off the game.","exZh":"他們取消了比賽。"}
   ],
   "careful": [
-    {"p":"be careful","zh":"小心","exEn":"Be careful on the stairs.","exZh":"上樓梯要小心。"}
+    {"p":"be careful","zh":"小心","exEn":"Be careful on the stairs.","exZh":"上樓梯要小心。"},
+    {"p":"be careful of","zh":"小心","exEn":"Be careful of the dog.","exZh":"小心那隻狗。"}
   ],
   "carry": [
     {"p":"carry on","zh":"繼續","exEn":"Carry on with the work.","exZh":"繼續工作。"},
@@ -96,7 +105,8 @@ window.WORDLAB_PHRASES = {
     {"p":"celebrate with","zh":"慶祝","exEn":"We celebrated with a cake.","exZh":"我們用蛋糕慶祝。"}
   ],
   "change": [
-    {"p":"change into","zh":"換成","exEn":"Change into your sports clothes.","exZh":"換上運動服。"}
+    {"p":"change into","zh":"換成","exEn":"Change into your sports clothes.","exZh":"換上運動服。"},
+    {"p":"change one's mind","zh":"改變主意","exEn":"She changed her mind.","exZh":"她改變了主意。"}
   ],
   "charge": [
     {"p":"in charge","zh":"負責","exEn":"She is in charge of the class.","exZh":"她負責這個班。"}
@@ -109,13 +119,15 @@ window.WORDLAB_PHRASES = {
     {"p":"cheer up","zh":"振作","exEn":"Cheer up, the test is over!","exZh":"振作，測驗完了！"}
   ],
   "choose": [
-    {"p":"choose between","zh":"在……之間選擇","exEn":"Choose between the two books.","exZh":"在兩本書之間選擇。"}
+    {"p":"choose between","zh":"在……之間選擇","exEn":"Choose between the two books.","exZh":"在兩本書之間選擇。"},
+    {"p":"choose to","zh":"選擇","exEn":"I choose to walk.","exZh":"我選擇走路。"}
   ],
   "clean": [
     {"p":"clean up","zh":"清理","exEn":"Clean up the room.","exZh":"清理房間。"}
   ],
   "close": [
-    {"p":"close to","zh":"接近","exEn":"The shop is close to my home.","exZh":"商店接近我家。"}
+    {"p":"close to","zh":"接近","exEn":"The shop is close to my home.","exZh":"商店接近我家。"},
+    {"p":"close down","zh":"關閉","exEn":"The shop closed down.","exZh":"那間店關閉了。"}
   ],
   "cold": [
     {"p":"catch a cold","zh":"感冒","exEn":"You may catch a cold tonight.","exZh":"你今晚可能會感冒。"}
@@ -128,40 +140,51 @@ window.WORDLAB_PHRASES = {
     {"p":"come in","zh":"進來","exEn":"Come in and sit down.","exZh":"進來坐下。"}
   ],
   "compare": [
-    {"p":"compare with","zh":"與……比較","exEn":"Compare this with that one.","exZh":"把這個與那個比較。"}
+    {"p":"compare with","zh":"與……比較","exEn":"Compare this with that one.","exZh":"把這個與那個比較。"},
+    {"p":"compare to","zh":"比作","exEn":"We compare life to a journey.","exZh":"我們把人生比作旅程。"}
   ],
   "complain": [
-    {"p":"complain about","zh":"抱怨","exEn":"She complains about the noise.","exZh":"她抱怨噪音。"}
+    {"p":"complain about","zh":"抱怨","exEn":"She complains about the noise.","exZh":"她抱怨噪音。"},
+    {"p":"complain to","zh":"向……投訴","exEn":"She complains to the manager.","exZh":"她向經理投訴。"}
   ],
   "confident": [
-    {"p":"be confident of","zh":"有信心","exEn":"She is confident of winning.","exZh":"她對勝利有信心。"}
+    {"p":"be confident of","zh":"有信心","exEn":"She is confident of winning.","exZh":"她對勝利有信心。"},
+    {"p":"be confident in","zh":"對……有信心","exEn":"He is confident in his answer.","exZh":"他對自己的答案有信心。"}
   ],
   "continue": [
-    {"p":"continue with","zh":"繼續","exEn":"Continue with your work.","exZh":"繼續你的工作。"}
+    {"p":"continue with","zh":"繼續","exEn":"Continue with your work.","exZh":"繼續你的工作。"},
+    {"p":"continue to","zh":"繼續","exEn":"We continue to read.","exZh":"我們繼續閱讀。"}
   ],
   "control": [
-    {"p":"under control","zh":"受控","exEn":"The fire is under control.","exZh":"火勢已受控。"}
+    {"p":"under control","zh":"受控","exEn":"The fire is under control.","exZh":"火勢已受控。"},
+    {"p":"take control","zh":"控制","exEn":"She takes control of the team.","exZh":"她控制這支隊伍。"}
   ],
   "cook": [
-    {"p":"cook for","zh":"為……煮","exEn":"She cooks for the family.","exZh":"她為家人煮飯。"}
+    {"p":"cook for","zh":"為……煮","exEn":"She cooks for the family.","exZh":"她為家人煮飯。"},
+    {"p":"cook dinner","zh":"煮晚餐","exEn":"I cook dinner on Fridays.","exZh":"我星期五煮晚餐。"}
   ],
   "count": [
-    {"p":"count on","zh":"依靠","exEn":"You can count on me.","exZh":"你可以依靠我。"}
+    {"p":"count on","zh":"依靠","exEn":"You can count on me.","exZh":"你可以依靠我。"},
+    {"p":"count up","zh":"數算","exEn":"Count up the books.","exZh":"數一數這些書。"}
   ],
   "cover": [
-    {"p":"cover with","zh":"覆蓋","exEn":"Cover the food with a cloth.","exZh":"用布覆蓋食物。"}
+    {"p":"cover with","zh":"覆蓋","exEn":"Cover the food with a cloth.","exZh":"用布覆蓋食物。"},
+    {"p":"be covered with","zh":"被……覆蓋","exEn":"The road is covered with snow.","exZh":"道路被雪覆蓋。"}
   ],
   "cross": [
-    {"p":"cross out","zh":"劃掉","exEn":"Cross out the wrong word.","exZh":"劃掉錯的字。"}
+    {"p":"cross out","zh":"劃掉","exEn":"Cross out the wrong word.","exZh":"劃掉錯的字。"},
+    {"p":"cross the road","zh":"過馬路","exEn":"Cross the road carefully.","exZh":"小心過馬路。"}
   ],
   "crowd": [
     {"p":"be crowded with","zh":"擠滿","exEn":"The bus is crowded with people.","exZh":"巴士擠滿了人。"}
   ],
   "cut": [
-    {"p":"cut down","zh":"削減","exEn":"We should cut down on sugar.","exZh":"我們應該削減糖分。"}
+    {"p":"cut down","zh":"削減","exEn":"We should cut down on sugar.","exZh":"我們應該削減糖分。"},
+    {"p":"cut off","zh":"切斷","exEn":"Cut off the paper.","exZh":"把紙切斷。"}
   ],
   "dance": [
-    {"p":"dance to","zh":"隨……跳舞","exEn":"They dance to the music.","exZh":"他們隨音樂跳舞。"}
+    {"p":"dance to","zh":"隨……跳舞","exEn":"They dance to the music.","exZh":"他們隨音樂跳舞。"},
+    {"p":"dance with","zh":"與……跳舞","exEn":"She dances with her friend.","exZh":"她和朋友跳舞。"}
   ],
   "day": [
     {"p":"every day","zh":"每天","exEn":"I read every day.","exZh":"我每天閱讀。"}
@@ -170,7 +193,8 @@ window.WORDLAB_PHRASES = {
     {"p":"deal with","zh":"處理","exEn":"Deal with the problem now.","exZh":"現在處理這個問題。"}
   ],
   "decide": [
-    {"p":"decide on","zh":"決定","exEn":"We decided on a date.","exZh":"我們決定了日期。"}
+    {"p":"decide on","zh":"決定","exEn":"We decided on a date.","exZh":"我們決定了日期。"},
+    {"p":"decide to","zh":"決定","exEn":"We decide to go.","exZh":"我們決定去。"}
   ],
   "depend": [
     {"p":"depend on","zh":"依靠","exEn":"We depend on the sun.","exZh":"我們依靠太陽。"}
@@ -179,7 +203,8 @@ window.WORDLAB_PHRASES = {
     {"p":"be different from","zh":"與……不同","exEn":"This is different from that.","exZh":"這個與那個不同。"}
   ],
   "difficult": [
-    {"p":"be difficult for","zh":"對……困難","exEn":"It is difficult for me.","exZh":"這對我來說很困難。"}
+    {"p":"be difficult for","zh":"對……困難","exEn":"It is difficult for me.","exZh":"這對我來說很困難。"},
+    {"p":"be difficult to","zh":"難以","exEn":"It is difficult to read.","exZh":"這很難讀。"}
   ],
   "disappoint": [
     {"p":"be disappointed with","zh":"對……失望","exEn":"She was disappointed with the result.","exZh":"她對結果失望。"}
@@ -188,28 +213,34 @@ window.WORDLAB_PHRASES = {
     {"p":"discuss with","zh":"討論","exEn":"Discuss it with your friends.","exZh":"和朋友討論。"}
   ],
   "divide": [
-    {"p":"be divided into","zh":"分為","exEn":"The class is divided into groups.","exZh":"全班分為幾組。"}
+    {"p":"be divided into","zh":"分為","exEn":"The class is divided into groups.","exZh":"全班分為幾組。"},
+    {"p":"divide into","zh":"分為","exEn":"Divide the class into groups.","exZh":"把全班分為幾組。"}
   ],
   "doubt": [
     {"p":"no doubt","zh":"無疑","exEn":"No doubt, she is right.","exZh":"無疑她是對的。"}
   ],
   "dream": [
-    {"p":"dream of","zh":"夢想","exEn":"She dreams of flying.","exZh":"她夢想飛翔。"}
+    {"p":"dream of","zh":"夢想","exEn":"She dreams of flying.","exZh":"她夢想飛翔。"},
+    {"p":"dream about","zh":"夢見","exEn":"She dreams about flying.","exZh":"她夢見飛翔。"}
   ],
   "dress": [
-    {"p":"dress up","zh":"打扮","exEn":"They dress up for the party.","exZh":"他們打扮參加派對。"}
+    {"p":"dress up","zh":"打扮","exEn":"They dress up for the party.","exZh":"他們打扮參加派對。"},
+    {"p":"dress for","zh":"為……打扮","exEn":"Dress for the weather.","exZh":"按天氣打扮。"}
   ],
   "drive": [
-    {"p":"drive to","zh":"駕車去","exEn":"We drive to school.","exZh":"我們駕車去學校。"}
+    {"p":"drive to","zh":"駕車去","exEn":"We drive to school.","exZh":"我們駕車去學校。"},
+    {"p":"drive away","zh":"駛走","exEn":"The car drives away.","exZh":"車子駛走了。"}
   ],
   "during": [
     {"p":"during the day","zh":"日間","exEn":"We read during the day.","exZh":"我們日間閱讀。"}
   ],
   "easy": [
-    {"p":"be easy for","zh":"對……容易","exEn":"It is easy for her.","exZh":"這對她來說很容易。"}
+    {"p":"be easy for","zh":"對……容易","exEn":"It is easy for her.","exZh":"這對她來說很容易。"},
+    {"p":"be easy to","zh":"容易","exEn":"It is easy to read.","exZh":"這很容易讀。"}
   ],
   "eat": [
-    {"p":"eat out","zh":"外出用餐","exEn":"We eat out on Fridays.","exZh":"我們星期五外出用餐。"}
+    {"p":"eat out","zh":"外出用餐","exEn":"We eat out on Fridays.","exZh":"我們星期五外出用餐。"},
+    {"p":"eat up","zh":"吃完","exEn":"Eat up your rice.","exZh":"把你的飯吃完。"}
   ],
   "else": [
     {"p":"or else","zh":"否則","exEn":"Hurry, or else we are late.","exZh":"快點，否則我們遲到。"}
@@ -224,16 +255,20 @@ window.WORDLAB_PHRASES = {
     {"p":"even though","zh":"雖然","exEn":"Even though it rained, we went.","exZh":"雖然下雨，我們仍去了。"}
   ],
   "ever": [
-    {"p":"ever since","zh":"自從","exEn":"Ever since then, he is happy.","exZh":"自從那時起，他很快樂。"}
+    {"p":"ever since","zh":"自從","exEn":"Ever since then, he is happy.","exZh":"自從那時起，他很快樂。"},
+    {"p":"for ever","zh":"永遠","exEn":"We will be friends for ever.","exZh":"我們永遠是朋友。"}
   ],
   "every": [
-    {"p":"every time","zh":"每次","exEn":"Every time I read, I learn.","exZh":"每次閱讀我都有得著。"}
+    {"p":"every time","zh":"每次","exEn":"Every time I read, I learn.","exZh":"每次閱讀我都有得著。"},
+    {"p":"every week","zh":"每週","exEn":"We have a test every week.","exZh":"我們每週有測驗。"}
   ],
   "example": [
-    {"p":"for example","zh":"例如","exEn":"For example, water boils at 100 degrees.","exZh":"例如水在100度沸騰。"}
+    {"p":"for example","zh":"例如","exEn":"For example, water boils at 100 degrees.","exZh":"例如水在100度沸騰。"},
+    {"p":"give an example","zh":"舉例","exEn":"Give an example, please.","exZh":"請舉一個例子。"}
   ],
   "excited": [
-    {"p":"be excited about","zh":"對……興奮","exEn":"She is excited about the trip.","exZh":"她對這次旅行很興奮。"}
+    {"p":"be excited about","zh":"對……興奮","exEn":"She is excited about the trip.","exZh":"她對這次旅行很興奮。"},
+    {"p":"be excited to","zh":"興奮","exEn":"I am excited to go.","exZh":"我很興奮可以去。"}
   ],
   "fact": [
     {"p":"in fact","zh":"事實上","exEn":"In fact, he is right.","exZh":"事實上，他是對的。"}
@@ -245,16 +280,19 @@ window.WORDLAB_PHRASES = {
     {"p":"be famous for","zh":"以……著名","exEn":"The town is famous for tea.","exZh":"這城鎮以茶著名。"}
   ],
   "far": [
-    {"p":"far from","zh":"遠離","exEn":"The school is far from here.","exZh":"學校遠離這裡。"}
+    {"p":"far from","zh":"遠離","exEn":"The school is far from here.","exZh":"學校遠離這裡。"},
+    {"p":"as far as","zh":"直到","exEn":"Walk as far as the gate.","exZh":"走到大門為止。"}
   ],
   "fast": [
-    {"p":"fast food","zh":"快餐","exEn":"We eat fast food sometimes.","exZh":"我們有時吃快餐。"}
+    {"p":"fast food","zh":"快餐","exEn":"We eat fast food sometimes.","exZh":"我們有時吃快餐。"},
+    {"p":"run fast","zh":"跑得快","exEn":"Dogs run fast.","exZh":"狗跑得很快。"}
   ],
   "fear": [
     {"p":"fear for","zh":"擔心","exEn":"We fear for his safety.","exZh":"我們擔心他的安全。"}
   ],
   "feel": [
-    {"p":"feel like","zh":"想要","exEn":"I feel like reading.","exZh":"我想閱讀。"}
+    {"p":"feel like","zh":"想要","exEn":"I feel like reading.","exZh":"我想閱讀。"},
+    {"p":"feel good","zh":"感覺良好","exEn":"I feel good today.","exZh":"我今天感覺良好。"}
   ],
   "fight": [
     {"p":"fight for","zh":"為……而戰","exEn":"They fight for peace.","exZh":"他們為和平而戰。"}
@@ -263,7 +301,8 @@ window.WORDLAB_PHRASES = {
     {"p":"figure out","zh":"弄清楚","exEn":"I cannot figure out the answer.","exZh":"我弄不清這答案。"}
   ],
   "fill": [
-    {"p":"fill in","zh":"填寫","exEn":"Fill in your name.","exZh":"填寫你的名字。"}
+    {"p":"fill in","zh":"填寫","exEn":"Fill in your name.","exZh":"填寫你的名字。"},
+    {"p":"fill up","zh":"裝滿","exEn":"Fill up the bottle.","exZh":"把瓶子裝滿。"}
   ],
   "find": [
     {"p":"find out","zh":"查明","exEn":"We will find out the answer.","exZh":"我們會查明答案。"}
@@ -272,28 +311,33 @@ window.WORDLAB_PHRASES = {
     {"p":"at first","zh":"起初","exEn":"At first, it was hard.","exZh":"起初很困難。"}
   ],
   "fit": [
-    {"p":"be fit for","zh":"適合","exEn":"The food is fit for children.","exZh":"這食物適合兒童。"}
+    {"p":"be fit for","zh":"適合","exEn":"The food is fit for children.","exZh":"這食物適合兒童。"},
+    {"p":"keep fit","zh":"保持健康","exEn":"We run to keep fit.","exZh":"我們跑步保持健康。"}
   ],
   "fly": [
-    {"p":"fly to","zh":"飛往","exEn":"They fly to Tokyo.","exZh":"他們飛往東京。"}
+    {"p":"fly to","zh":"飛往","exEn":"They fly to Tokyo.","exZh":"他們飛往東京。"},
+    {"p":"fly away","zh":"飛走","exEn":"The birds fly away.","exZh":"鳥兒飛走了。"}
   ],
   "focus": [
     {"p":"focus on","zh":"專注於","exEn":"Focus on your work.","exZh":"專注於你的工作。"}
   ],
   "forget": [
-    {"p":"forget about","zh":"忘記","exEn":"Forget about the mistake.","exZh":"忘記那個錯誤。"}
+    {"p":"forget about","zh":"忘記","exEn":"Forget about the mistake.","exZh":"忘記那個錯誤。"},
+    {"p":"forget to","zh":"忘記","exEn":"Do not forget to call.","exZh":"不要忘記打電話。"}
   ],
   "forgive": [
     {"p":"forgive for","zh":"原諒","exEn":"Forgive me for being late.","exZh":"原諒我遲到。"}
   ],
   "free": [
-    {"p":"free of charge","zh":"免費","exEn":"It is free of charge.","exZh":"這是免費的。"}
+    {"p":"free of charge","zh":"免費","exEn":"It is free of charge.","exZh":"這是免費的。"},
+    {"p":"be free to","zh":"可以自由","exEn":"You are free to choose.","exZh":"你可以自由選擇。"}
   ],
   "front": [
     {"p":"in front of","zh":"在前面","exEn":"Sit in front of me.","exZh":"坐在我前面。"}
   ],
   "full": [
-    {"p":"be full of","zh":"充滿","exEn":"The box is full of toys.","exZh":"盒子充滿玩具。"}
+    {"p":"be full of","zh":"充滿","exEn":"The box is full of toys.","exZh":"盒子充滿玩具。"},
+    {"p":"be full","zh":"滿","exEn":"The bus is full.","exZh":"巴士滿了。"}
   ],
   "get": [
     {"p":"get up","zh":"起床","exEn":"I get up at seven.","exZh":"我七點起床。"},
@@ -307,17 +351,20 @@ window.WORDLAB_PHRASES = {
     {"p":"give back","zh":"歸還","exEn":"Give back the book tomorrow.","exZh":"明天歸還這本書。"}
   ],
   "glad": [
-    {"p":"be glad to","zh":"樂意","exEn":"I am glad to help.","exZh":"我樂意幫忙。"}
+    {"p":"be glad to","zh":"樂意","exEn":"I am glad to help.","exZh":"我樂意幫忙。"},
+    {"p":"be glad about","zh":"高興","exEn":"We are glad about the news.","exZh":"我們對這消息很高興。"}
   ],
   "go": [
     {"p":"go on","zh":"繼續","exEn":"Please go on with the story.","exZh":"請繼續說故事。"},
     {"p":"go out","zh":"外出","exEn":"We go out after dinner.","exZh":"我們晚飯後外出。"}
   ],
   "good": [
-    {"p":"be good at","zh":"擅長","exEn":"She is good at singing.","exZh":"她擅長唱歌。"}
+    {"p":"be good at","zh":"擅長","exEn":"She is good at singing.","exZh":"她擅長唱歌。"},
+    {"p":"be good for","zh":"對……有益","exEn":"Fruit is good for you.","exZh":"水果對你有益。"}
   ],
   "grateful": [
-    {"p":"be grateful for","zh":"感激","exEn":"I am grateful for your help.","exZh":"我感激你的幫助。"}
+    {"p":"be grateful for","zh":"感激","exEn":"I am grateful for your help.","exZh":"我感激你的幫助。"},
+    {"p":"be grateful to","zh":"感激某人","exEn":"I am grateful to my teacher.","exZh":"我感激我的老師。"}
   ],
   "grow": [
     {"p":"grow up","zh":"長大","exEn":"Children grow up fast.","exZh":"孩子長得很快。"}
@@ -327,41 +374,50 @@ window.WORDLAB_PHRASES = {
     {"p":"hand out","zh":"分發","exEn":"Hand out the books.","exZh":"分發書本。"}
   ],
   "happy": [
-    {"p":"be happy with","zh":"滿意","exEn":"She is happy with the gift.","exZh":"她對禮物滿意。"}
+    {"p":"be happy with","zh":"滿意","exEn":"She is happy with the gift.","exZh":"她對禮物滿意。"},
+    {"p":"be happy to","zh":"樂意","exEn":"I am happy to help.","exZh":"我樂意幫忙。"}
   ],
   "hard": [
-    {"p":"hard work","zh":"辛苦工作","exEn":"Hard work brings success.","exZh":"辛苦工作帶來成功。"}
+    {"p":"hard work","zh":"辛苦工作","exEn":"Hard work brings success.","exZh":"辛苦工作帶來成功。"},
+    {"p":"try hard","zh":"努力","exEn":"Try hard in the test.","exZh":"測驗要努力。"}
   ],
   "hate": [
     {"p":"hate to","zh":"討厭","exEn":"I hate to wait.","exZh":"我討厭等待。"}
   ],
   "hear": [
-    {"p":"hear from","zh":"收到消息","exEn":"I hope to hear from you.","exZh":"我希望收到你的消息。"}
+    {"p":"hear from","zh":"收到消息","exEn":"I hope to hear from you.","exZh":"我希望收到你的消息。"},
+    {"p":"hear of","zh":"聽聞","exEn":"I hear of the story.","exZh":"我聽聞過這個故事。"}
   ],
   "help": [
-    {"p":"help with","zh":"幫助","exEn":"She helps with the cleaning.","exZh":"她幫忙清潔。"}
+    {"p":"help with","zh":"幫助","exEn":"She helps with the cleaning.","exZh":"她幫忙清潔。"},
+    {"p":"help out","zh":"幫忙","exEn":"She helps out at home.","exZh":"她在家幫忙。"}
   ],
   "hold": [
     {"p":"hold on","zh":"稍等","exEn":"Hold on a moment.","exZh":"稍等一會。"},
     {"p":"hold up","zh":"舉起","exEn":"Hold up your hand.","exZh":"舉起你的手。"}
   ],
   "hope": [
-    {"p":"hope for","zh":"希望","exEn":"We hope for good weather.","exZh":"我們希望有好天氣。"}
+    {"p":"hope for","zh":"希望","exEn":"We hope for good weather.","exZh":"我們希望有好天氣。"},
+    {"p":"hope to","zh":"希望","exEn":"We hope to win.","exZh":"我們希望贏。"}
   ],
   "hungry": [
-    {"p":"be hungry for","zh":"渴望","exEn":"He is hungry for knowledge.","exZh":"他渴望知識。"}
+    {"p":"be hungry for","zh":"渴望","exEn":"He is hungry for knowledge.","exZh":"他渴望知識。"},
+    {"p":"be hungry","zh":"餓","exEn":"The baby is hungry.","exZh":"嬰兒餓了。"}
   ],
   "hurry": [
     {"p":"hurry up","zh":"趕快","exEn":"Hurry up or we are late.","exZh":"趕快，否則我們遲到。"}
   ],
   "important": [
-    {"p":"be important to","zh":"對……重要","exEn":"Family is important to me.","exZh":"家庭對我來說很重要。"}
+    {"p":"be important to","zh":"對……重要","exEn":"Family is important to me.","exZh":"家庭對我來說很重要。"},
+    {"p":"be important for","zh":"對……重要","exEn":"Sleep is important for health.","exZh":"睡眠對健康很重要。"}
   ],
   "interest": [
-    {"p":"be interested in","zh":"對……有興趣","exEn":"She is interested in science.","exZh":"她對科學有興趣。"}
+    {"p":"be interested in","zh":"對……有興趣","exEn":"She is interested in science.","exZh":"她對科學有興趣。"},
+    {"p":"show interest","zh":"表現興趣","exEn":"He shows interest in music.","exZh":"他對音樂表現出興趣。"}
   ],
   "invite": [
-    {"p":"invite to","zh":"邀請","exEn":"We invited them to dinner.","exZh":"我們邀請他們吃晚飯。"}
+    {"p":"invite to","zh":"邀請","exEn":"We invited them to dinner.","exZh":"我們邀請他們吃晚飯。"},
+    {"p":"invite out","zh":"邀約外出","exEn":"They invite us out.","exZh":"他們邀約我們外出。"}
   ],
   "join": [
     {"p":"join in","zh":"加入","exEn":"Join in the game.","exZh":"加入遊戲吧。"}
@@ -370,32 +426,38 @@ window.WORDLAB_PHRASES = {
     {"p":"journey to","zh":"旅程","exEn":"The journey to the island is long.","exZh":"去島嶼的旅程很長。"}
   ],
   "jump": [
-    {"p":"jump over","zh":"跳過","exEn":"The dog jumps over the fence.","exZh":"那隻狗跳過圍欄。"}
+    {"p":"jump over","zh":"跳過","exEn":"The dog jumps over the fence.","exZh":"那隻狗跳過圍欄。"},
+    {"p":"jump into","zh":"跳進","exEn":"The dog jumps into the water.","exZh":"狗跳進水裡。"}
   ],
   "keep": [
     {"p":"keep on","zh":"繼續","exEn":"Keep on reading.","exZh":"繼續閱讀。"},
     {"p":"keep up","zh":"保持","exEn":"Keep up the good work.","exZh":"保持良好的工作。"}
   ],
   "kind": [
-    {"p":"be kind to","zh":"對……友善","exEn":"Be kind to animals.","exZh":"對動物友善。"}
+    {"p":"be kind to","zh":"對……友善","exEn":"Be kind to animals.","exZh":"對動物友善。"},
+    {"p":"a kind of","zh":"一種","exEn":"This is a kind of fruit.","exZh":"這是一種水果。"}
   ],
   "know": [
-    {"p":"know about","zh":"知道","exEn":"I know about the plan.","exZh":"我知道這個計劃。"}
+    {"p":"know about","zh":"知道","exEn":"I know about the plan.","exZh":"我知道這個計劃。"},
+    {"p":"know well","zh":"熟悉","exEn":"I know the town well.","exZh":"我很熟悉這城鎮。"}
   ],
   "last": [
-    {"p":"at last","zh":"終於","exEn":"At last, the rain stopped.","exZh":"終於，雨停了。"}
+    {"p":"at last","zh":"終於","exEn":"At last, the rain stopped.","exZh":"終於，雨停了。"},
+    {"p":"last for","zh":"持續","exEn":"The film lasts for two hours.","exZh":"電影持續兩小時。"}
   ],
   "laugh": [
     {"p":"laugh at","zh":"嘲笑","exEn":"Do not laugh at others.","exZh":"不要嘲笑別人。"}
   ],
   "learn": [
-    {"p":"learn from","zh":"向……學習","exEn":"We learn from mistakes.","exZh":"我們從錯誤中學習。"}
+    {"p":"learn from","zh":"向……學習","exEn":"We learn from mistakes.","exZh":"我們從錯誤中學習。"},
+    {"p":"learn to","zh":"學會","exEn":"Children learn to read.","exZh":"孩子學會閱讀。"}
   ],
   "least": [
     {"p":"at least","zh":"至少","exEn":"Read at least ten pages.","exZh":"至少讀十頁。"}
   ],
   "leave": [
-    {"p":"leave for","zh":"前往","exEn":"We leave for school at seven.","exZh":"我們七點前往學校。"}
+    {"p":"leave for","zh":"前往","exEn":"We leave for school at seven.","exZh":"我們七點前往學校。"},
+    {"p":"leave behind","zh":"遺下","exEn":"Do not leave your bag behind.","exZh":"不要遺下你的袋子。"}
   ],
   "let": [
     {"p":"let down","zh":"辜負","exEn":"Do not let down your team.","exZh":"不要辜負你的隊伍。"}
@@ -404,10 +466,12 @@ window.WORDLAB_PHRASES = {
     {"p":"lie down","zh":"躺下","exEn":"Lie down and rest.","exZh":"躺下休息。"}
   ],
   "listen": [
-    {"p":"listen to","zh":"聽","exEn":"Listen to the teacher.","exZh":"聽老師說。"}
+    {"p":"listen to","zh":"聽","exEn":"Listen to the teacher.","exZh":"聽老師說。"},
+    {"p":"listen for","zh":"留聽","exEn":"Listen for the bell.","exZh":"留聽鐘聲。"}
   ],
   "live": [
-    {"p":"live in","zh":"住在","exEn":"They live in a village.","exZh":"他們住在村莊。"}
+    {"p":"live in","zh":"住在","exEn":"They live in a village.","exZh":"他們住在村莊。"},
+    {"p":"live with","zh":"與……同住","exEn":"She lives with her aunt.","exZh":"她與姑母同住。"}
   ],
   "log": [
     {"p":"log in","zh":"登入","exEn":"Log in with your name.","exZh":"用你的名字登入。"}
@@ -418,7 +482,8 @@ window.WORDLAB_PHRASES = {
     {"p":"look up","zh":"查閱","exEn":"Look up the word in the dictionary.","exZh":"在字典裡查閱這個字。"}
   ],
   "lose": [
-    {"p":"lose to","zh":"輸給","exEn":"We may lose to their team.","exZh":"我們可能輸給他們隊。"}
+    {"p":"lose to","zh":"輸給","exEn":"We may lose to their team.","exZh":"我們可能輸給他們隊。"},
+    {"p":"lose your way","zh":"迷路","exEn":"Do not lose your way.","exZh":"不要迷路。"}
   ],
   "lot": [
     {"p":"a lot of","zh":"很多","exEn":"She has a lot of friends.","exZh":"她有很多朋友。"}
@@ -432,22 +497,27 @@ window.WORDLAB_PHRASES = {
     {"p":"make friends","zh":"交朋友","exEn":"It is easy to make friends here.","exZh":"在這裡交朋友很容易。"}
   ],
   "meet": [
-    {"p":"meet with","zh":"遇到","exEn":"We may meet with a problem.","exZh":"我們可能遇到問題。"}
+    {"p":"meet with","zh":"遇到","exEn":"We may meet with a problem.","exZh":"我們可能遇到問題。"},
+    {"p":"meet up","zh":"會面","exEn":"We meet up on Sundays.","exZh":"我們星期日會面。"}
   ],
   "mind": [
-    {"p":"never mind","zh":"不要緊","exEn":"Never mind the mess.","exZh":"不要緊，亂一點。"}
+    {"p":"never mind","zh":"不要緊","exEn":"Never mind the mess.","exZh":"不要緊，亂一點。"},
+    {"p":"make up your mind","zh":"下定決心","exEn":"She makes up her mind.","exZh":"她下定決心。"}
   ],
   "miss": [
-    {"p":"miss out","zh":"錯過","exEn":"Do not miss out on the fun.","exZh":"不要錯過樂趣。"}
+    {"p":"miss out","zh":"錯過","exEn":"Do not miss out on the fun.","exZh":"不要錯過樂趣。"},
+    {"p":"miss the bus","zh":"錯過巴士","exEn":"Do not miss the bus.","exZh":"不要錯過巴士。"}
   ],
   "mistake": [
     {"p":"by mistake","zh":"錯誤地","exEn":"I took your bag by mistake.","exZh":"我誤拿了你的袋子。"}
   ],
   "need": [
-    {"p":"need to","zh":"需要","exEn":"You need to rest.","exZh":"你需要休息。"}
+    {"p":"need to","zh":"需要","exEn":"You need to rest.","exZh":"你需要休息。"},
+    {"p":"be in need","zh":"有需要","exEn":"The family is in need.","exZh":"這個家庭有需要。"}
   ],
   "next": [
-    {"p":"next to","zh":"旁邊","exEn":"Sit next to me.","exZh":"坐在我旁邊。"}
+    {"p":"next to","zh":"旁邊","exEn":"Sit next to me.","exZh":"坐在我旁邊。"},
+    {"p":"next time","zh":"下次","exEn":"Next time, read carefully.","exZh":"下次要仔細閱讀。"}
   ],
   "nice": [
     {"p":"be nice to","zh":"對……好","exEn":"Be nice to your sister.","exZh":"對你妹妹好一點。"}
