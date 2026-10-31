@@ -975,6 +975,68 @@ a {
   color: var(--bad);
 }
 
+/* 拼寫練習 */
+.spell-input {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  /* 16px 或以上，iOS Safari 聚焦時唔會自動放大整頁 */
+  font-size: 18px;
+  font-family: var(--serif);
+  letter-spacing: 0.02em;
+}
+
+.spell-input::placeholder {
+  color: var(--muted);
+  font-family: inherit;
+  letter-spacing: normal;
+}
+
+.spell-input:focus {
+  outline: 2px solid rgba(125, 211, 252, 0.7);
+  outline-offset: 2px;
+  border-color: rgba(125, 211, 252, 0.7);
+}
+
+.spell-input:disabled {
+  opacity: 0.75;
+}
+
+.spell-letters {
+  margin: 4px 0 0;
+}
+
+.spell-warn {
+  margin: 8px 0 0;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.spell-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.spell-actions .btn {
+  flex: 1 1 140px;
+  min-height: 48px;
+}
+
+.spell-answer {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 7vw, 2.4rem);
+  color: var(--good);
+  overflow-wrap: anywhere;
+}
+
 .match-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

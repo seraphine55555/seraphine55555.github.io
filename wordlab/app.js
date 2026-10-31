@@ -152,6 +152,17 @@
     phraseHint: ['揀正確配搭', '選正確配搭', 'Choose the correct collocation'],
     phraseNoData: ['目前篩選下冇常用配搭嘅字；試下清除篩選。', '目前篩選下沒有常用配搭的字；試試清除篩選。', 'No words with phrases in this filter — try clearing filters.'],
     phraseStats: ['配搭：已掌握 {k} / {t} 條；今日到期 {d} 條', '配搭：已掌握 {k} / {t} 條；今日到期 {d} 條', 'Phrases: {k} / {t} mastered; {d} due today'],
+    modeSpell: ['拼寫練習', '拼寫練習', 'Spelling'],
+    modeSpellDesc: ['睇中文義自己串出英文生字', '看中文義自己串出英文生字', 'Type the English word'],
+    spellHint: ['睇中文意思，打出英文生字', '看中文意思，打出英文生字', 'Type the English word for this meaning'],
+    spellPlaceholder: ['打英文生字…', '打英文生字…', 'Type the English word…'],
+    spellCheck: ['確定', '確定', 'Check'],
+    spellGiveUp: ['唔識，看答案', '不會，看答案', 'Show answer'],
+    spellAnswerLabel: ['正確答案', '正確答案', 'Correct spelling'],
+    spellEmpty: ['先輸入生字再撳「確定」', '先輸入生字再按「確定」', 'Type a word before you check'],
+    spellLetters: ['{n} 個字母', '{n} 個字母', '{n} letters'],
+    resultSpell: ['拼寫完成', '拼寫完成', 'Spelling complete'],
+    spellNoData: ['目前篩選下冇字可以練拼寫；試下清除篩選。', '目前篩選下沒有字可以練拼寫；試試清除篩選。', 'No words to spell in this filter — try clearing filters.'],
     back: ['返回', '返回', 'Back'],
     flip: ['揭意思', '揭意思', 'Reveal'],
     meaning: ['意思', '意思', 'Meaning'],
@@ -474,8 +485,8 @@
    * 一次答題：更新該方向嘅 SRS、連續日數、HubProgress。
    * 答對 step +1（最多 5），下次 1/3/7/14/30 日後；答錯 step 歸零、即日再練。
    */
-  function markWord(w, ok, skill, ms) {
-    var key = recKey(w);
+  function markWord(w, ok, skill, ms, keyOverride) {
+    var key = keyOverride || recKey(w);
     var r = progress[key] && typeof progress[key] === 'object' ? progress[key] : {
       tries: 0,
       correct: 0,
@@ -501,6 +512,41 @@
 
   function needRank(value) {
     return value === 'must' ? 0 : value === 'should' ? 1 : value === 'rare' ? 2 : 3;
+  }
+
+  /**
+   * 拼寫批改：只放寬「唔影響答案」嘅差異，唔會猜字。
+   *  - 全形字母／數字 → 半形（電話鍵盤、中文輸入法好容易打全形）
+   *  - 全形空格 → 半形；連續空白收窄
+   *  - 去頭尾空白；大小寫不敏感；彎引號統一成直引號
+   * 其餘（少字母、多字母、串錯）一律當錯，並顯示正確串法。
+   */
+  function normalizeSpell(value) {
+    var s = String(value == null ? '' : value);
+    s = s.replace(/[\uFF01-\uFF5E]/g, function (ch) {
+      return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
+    });
+    s = s.replace(/\u3000/g, ' ').replace(/[\u2018\u2019\u02bc]/g, "'");
+    return s.trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  // 拼寫練習固定練「中文 → 英文」，進度寫入英文方向（w.id + ':en'），唔會污染中文方向紀錄。
+  function spellKey(w) {
+    return w.id + ':en';
+  }
+
+  function spellRecord(w) {
+    var r = progress[spellKey(w)];
+    return r && typeof r === 'object' ? r : null;
+  }
+
+  function spellDue(w) {
+    var r = spellRecord(w);
+    return !r || !r.due || Number(r.due) <= Date.now();
+  }
+
+  function spellLetters(w) {
+    return String(w.en || '').replace(/[^A-Za-z]/g, '').length;
   }
 
   function filtersActive() {
@@ -592,7 +638,7 @@
     var label = el('span', 'counter');
     if (viewName === 'flash' && session) {
       label.textContent = t('questionOf', { i: Math.min(session.pos + 1, session.queue.length), n: session.queue.length });
-    } else if ((viewName === 'quiz' || viewName === 'phrase') && session) {
+    } else if ((viewName === 'quiz' || viewName === 'phrase' || viewName === 'spell') && session) {
       label.textContent = t('questionOf', { i: Math.min(session.pos + 1, session.queue.length), n: session.queue.length });
     } else if (viewName === 'match' && session) {
       label.textContent = t('matchPairs', { n: session.matched, m: session.pairs.length });
@@ -848,6 +894,7 @@
       { v: 'match', icon: '🧩', name: t('modeMatch'), desc: t('modeMatchDesc') },
       { v: 'quiz', icon: '⚡', name: t('modeQuiz'), desc: t('modeQuizDesc') },
       { v: 'phrase', icon: '🔗', name: t('modePhrase'), desc: t('modePhraseDesc') },
+      { v: 'spell', icon: '⌨️', name: t('modeSpell'), desc: t('modeSpellDesc') },
     ].forEach(function (m) {
       var card = el('button', 'mode-card');
       card.type = 'button';
@@ -1318,6 +1365,169 @@
     }
   }
 
+  function startSpell() {
+    var list = currentWords();
+    if (!list.length) {
+      view = 'home';
+      render();
+      return;
+    }
+    var due = list.filter(spellDue).sort(function (a, b) {
+      return needRank(a.need) - needRank(b.need) || Number(a.band) - Number(b.band);
+    });
+    var rest = list.filter(function (w) { return !spellDue(w); });
+    var words = shuffled(due).concat(shuffled(rest)).slice(0, Math.min(10, list.length));
+    session = {
+      kind: 'spell',
+      queue: words,
+      pos: 0,
+      answered: 0,
+      correct: 0,
+      typed: '',
+      feedback: null,
+      warn: false,
+      combo: 0,
+      startedAt: Date.now(),
+      itemAt: Date.now(),
+      mission: false,
+    };
+    view = 'spell';
+    render();
+  }
+
+  function renderSpell() {
+    if (!session || !session.queue.length) {
+      view = 'home';
+      render();
+      return;
+    }
+    var w = session.queue[session.pos];
+    app.appendChild(topbarFor('spell'));
+
+    var card = el('section', 'quiz-card spell-card');
+    var top = el('div', 'quiz-top');
+    top.appendChild(el('span', 'badge', t('modeSpell')));
+    if (session.combo > 1) top.appendChild(el('span', 'combo', t('combo', { n: session.combo })));
+    card.appendChild(top);
+    card.appendChild(el('p', 'prompt-label', t('spellHint')));
+    card.appendChild(el('p', 'term', w.zh));
+    card.appendChild(el('p', 'spell-letters tiny muted', t('spellLetters', { n: spellLetters(w) })));
+
+    var input = el('input', 'spell-input');
+    input.type = 'text';
+    input.setAttribute('data-spell-input', '');
+    input.setAttribute('autocomplete', 'off');
+    input.setAttribute('autocapitalize', 'off');
+    input.setAttribute('autocorrect', 'off');
+    input.setAttribute('spellcheck', 'false');
+    input.setAttribute('enterkeyhint', 'done');
+    input.setAttribute('aria-label', t('spellHint'));
+    input.placeholder = t('spellPlaceholder');
+    input.value = session.typed || '';
+    if (session.feedback) input.disabled = true;
+    card.appendChild(input);
+
+    if (session.warn && !session.feedback) card.appendChild(el('p', 'spell-warn', t('spellEmpty')));
+
+    var actions = el('div', 'spell-actions');
+    var check = el('button', 'btn primary', t('spellCheck'));
+    check.type = 'button';
+    check.setAttribute('data-spell-submit', '');
+    if (session.feedback) check.disabled = true;
+    actions.appendChild(check);
+    var giveUp = el('button', 'btn ghost', t('spellGiveUp'));
+    giveUp.type = 'button';
+    giveUp.setAttribute('data-spell-giveup', '');
+    if (session.feedback) giveUp.disabled = true;
+    actions.appendChild(giveUp);
+    card.appendChild(actions);
+
+    if (session.feedback) {
+      var ok = session.feedback === 'ok';
+      card.appendChild(el('p', 'feedback ' + (ok ? 'ok' : 'bad'), ok ? t('correct') : t('wrong')));
+      var answerBox = el('div', 'answer');
+      answerBox.appendChild(el('p', 'answer-label', t('spellAnswerLabel')));
+      var answerWord = el('p', 'spell-answer', w.en);
+      answerWord.setAttribute('data-spell-answer', '');
+      answerBox.appendChild(answerWord);
+      if (w.exEn) {
+        answerBox.appendChild(el('p', 'answer-label', t('example')));
+        answerBox.appendChild(el('p', 'example', w.exEn));
+        if (w.exZh) answerBox.appendChild(el('p', 'translation', w.exZh));
+      }
+      card.appendChild(answerBox);
+    }
+    app.appendChild(card);
+
+    if (!session.feedback) {
+      window.setTimeout(function () {
+        try {
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+        } catch (e) {}
+      }, 0);
+    }
+  }
+
+  function gradeSpell(ok) {
+    if (!session || session.kind !== 'spell' || session.feedback) return;
+    var w = session.queue[session.pos];
+    session.feedback = ok ? 'ok' : 'bad';
+    session.warn = false;
+    session.answered += 1;
+    if (ok) {
+      session.correct += 1;
+      session.combo += 1;
+    } else {
+      session.combo = 0;
+    }
+    markWord(w, ok, 'spell', Date.now() - session.itemAt, spellKey(w));
+    render();
+
+    function advance() {
+      if (!session || session.kind !== 'spell' || !session.feedback) return;
+      session.pos += 1;
+      session.feedback = null;
+      session.typed = '';
+      session.warn = false;
+      session.itemAt = Date.now();
+      if (session.pos >= session.queue.length) finishSession();
+      else render();
+    }
+
+    if (ok) {
+      var moved = false;
+      var go = function () {
+        if (moved) return;
+        moved = true;
+        advance();
+      };
+      speak(w.en, 'en-US', function () {
+        window.setTimeout(go, 900);
+      });
+      window.setTimeout(go, 2500);
+    } else {
+      window.setTimeout(advance, 1700);
+    }
+  }
+
+  function submitSpell() {
+    if (!session || session.kind !== 'spell' || session.feedback) return;
+    var w = session.queue[session.pos];
+    var typed = normalizeSpell(session.typed);
+    if (!typed) {
+      session.warn = true;
+      render();
+      return;
+    }
+    gradeSpell(typed === normalizeSpell(w.en));
+  }
+
+  function revealSpell() {
+    if (!session || session.kind !== 'spell' || session.feedback) return;
+    gradeSpell(false);
+  }
+
   function renderMatch() {
     if (!session || !session.pairs.length) {
       view = 'home';
@@ -1406,7 +1616,9 @@
           ? t('modeMatch')
           : lastResult.kind === 'phrase'
             ? t('modePhrase')
-            : t('modeQuiz');
+            : lastResult.kind === 'spell'
+              ? t('modeSpell')
+              : t('modeQuiz');
     box.appendChild(el('p', 'result-kicker', lastResult.mission ? t('missionBadge') : kicker));
     var title =
       lastResult.kind === 'flash'
@@ -1415,7 +1627,9 @@
           ? t('resultMatch')
           : lastResult.kind === 'phrase'
             ? t('modePhrase')
-            : t('resultQuiz');
+            : lastResult.kind === 'spell'
+              ? t('resultSpell')
+              : t('resultQuiz');
     if (lastResult.mission) title = t('dailyTitle') + ' · ' + title;
     box.appendChild(el('h1', 'result-title', title));
     var stars = el('p', 'result-stars');
@@ -1455,6 +1669,7 @@
     else if (view === 'quiz') renderQuiz();
     else if (view === 'match') renderMatch();
     else if (view === 'phrase') renderPhrase();
+    else if (view === 'spell') renderSpell();
     else if (view === 'result') renderResult();
     else renderHome();
     document.documentElement.lang = lang === 'en' ? 'en' : lang === 'yue' ? 'zh-HK' : 'zh-Hant';
@@ -1551,6 +1766,15 @@
       else if (mode === 'match') startMatch();
       else if (mode === 'quiz') startQuiz();
       else if (mode === 'phrase') startPhrase();
+      else if (mode === 'spell') startSpell();
+      return;
+    }
+    if (target.hasAttribute('data-spell-submit')) {
+      submitSpell();
+      return;
+    }
+    if (target.hasAttribute('data-spell-giveup')) {
+      revealSpell();
       return;
     }
     if (target.hasAttribute('data-reveal')) {
@@ -1599,6 +1823,7 @@
       else if (kind === 'match') startMatch();
       else if (kind === 'quiz') startQuiz();
       else if (kind === 'phrase') startPhrase();
+      else if (kind === 'spell') startSpell();
       else {
         view = 'home';
         render();
@@ -1611,6 +1836,24 @@
       lastResult = null;
       render();
     }
+  });
+
+  document.addEventListener('input', function (event) {
+    var target = event.target;
+    if (!target || typeof target.hasAttribute !== 'function') return;
+    if (!target.hasAttribute('data-spell-input')) return;
+    if (!session || session.kind !== 'spell') return;
+    session.typed = target.value;
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter') return;
+    if (!session || session.kind !== 'spell' || view !== 'spell') return;
+    var target = event.target;
+    if (!target || typeof target.hasAttribute !== 'function') return;
+    if (!target.hasAttribute('data-spell-input')) return;
+    event.preventDefault();
+    if (!session.feedback) submitSpell();
   });
 
   function openDeepLink() {
