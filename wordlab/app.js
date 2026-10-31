@@ -163,6 +163,17 @@
     spellLetters: ['{n} 個字母', '{n} 個字母', '{n} letters'],
     resultSpell: ['拼寫完成', '拼寫完成', 'Spelling complete'],
     spellNoData: ['目前篩選下冇字可以練拼寫；試下清除篩選。', '目前篩選下沒有字可以練拼寫；試試清除篩選。', 'No words to spell in this filter — try clearing filters.'],
+    weakTitle: ['錯題重練', '錯題重練', 'Redo mistakes'],
+    weakCount: ['{n} 個', '{n} 個', '{n} words'],
+    weakDesc: [
+      '最近答錯、仲未答對返嘅字（只計目前篩選同方向）；答對一次就會移出呢個清單。',
+      '最近答錯、還沒有答對過的字（只計目前篩選和方向）；答對一次就會移出這份清單。',
+      'Words you missed and have not got right since (current filter and direction); one correct answer clears a word.',
+    ],
+    weakStart: ['重練 {n} 個', '重練 {n} 個', 'Redo {n}'],
+    weakBadge: ['錯題重練', '錯題重練', 'Redo mistakes'],
+    weakResult: ['錯題重練完成', '錯題重練完成', 'Mistakes reviewed'],
+    weakDone: ['錯題清空！', '錯題清空！', 'No mistakes left!'],
     back: ['返回', '返回', 'Back'],
     flip: ['揭意思', '揭意思', 'Reveal'],
     meaning: ['意思', '意思', 'Meaning'],
@@ -401,6 +412,33 @@
 
   function isNew(w) {
     return !recordOf(w);
+  }
+
+  /**
+   * 錯題＝最近答錯、之後未答對過（step 歸零）嘅字。
+   * 答對一次 step 就會變 1，即刻移出清單，交回 SRS 跟進；所以清單只會越練越短。
+   */
+  function wrongCount(w) {
+    var r = recordOf(w);
+    if (!r) return 0;
+    return Math.max(0, (Number(r.tries) || 0) - (Number(r.correct) || 0));
+  }
+
+  function isWrongWord(w) {
+    var r = recordOf(w);
+    return !!r && Number(r.step) === 0 && wrongCount(w) > 0;
+  }
+
+  function weakWords() {
+    return currentWords()
+      .filter(isWrongWord)
+      .sort(function (a, b) {
+        var rb = recordOf(b) || {};
+        var ra = recordOf(a) || {};
+        return (
+          wrongCount(b) - wrongCount(a) || String(rb.last || '').localeCompare(String(ra.last || ''))
+        );
+      });
   }
 
   function saveProgress() {
@@ -726,6 +764,31 @@
     daily.appendChild(dailyBtn);
     app.appendChild(daily);
 
+    // 錯題卡放喺「今日任務」之後：要重練嘅字擺喺最前面，唔使人捲到底部才見到。
+    var weak = weakWords();
+    if (weak.length) {
+      var weakBox = el('section', 'weak-panel');
+      var weakHead = el('div', 'weak-head');
+      weakHead.appendChild(el('h2', 'weak-title', t('weakTitle')));
+      var weakBadge = el('span', 'badge weak-count', t('weakCount', { n: weak.length }));
+      weakBadge.setAttribute('data-weak-count', String(weak.length));
+      weakHead.appendChild(weakBadge);
+      weakBox.appendChild(weakHead);
+      weakBox.appendChild(el('p', 'tiny muted', t('weakDesc')));
+      var weakList = el('p', 'weak-words');
+      weakList.setAttribute('data-weak-words', '');
+      var shown = weak.slice(0, 8).map(function (w) {
+        return term(w);
+      });
+      weakList.textContent = shown.join('、') + (weak.length > shown.length ? '…' : '');
+      weakBox.appendChild(weakList);
+      var weakBtn = el('button', 'btn primary', t('weakStart', { n: Math.min(10, weak.length) }));
+      weakBtn.type = 'button';
+      weakBtn.setAttribute('data-start-weak', '');
+      weakBox.appendChild(weakBtn);
+      app.appendChild(weakBox);
+    }
+
     var gradeWrap = el('section', 'panel grade-panel');
     var gradeHead = el('div', 'panel-head');
     gradeHead.appendChild(el('h2', '', t('gradeLabel')));
@@ -985,9 +1048,11 @@
     return shuffled(options);
   }
 
-  function startQuiz(queue, mission) {
+  function startQuiz(queue, mission, variant) {
     var words = queue || shuffled(currentWords()).slice(0, Math.min(8, currentWords().length));
-    if (words.length < 2) return;
+    if (!words.length) return;
+    // 錯題重練可以只有 1 個字；其他快問快答至少要 2 個字才有得揀。
+    if (!variant && words.length < 2) return;
     session = {
       kind: 'quiz',
       queue: words,
@@ -1000,9 +1065,16 @@
       startedAt: Date.now(),
       itemAt: Date.now(),
       mission: !!mission,
+      variant: variant || null,
     };
     view = 'quiz';
     render();
+  }
+
+  function startWeak() {
+    var queue = weakWords().slice(0, 10);
+    if (!queue.length) return;
+    startQuiz(queue, false, 'weak');
   }
 
   function finishSession() {
@@ -1026,6 +1098,7 @@
       errors: kind === 'match' ? session.errors : 0,
       ms: Date.now() - session.startedAt,
       mission: !!session.mission,
+      weak: session.variant === 'weak',
     };
     session = null;
     view = 'result';
@@ -1155,7 +1228,13 @@
 
     var card = el('section', 'quiz-card');
     var top = el('div', 'quiz-top');
-    top.appendChild(el('span', 'badge', session.mission ? t('missionBadge') : t('modeQuiz')));
+    top.appendChild(
+      el(
+        'span',
+        'badge',
+        session.mission ? t('missionBadge') : session.variant === 'weak' ? t('weakBadge') : t('modeQuiz')
+      )
+    );
     if (session.combo > 1) top.appendChild(el('span', 'combo', t('combo', { n: session.combo })));
     card.appendChild(top);
     card.appendChild(el('p', 'prompt-label', t('quizHint')));
@@ -1211,7 +1290,7 @@
     } else {
       session.combo = 0;
     }
-    markWord(w, ok, session.mission ? 'mission' : 'quiz', Date.now() - session.itemAt);
+    markWord(w, ok, session.mission ? 'mission' : session.variant === 'weak' ? 'weak' : 'quiz', Date.now() - session.itemAt);
     render();
 
     function advance() {
@@ -1609,8 +1688,10 @@
       return;
     }
     var box = el('section', 'result-card');
-    var kicker =
-      lastResult.kind === 'flash'
+    var weakMode = !!lastResult.weak;
+    var kicker = weakMode
+      ? t('weakBadge')
+      : lastResult.kind === 'flash'
         ? t('modeFlash')
         : lastResult.kind === 'match'
           ? t('modeMatch')
@@ -1620,8 +1701,9 @@
               ? t('modeSpell')
               : t('modeQuiz');
     box.appendChild(el('p', 'result-kicker', lastResult.mission ? t('missionBadge') : kicker));
-    var title =
-      lastResult.kind === 'flash'
+    var title = weakMode
+      ? t('weakResult')
+      : lastResult.kind === 'flash'
         ? t('resultFlash')
         : lastResult.kind === 'match'
           ? t('resultMatch')
@@ -1760,6 +1842,10 @@
       if (queue.length) startQuiz(queue, true);
       return;
     }
+    if (target.hasAttribute('data-start-weak')) {
+      startWeak();
+      return;
+    }
     if (target.hasAttribute('data-mode')) {
       var mode = target.getAttribute('data-mode');
       if (mode === 'flash') startFlash();
@@ -1818,11 +1904,14 @@
     }
     if (target.hasAttribute('data-replay')) {
       var kind = lastResult && lastResult.kind;
+      var wasWeak = !!(lastResult && lastResult.weak);
       lastResult = null;
       if (kind === 'flash') startFlash();
       else if (kind === 'match') startMatch();
-      else if (kind === 'quiz') startQuiz();
-      else if (kind === 'phrase') startPhrase();
+      else if (kind === 'quiz') {
+        if (wasWeak) startWeak();
+        else startQuiz();
+      } else if (kind === 'phrase') startPhrase();
       else if (kind === 'spell') startSpell();
       else {
         view = 'home';

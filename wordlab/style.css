@@ -1037,6 +1037,43 @@ a {
   overflow-wrap: anywhere;
 }
 
+/* 錯題重練 */
+.weak-panel {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(246, 168, 37, 0.5);
+  border-radius: var(--radius);
+  background: rgba(246, 168, 37, 0.08);
+}
+
+.weak-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.weak-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.weak-count {
+  border-color: rgba(246, 168, 37, 0.6);
+  color: var(--accent);
+}
+
+.weak-words {
+  margin: 8px 0 10px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.weak-panel .btn {
+  width: 100%;
+  min-height: 48px;
+}
+
 .match-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
