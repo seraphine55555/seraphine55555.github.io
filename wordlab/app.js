@@ -62,6 +62,7 @@
   var PROG_KEY = 'wordlab/progress/v1';
   var STREAK_KEY = 'wordlab/streak';
   var PHRASE_KEY = 'wordlab/phrase-progress/v1';
+  var SENSE_KEY = 'wordlab/sense-progress/v1';
   var STEPS = [1, 3, 7, 14, 30];
 
   var DICT = {
@@ -174,6 +175,14 @@
     weakBadge: ['錯題重練', '錯題重練', 'Redo mistakes'],
     weakResult: ['錯題重練完成', '錯題重練完成', 'Mistakes reviewed'],
     weakDone: ['錯題清空！', '錯題清空！', 'No mistakes left!'],
+    modeSense: ['多義詞練習', '多義詞練習', 'Multi-meaning'],
+    modeSenseDesc: ['睇英文例句，揀出正確意思', '看英文例句，選出正確意思', 'Pick the meaning that fits the sentence'],
+    senseHint: ['呢句例句用邊個意思？', '這句例句用哪個意思？', 'Which meaning does this sentence use?'],
+    senseAnswerLabel: ['呢個意思', '這個意思', 'This meaning'],
+    sensePrimaryLabel: ['主要義', '主要義', 'Main meaning'],
+    senseStats: ['多義詞：已掌握 {k} / {t} 條；今日到期 {d} 條', '多義詞：已掌握 {k} / {t} 條；今日到期 {d} 條', 'Multi-meaning: {k} / {t} mastered; {d} due today'],
+    resultSense: ['多義詞練習完成', '多義詞練習完成', 'Multi-meaning complete'],
+    senseNoData: ['目前篩選下冇多義詞；試下清除篩選。', '目前篩選下沒有多義詞；試試清除篩選。', 'No multi-meaning words in this filter — try clearing filters.'],
     back: ['返回', '返回', 'Back'],
     flip: ['揭意思', '揭意思', 'Reveal'],
     meaning: ['意思', '意思', 'Meaning'],
@@ -305,6 +314,8 @@
   if (!streak || typeof streak !== 'object') streak = { date: '', count: 0 };
   var phraseProgress = load(PHRASE_KEY, {});
   if (!phraseProgress || typeof phraseProgress !== 'object') phraseProgress = {};
+  var senseProgress = load(SENSE_KEY, {});
+  if (!senseProgress || typeof senseProgress !== 'object') senseProgress = {};
   var view = 'home';
   var session = null;
   var lastResult = null;
@@ -492,6 +503,75 @@
     return { total: total, known: known, due: due };
   }
 
+  // ---- 多義詞練習：每條「第二義」＝一題（有中文義同英文例句才計）----
+  function senseEligible(w) {
+    if (!w.extraSenses || !w.extraSenses.length) return false;
+    return w.extraSenses.some(function (s) {
+      return s && typeof s.zh === 'string' && s.zh.trim() && typeof s.exEn === 'string' && s.exEn.trim();
+    });
+  }
+
+  function senseItems() {
+    var items = [];
+    currentWords().forEach(function (w) {
+      if (!w.extraSenses || !w.extraSenses.length) return;
+      w.extraSenses.forEach(function (sense) {
+        if (!sense || typeof sense.zh !== 'string' || !sense.zh.trim()) return;
+        if (typeof sense.exEn !== 'string' || !sense.exEn.trim()) return;
+        items.push({ word: w, sense: sense });
+      });
+    });
+    return items;
+  }
+
+  function senseItemKey(item) {
+    return String(item.word.id) + '|sense|' + String(item.sense.zh);
+  }
+
+  function senseRecord(key) {
+    var r = senseProgress[key];
+    return r && typeof r === 'object' ? r : null;
+  }
+
+  function senseKnown(key) {
+    var r = senseRecord(key);
+    return !!r && Number(r.step) >= 3;
+  }
+
+  function senseDue(key) {
+    var r = senseRecord(key);
+    return !r || !r.due || Number(r.due) <= Date.now();
+  }
+
+  function markSense(key, ok) {
+    var r = senseRecord(key) || { tries: 0, correct: 0, step: 0, due: 0, last: null };
+    r.tries = (Number(r.tries) || 0) + 1;
+    if (ok) {
+      r.correct = (Number(r.correct) || 0) + 1;
+      r.step = Math.min(5, (Number(r.step) || 0) + 1);
+    } else {
+      r.step = 0;
+    }
+    var days = ok ? STEPS[Math.max(0, Math.min(STEPS.length - 1, r.step - 1))] : 0;
+    r.due = Date.now() + days * 86400000;
+    r.last = new Date().toISOString();
+    senseProgress[key] = r;
+    save(SENSE_KEY, senseProgress);
+    logEvent('sense', ok, 0);
+  }
+
+  function senseStats() {
+    var items = senseItems();
+    var known = 0;
+    var due = 0;
+    items.forEach(function (it) {
+      var key = senseItemKey(it);
+      if (senseKnown(key)) known += 1;
+      if (senseDue(key)) due += 1;
+    });
+    return { total: items.length, known: known, due: due };
+  }
+
   function bumpStreak() {
     var today = todayKey();
     if (streak.date === today) return;
@@ -676,7 +756,7 @@
     var label = el('span', 'counter');
     if (viewName === 'flash' && session) {
       label.textContent = t('questionOf', { i: Math.min(session.pos + 1, session.queue.length), n: session.queue.length });
-    } else if ((viewName === 'quiz' || viewName === 'phrase' || viewName === 'spell') && session) {
+    } else if ((viewName === 'quiz' || viewName === 'phrase' || viewName === 'spell' || viewName === 'sense') && session) {
       label.textContent = t('questionOf', { i: Math.min(session.pos + 1, session.queue.length), n: session.queue.length });
     } else if (viewName === 'match' && session) {
       label.textContent = t('matchPairs', { n: session.matched, m: session.pairs.length });
@@ -947,6 +1027,10 @@
     if (ps.total) {
       prog.appendChild(el('p', 'progress-phrase tiny muted', t('phraseStats', { k: ps.known, t: ps.total, d: ps.due })));
     }
+    var ss = senseStats();
+    if (ss.total) {
+      prog.appendChild(el('p', 'progress-sense tiny muted', t('senseStats', { k: ss.known, t: ss.total, d: ss.due })));
+    }
     app.appendChild(prog);
 
     var modes = el('section', 'modes');
@@ -958,6 +1042,7 @@
       { v: 'quiz', icon: '⚡', name: t('modeQuiz'), desc: t('modeQuizDesc') },
       { v: 'phrase', icon: '🔗', name: t('modePhrase'), desc: t('modePhraseDesc') },
       { v: 'spell', icon: '⌨️', name: t('modeSpell'), desc: t('modeSpellDesc') },
+      { v: 'sense', icon: '🧠', name: t('modeSense'), desc: t('modeSenseDesc') },
     ].forEach(function (m) {
       var card = el('button', 'mode-card');
       card.type = 'button';
@@ -968,6 +1053,11 @@
         card.setAttribute('aria-disabled', 'true');
       }
       if (m.v === 'phrase' && !list.some(function (w) { return w.phrases && w.phrases.length >= 3; })) {
+        card.disabled = true;
+        card.classList.add('is-disabled');
+        card.setAttribute('aria-disabled', 'true');
+      }
+      if (m.v === 'sense' && !list.some(senseEligible)) {
         card.disabled = true;
         card.classList.add('is-disabled');
         card.setAttribute('aria-disabled', 'true');
@@ -1607,6 +1697,154 @@
     gradeSpell(false);
   }
 
+  // ---- 多義詞練習（第七個入口）：睇英文例句，揀出呢個字喺句中嘅意思 ----
+  function startSense() {
+    var items = senseItems();
+    if (!items.length) {
+      view = 'home';
+      render();
+      return;
+    }
+    var due = items.filter(function (it) {
+      return senseDue(senseItemKey(it));
+    });
+    var rest = items.filter(function (it) {
+      return !senseDue(senseItemKey(it));
+    });
+    var queue = shuffled(due).concat(shuffled(rest)).slice(0, Math.min(8, items.length));
+    session = {
+      kind: 'sense',
+      queue: queue,
+      pos: 0,
+      answered: 0,
+      correct: 0,
+      options: makeSenseOptions(queue[0]),
+      picked: null,
+      combo: 0,
+      startedAt: Date.now(),
+      itemAt: Date.now(),
+      mission: false,
+    };
+    view = 'sense';
+    render();
+  }
+
+  function makeSenseOptions(item) {
+    var correct = item.sense.zh;
+    var pool = [];
+    // 干擾項優先用「其他字嘅第二義」（同類義項，唔會同答案一樣），再用主要義補足。
+    currentWords().forEach(function (w) {
+      if (!w.extraSenses) return;
+      w.extraSenses.forEach(function (s) {
+        if (s && typeof s.zh === 'string' && s.zh !== correct && pool.indexOf(s.zh) < 0) pool.push(s.zh);
+      });
+    });
+    if (pool.length < 3) {
+      currentWords().forEach(function (w) {
+        if (w.zh && w.zh !== correct && pool.indexOf(w.zh) < 0) pool.push(w.zh);
+      });
+    }
+    return shuffled([correct].concat(shuffled(pool).slice(0, 3)));
+  }
+
+  function renderSense() {
+    if (!session || !session.queue.length) {
+      view = 'home';
+      render();
+      return;
+    }
+    var item = session.queue[session.pos];
+    var w = item.word;
+    var sense = item.sense;
+    app.appendChild(topbarFor('sense'));
+
+    var card = el('section', 'quiz-card sense-card');
+    var top = el('div', 'quiz-top');
+    top.appendChild(el('span', 'badge', t('modeSense')));
+    if (session.combo > 1) top.appendChild(el('span', 'combo', t('combo', { n: session.combo })));
+    card.appendChild(top);
+    card.appendChild(el('p', 'prompt-label', t('senseHint')));
+    card.appendChild(el('p', 'sense-word', w.en));
+    var sentence = el('p', 'sense-sentence', sense.exEn);
+    sentence.setAttribute('data-sense-sentence', '');
+    card.appendChild(sentence);
+
+    var options = el('div', 'options');
+    session.options.forEach(function (opt, i) {
+      var b = el('button', 'option');
+      b.type = 'button';
+      b.setAttribute('data-option', String(i));
+      b.textContent = opt;
+      if (session.picked !== null) {
+        if (opt === sense.zh) b.classList.add('is-correct');
+        else if (i === session.picked) b.classList.add('is-wrong');
+      }
+      options.appendChild(b);
+    });
+    card.appendChild(options);
+
+    if (session.picked !== null) {
+      var ok = session.options[session.picked] === sense.zh;
+      card.appendChild(el('p', 'feedback ' + (ok ? 'ok' : 'bad'), ok ? t('correct') : t('wrong')));
+      var answer = el('div', 'answer');
+      answer.appendChild(el('p', 'answer-label', t('senseAnswerLabel')));
+      answer.appendChild(el('p', 'meaning', sense.zh));
+      if (sense.exZh) answer.appendChild(el('p', 'translation', sense.exZh));
+      answer.appendChild(el('p', 'answer-label', t('sensePrimaryLabel')));
+      answer.appendChild(el('p', 'meaning', w.zh));
+      if (w.exEn) {
+        answer.appendChild(el('p', 'example', w.exEn));
+        if (w.exZh) answer.appendChild(el('p', 'translation', w.exZh));
+      }
+      card.appendChild(answer);
+    }
+    app.appendChild(card);
+  }
+
+  function chooseSense(index) {
+    if (!session || session.kind !== 'sense' || session.picked !== null) return;
+    var item = session.queue[session.pos];
+    var ok = session.options[index] === item.sense.zh;
+    session.picked = index;
+    session.answered += 1;
+    if (ok) {
+      session.correct += 1;
+      session.combo += 1;
+    } else {
+      session.combo = 0;
+    }
+    markSense(senseItemKey(item), ok);
+    render();
+
+    function advance() {
+      if (!session || session.kind !== 'sense' || session.picked === null) return;
+      session.pos += 1;
+      session.picked = null;
+      session.itemAt = Date.now();
+      if (session.pos >= session.queue.length) finishSession();
+      else {
+        session.options = makeSenseOptions(session.queue[session.pos]);
+        render();
+      }
+    }
+
+    if (ok) {
+      // 朗讀整句例句（聽力順便練），讀完再停 1 秒才跳題。
+      var moved = false;
+      var go = function () {
+        if (moved) return;
+        moved = true;
+        advance();
+      };
+      speak(item.sense.exEn, 'en-US', function () {
+        window.setTimeout(go, 900);
+      });
+      window.setTimeout(go, 3000);
+    } else {
+      window.setTimeout(advance, 2000);
+    }
+  }
+
   function renderMatch() {
     if (!session || !session.pairs.length) {
       view = 'home';
@@ -1699,7 +1937,9 @@
             ? t('modePhrase')
             : lastResult.kind === 'spell'
               ? t('modeSpell')
-              : t('modeQuiz');
+              : lastResult.kind === 'sense'
+                ? t('modeSense')
+                : t('modeQuiz');
     box.appendChild(el('p', 'result-kicker', lastResult.mission ? t('missionBadge') : kicker));
     var title = weakMode
       ? t('weakResult')
@@ -1711,7 +1951,9 @@
             ? t('modePhrase')
             : lastResult.kind === 'spell'
               ? t('resultSpell')
-              : t('resultQuiz');
+              : lastResult.kind === 'sense'
+                ? t('resultSense')
+                : t('resultQuiz');
     if (lastResult.mission) title = t('dailyTitle') + ' · ' + title;
     box.appendChild(el('h1', 'result-title', title));
     var stars = el('p', 'result-stars');
@@ -1751,6 +1993,7 @@
     else if (view === 'quiz') renderQuiz();
     else if (view === 'match') renderMatch();
     else if (view === 'phrase') renderPhrase();
+    else if (view === 'sense') renderSense();
     else if (view === 'spell') renderSpell();
     else if (view === 'result') renderResult();
     else renderHome();
@@ -1853,6 +2096,7 @@
       else if (mode === 'quiz') startQuiz();
       else if (mode === 'phrase') startPhrase();
       else if (mode === 'spell') startSpell();
+      else if (mode === 'sense') startSense();
       return;
     }
     if (target.hasAttribute('data-spell-submit')) {
@@ -1884,6 +2128,7 @@
     }
     if (target.hasAttribute('data-option')) {
       if (session && session.kind === 'phrase') choosePhrase(Number(target.getAttribute('data-option')));
+      else if (session && session.kind === 'sense') chooseSense(Number(target.getAttribute('data-option')));
       else chooseOption(Number(target.getAttribute('data-option')));
       return;
     }
@@ -1913,6 +2158,7 @@
         else startQuiz();
       } else if (kind === 'phrase') startPhrase();
       else if (kind === 'spell') startSpell();
+      else if (kind === 'sense') startSense();
       else {
         view = 'home';
         render();

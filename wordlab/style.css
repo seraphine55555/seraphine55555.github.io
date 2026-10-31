@@ -1074,6 +1074,27 @@ a {
   min-height: 48px;
 }
 
+/* 多義詞練習 */
+.sense-word {
+  margin: 2px 0 8px;
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 6vw, 2.2rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.sense-sentence {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-left: 3px solid rgba(192, 132, 252, 0.6);
+  border-radius: 8px;
+  background: rgba(192, 132, 252, 0.09);
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
 .match-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
