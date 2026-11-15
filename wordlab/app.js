@@ -225,6 +225,39 @@
       'Each direction tracks separately; correct answers space reviews out, mistakes come back today.',
     ],
     langLabel: ['語言', '語言', 'Language'],
+    /* 搵字／查閱（2026-11-03） */
+    lookupTitle: ['搵字', '查字', 'Look up a word'],
+    lookupPlaceholder: ['打英文或中文，例如 water／水', '打英文或中文，例如 water／水', 'Type English or Chinese, e.g. water'],
+    lookupGo: ['查', '查', 'Search'],
+    lookupCount: ['{n} 個結果', '{n} 個結果', '{n} results'],
+    lookupHint: [
+      '搜尋範圍＝全站 {n} 個字（唔受年級／篩選限制）。',
+      '搜尋範圍＝全站 {n} 個字（不受年級／篩選限制）。',
+      'Searches all {n} words (ignores grade and filters).',
+    ],
+    lookupEmpty: [
+      '搵唔到「{q}」。試下打少幾個字母，或者打中文意思。',
+      '找不到「{q}」。試試打少幾個字母，或打中文意思。',
+      'No match for 「{q}」. Try fewer letters, or search a Chinese meaning.',
+    ],
+    lookupClear: ['清除', '清除', 'Clear'],
+    lookupMore: [
+      '仲有 {n} 個，打多幾個字收窄範圍。',
+      '還有 {n} 個，多打幾個字收窄範圍。',
+      '{n} more — type more to narrow it down.',
+    ],
+    lookupSecondSense: ['第二義：{s}', '第二義：{s}', '2nd sense: {s}'],
+    lookupBack: ['返去搵字', '返回查字', 'Back to search'],
+    lookupDetail: ['字詞詳情', '詞語詳情', 'Word detail'],
+    lookupPractice: ['練呢個字', '練這個字', 'Practise this word'],
+    lookupSayWord: ['讀個字', '讀這個字', 'Hear the word'],
+    lookupSayExample: ['讀例句', '讀例句', 'Hear the example'],
+    lookupProgressNew: ['未練過呢個字。', '未練過這個字。', 'Not practised yet.'],
+    lookupProgress: [
+      '進度：第 {lvl} 級 · 答對 {ok} / {all} 次 · 下次 {date}',
+      '進度：第 {lvl} 級 · 答對 {ok} / {all} 次 · 下次 {date}',
+      'Progress: level {lvl} · {ok} / {all} correct · next {date}',
+    ],
   };
 
   function load(key, fallback) {
@@ -320,6 +353,14 @@
   var session = null;
   var lastResult = null;
   var app = document.getElementById('app');
+
+  /* 2026-11-03：新增「搵字」查閱（搜尋＋詳情）。
+     之前 4,954 個字嘅詞庫冇任何搜尋入口：只可以用 #word= 深層連結睇單一個字，
+     而首頁只有練習入口。呢個 view 唔受年級／篩選限制，永遠搜全站詞庫。 */
+  var lookupQuery = '';
+  var lookupWordId = null;
+  var lookupFocusPending = false;
+  var LOOKUP_LIMIT = 60;
 
   function gradeWords() {
     return DATA.filter(function (w) {
@@ -774,6 +815,274 @@
     return top;
   }
 
+  /* ---------- 搵字（查閱）---------- */
+
+  /* 搜尋索引：只建一次。每個字預先正規化英文／主要義／第二義，
+     咁每次打字就只係掃 4,954 條字串，唔需要每次重新 normalize。 */
+  var lookupIndex = null;
+
+  function lookupRowsAll() {
+    if (!lookupIndex) {
+      lookupIndex = DATA.map(function (w) {
+        return {
+          w: w,
+          en: normalizeSpell(w.en),
+          zh: normalizeSpell(w.zh),
+          extra: (w.extraSenses || []).map(function (s) {
+            return normalizeSpell(s.zh);
+          }),
+        };
+      }).sort(function (a, b) {
+        return String(a.w.en || '').localeCompare(String(b.w.en || ''));
+      });
+    }
+    return lookupIndex;
+  }
+
+  /* 英文（任何位置都得，唔止字頭）＋中文主要義＋中文第二義。
+     靠第二義命中時，列表要顯示嗰個義項，否則會見到一個對唔上查詢嘅中文義。 */
+  function lookupHitSense(row, q) {
+    if (!q || row.zh.indexOf(q) >= 0) return '';
+    for (var i = 0; i < row.extra.length; i++) {
+      if (row.extra[i].indexOf(q) >= 0) {
+        var sense = (row.w.extraSenses || [])[i];
+        return String((sense && sense.zh) || '');
+      }
+    }
+    return '';
+  }
+
+  function lookupSearch(query) {
+    /* 查詢同索引必須用同一個 normalizer（normalizeSpell）：只 trim() 會令
+       大寫、前後多餘空白、全形字母嘅查詢靜靜回 0 筆，而精確細楷查詢照樣通。 */
+    var q = normalizeSpell(query);
+    var all = lookupRowsAll();
+    if (!q) return { q: q, rows: all };
+    var hits = all.filter(function (row) {
+      if (row.en.indexOf(q) >= 0 || row.zh.indexOf(q) >= 0) return true;
+      for (var i = 0; i < row.extra.length; i += 1) {
+        if (row.extra[i].indexOf(q) >= 0) return true;
+      }
+      return false;
+    });
+    return { q: q, rows: hits };
+  }
+
+  function lookupWordById(id) {
+    if (!id) return null;
+    var found = null;
+    DATA.forEach(function (w) {
+      if (!found && String(w.id) === String(id)) found = w;
+    });
+    return found;
+  }
+
+  function lookupStatusBadge(w) {
+    if (isKnown(w)) return el('span', 'badge known', t('knownBadge'));
+    if (isWrongWord(w)) return el('span', 'badge weak', t('weakBadge'));
+    if (!recordOf(w)) return el('span', 'badge new', t('newBadge'));
+    return el('span', 'badge due', t('dueBadge'));
+  }
+
+  function openLookup() {
+    view = 'lookup';
+    lookupWordId = null;
+    session = null;
+    lastResult = null;
+    lookupFocusPending = true;
+    window.scrollTo(0, 0);
+    render();
+  }
+
+  function fillLookupList(list, result) {
+    list.replaceChildren();
+    if (!result.rows.length) {
+      var empty = el('div', 'lookup-empty');
+      empty.setAttribute('data-lookup-empty', '');
+      empty.appendChild(el('p', 'empty', t('lookupEmpty', { q: lookupQuery.trim() })));
+      var clear = el('button', 'btn ghost', t('lookupClear'));
+      clear.type = 'button';
+      clear.setAttribute('data-lookup-clear', '');
+      empty.appendChild(clear);
+      list.appendChild(empty);
+      return;
+    }
+    result.rows.slice(0, LOOKUP_LIMIT).forEach(function (row) {
+      list.appendChild(lookupRow(row, result.q));
+    });
+    if (result.rows.length > LOOKUP_LIMIT) {
+      list.appendChild(el('p', 'lookup-more', t('lookupMore', { n: result.rows.length - LOOKUP_LIMIT })));
+    }
+  }
+
+  function lookupRow(row, q) {
+    var w = row.w;
+    var btn = el('button', 'lookup-row');
+    btn.type = 'button';
+    btn.setAttribute('data-lookup-word', String(w.id));
+    var head = el('span', 'lookup-row-head');
+    head.appendChild(el('strong', 'lookup-en', String(w.en || '')));
+    var tags = el('span', 'lookup-tags');
+    tags.appendChild(el('span', 'badge', String(w.grade || '')));
+    tags.appendChild(lookupStatusBadge(w));
+    head.appendChild(tags);
+    btn.appendChild(head);
+    var sub = el('span', 'lookup-zh', String(w.zh || ''));
+    var type = typeText(w);
+    if (type) sub.appendChild(el('span', 'lookup-type', ' · ' + type));
+    btn.appendChild(sub);
+    var hit = lookupHitSense(row, q);
+    if (hit) btn.appendChild(el('span', 'lookup-hit', t('lookupSecondSense', { s: hit })));
+    return btn;
+  }
+
+  function refreshLookupList() {
+    var result = lookupSearch(lookupQuery);
+    var list = document.querySelector('[data-lookup-list]');
+    if (list) fillLookupList(list, result);
+    var pill = document.querySelector('[data-lookup-count]');
+    if (pill) pill.textContent = t('lookupCount', { n: result.rows.length });
+  }
+
+  function lookupSearchBox() {
+    var box = el('div', 'search-row');
+    var input = el('input', 'search-input');
+    input.type = 'text';
+    input.setAttribute('data-lookup-input', '');
+    input.setAttribute('placeholder', t('lookupPlaceholder'));
+    input.setAttribute('aria-label', t('lookupTitle'));
+    input.setAttribute('autocomplete', 'off');
+    input.setAttribute('enterkeyhint', 'search');
+    input.value = lookupQuery;
+    box.appendChild(input);
+    var go = el('button', 'btn primary search-go', t('lookupGo'));
+    go.type = 'button';
+    go.setAttribute('data-lookup-go', '');
+    box.appendChild(go);
+    return { box: box, input: input };
+  }
+
+  function renderLookup() {
+    var picked = lookupWordId ? lookupWordById(lookupWordId) : null;
+    var result = lookupSearch(lookupQuery);
+
+    var top = el('div', 'play-top');
+    if (picked) {
+      var backList = el('button', 'btn ghost', '← ' + t('lookupBack'));
+      backList.type = 'button';
+      backList.setAttribute('data-lookup-back', '');
+      top.appendChild(backList);
+    } else {
+      var backHome = el('button', 'btn ghost', '← ' + t('back'));
+      backHome.type = 'button';
+      backHome.setAttribute('data-home', '');
+      top.appendChild(backHome);
+    }
+    top.appendChild(el('span', 'counter', picked ? t('lookupDetail') : t('lookupCount', { n: result.rows.length })));
+    top.appendChild(el('span', 'top-spacer'));
+    app.appendChild(top);
+
+    if (picked) {
+      app.appendChild(lookupDetailCard(picked, result.q));
+      return;
+    }
+
+    var panel = el('section', 'panel lookup-panel');
+    var head = el('div', 'panel-head');
+    head.appendChild(el('h1', 'lookup-title', t('lookupTitle')));
+    var pill = el('span', 'pill', t('lookupCount', { n: result.rows.length }));
+    pill.setAttribute('data-lookup-count', '');
+    head.appendChild(pill);
+    panel.appendChild(head);
+    var search = lookupSearchBox();
+    panel.appendChild(search.box);
+    panel.appendChild(el('p', 'filter-note', t('lookupHint', { n: DATA.length })));
+    var list = el('div', 'lookup-list');
+    list.setAttribute('data-lookup-list', '');
+    fillLookupList(list, result);
+    panel.appendChild(list);
+    app.appendChild(panel);
+    if (lookupFocusPending) {
+      lookupFocusPending = false;
+      try {
+        search.input.focus();
+      } catch (e) {}
+    }
+  }
+
+  function lookupDetailCard(w, q) {
+    var card = el('section', 'panel lookup-detail');
+    var head = el('div', 'panel-head');
+    head.appendChild(el('h1', 'lookup-title', String(w.en || '')));
+    head.appendChild(lookupStatusBadge(w));
+    card.appendChild(head);
+
+    var meta = el('p', 'word-meta');
+    if (w.grade) meta.appendChild(el('span', 'badge', String(w.grade)));
+    if (w.ipa) meta.appendChild(el('span', 'badge ipa', w.ipa));
+    meta.appendChild(el('span', 'badge need-' + w.need, needName(w.need)));
+    meta.appendChild(el('span', 'badge band-' + w.band, bandName(Number(w.band))));
+    meta.appendChild(el('span', 'badge type', typeText(w)));
+    meta.appendChild(
+      el(
+        'span',
+        'badge source-' + wordSource(w),
+        wordSource(w) === 'curated' ? t('sourceCuratedBadge') : t('sourceDictBadge')
+      )
+    );
+    card.appendChild(meta);
+
+    var actions = el('div', 'detail-actions');
+    var sayWord = el('button', 'btn ghost', '🔊 ' + t('lookupSayWord'));
+    sayWord.type = 'button';
+    sayWord.setAttribute('data-speak-word', String(w.id));
+    actions.appendChild(sayWord);
+    var practice = el('button', 'btn primary', '▶ ' + t('lookupPractice'));
+    practice.type = 'button';
+    practice.setAttribute('data-practice-word', String(w.id));
+    actions.appendChild(practice);
+    card.appendChild(actions);
+
+    var body = el('div', 'detail-body');
+    body.appendChild(el('p', 'answer-label', t('meaning')));
+    body.appendChild(el('p', 'meaning', String(w.zh || '')));
+    if (w.exEn) {
+      body.appendChild(el('p', 'answer-label', t('example')));
+      body.appendChild(el('p', 'example', w.exEn));
+      body.appendChild(el('p', 'translation', w.exZh || ''));
+      var sayEx = el('button', 'btn ghost slim', '🔊 ' + t('lookupSayExample'));
+      sayEx.type = 'button';
+      sayEx.setAttribute('data-speak-example', String(w.id));
+      body.appendChild(sayEx);
+    } else {
+      body.appendChild(el('p', 'tiny muted', t('exampleMissing')));
+    }
+    appendExtraSenses(body, w);
+    appendPhrases(body, w);
+    card.appendChild(body);
+
+    var rec = recordOf(w);
+    var line = el('p', 'detail-progress');
+    line.setAttribute('data-detail-progress', '');
+    if (!rec) {
+      line.textContent = t('lookupProgressNew');
+    } else {
+      line.textContent = t('lookupProgress', {
+        lvl: String(Number(rec.step) || 0),
+        ok: String(Number(rec.correct) || 0),
+        all: String(Number(rec.tries) || 0),
+        date: rec.due ? new Date(Number(rec.due)).toLocaleDateString() : '—',
+      });
+    }
+    card.appendChild(line);
+
+    var home = el('button', 'btn ghost', t('home'));
+    home.type = 'button';
+    home.setAttribute('data-home', '');
+    card.appendChild(home);
+    return card;
+  }
+
   function renderHome() {
     var list = currentWords();
     if (!list.length) {
@@ -797,27 +1106,10 @@
     hero.appendChild(heroTop);
     hero.appendChild(el('h1', 'hero-title', t('heroTitle')));
     hero.appendChild(el('p', 'hero-lead', t('heroLead')));
+    /* 2026-11-03：搵字入口放喺 hero 入面（頁面最頂），因為查字係詞庫 app 嘅第一個動作；
+       代價係主頁高咗 ≈52px，所以同時把「學習方向」搬去下面嘅範圍／篩選區（見下）。 */
+    hero.appendChild(lookupSearchBox().box);
     app.appendChild(hero);
-
-    var subjectWrap = el('section', 'panel subject-panel');
-    var subjectHead = el('div', 'panel-head');
-    subjectHead.appendChild(el('h2', '', t('subjectTitle')));
-    subjectWrap.appendChild(subjectHead);
-    var tabs = el('div', 'subject-tabs');
-    [
-      { v: 'en', label: t('subjectEn'), hint: t('subjectEnHint') },
-      { v: 'zh', label: t('subjectZh'), hint: t('subjectZhHint') },
-    ].forEach(function (s) {
-      var b = el('button', 'subject-tab' + (subject === s.v ? ' is-on' : ''));
-      b.type = 'button';
-      b.setAttribute('data-subject', s.v);
-      b.setAttribute('aria-pressed', subject === s.v ? 'true' : 'false');
-      b.appendChild(el('strong', '', s.label));
-      b.appendChild(el('span', '', s.hint));
-      tabs.appendChild(b);
-    });
-    subjectWrap.appendChild(tabs);
-    app.appendChild(subjectWrap);
 
     var daily = el('section', 'panel daily-panel');
     var dailyHead = el('div', 'panel-head');
@@ -910,6 +1202,31 @@
       modes.appendChild(card);
     });
     app.appendChild(modes);
+
+    /* 2026-11-03：「學習方向」由 hero 之後搬到呢度（玩法卡之後、年級之前）。
+       原因：英雄區要放「搵字」輸入框（查字係詞庫 app 嘅第一動作），
+       而 320×700 首屏只剩 ~17px 鬆動，唔搬就會推低第一個玩法卡；
+       方向本身係「一次設定、之後好少改」嘅範圍設定，同下面年級／篩選同一組。
+       有守衛：verify「第一個玩法卡喺首屏內」＋「搜尋框喺首屏內」。 */
+    var subjectWrap = el('section', 'panel subject-panel');
+    var subjectHead = el('div', 'panel-head');
+    subjectHead.appendChild(el('h2', '', t('subjectTitle')));
+    subjectWrap.appendChild(subjectHead);
+    var tabs = el('div', 'subject-tabs');
+    [
+      { v: 'en', label: t('subjectEn'), hint: t('subjectEnHint') },
+      { v: 'zh', label: t('subjectZh'), hint: t('subjectZhHint') },
+    ].forEach(function (s) {
+      var b = el('button', 'subject-tab' + (subject === s.v ? ' is-on' : ''));
+      b.type = 'button';
+      b.setAttribute('data-subject', s.v);
+      b.setAttribute('aria-pressed', subject === s.v ? 'true' : 'false');
+      b.appendChild(el('strong', '', s.label));
+      b.appendChild(el('span', '', s.hint));
+      tabs.appendChild(b);
+    });
+    subjectWrap.appendChild(tabs);
+    app.appendChild(subjectWrap);
 
     var gradeWrap = el('section', 'panel grade-panel');
     var gradeHead = el('div', 'panel-head');
@@ -1999,6 +2316,7 @@
     else if (view === 'phrase') renderPhrase();
     else if (view === 'sense') renderSense();
     else if (view === 'spell') renderSpell();
+    else if (view === 'lookup') renderLookup();
     else if (view === 'result') renderResult();
     else renderHome();
     document.documentElement.lang = lang === 'en' ? 'en' : lang === 'yue' ? 'zh-HK' : 'zh-Hant';
@@ -2093,6 +2411,50 @@
       startWeak();
       return;
     }
+    if (target.hasAttribute('data-lookup-go')) {
+      openLookup();
+      return;
+    }
+    if (target.hasAttribute('data-lookup-clear')) {
+      lookupQuery = '';
+      lookupWordId = null;
+      var clearInput = document.querySelector('[data-lookup-input]');
+      if (clearInput) clearInput.value = '';
+      if (view === 'lookup' && !lookupWordId) refreshLookupList();
+      if (clearInput) {
+        try {
+          clearInput.focus();
+        } catch (e) {}
+      }
+      return;
+    }
+    if (target.hasAttribute('data-lookup-back')) {
+      lookupWordId = null;
+      window.scrollTo(0, 0);
+      render();
+      return;
+    }
+    if (target.hasAttribute('data-lookup-word')) {
+      lookupWordId = target.getAttribute('data-lookup-word');
+      window.scrollTo(0, 0);
+      render();
+      return;
+    }
+    if (target.hasAttribute('data-speak-word')) {
+      var sayWordRow = lookupWordById(target.getAttribute('data-speak-word'));
+      if (sayWordRow) speak(String(sayWordRow.en || ''), 'en-US');
+      return;
+    }
+    if (target.hasAttribute('data-speak-example')) {
+      var sayExRow = lookupWordById(target.getAttribute('data-speak-example'));
+      if (sayExRow && sayExRow.exEn) speak(String(sayExRow.exEn), 'en-US');
+      return;
+    }
+    if (target.hasAttribute('data-practice-word')) {
+      var practiceWord = lookupWordById(target.getAttribute('data-practice-word'));
+      if (practiceWord) startFlash([practiceWord]);
+      return;
+    }
     if (target.hasAttribute('data-mode')) {
       var mode = target.getAttribute('data-mode');
       if (mode === 'flash') startFlash();
@@ -2173,6 +2535,9 @@
       view = 'home';
       session = null;
       lastResult = null;
+      lookupWordId = null;
+      lookupQuery = '';
+      window.scrollTo(0, 0);
       render();
     }
   });
@@ -2180,6 +2545,12 @@
   document.addEventListener('input', function (event) {
     var target = event.target;
     if (!target || typeof target.hasAttribute !== 'function') return;
+    if (target.hasAttribute('data-lookup-input')) {
+      lookupQuery = String(target.value || '');
+      // 只換結果清單，唔整個畫面重畫 ⇒ 輸入框唔會失焦、IME 唔會斷。
+      if (view === 'lookup' && !lookupWordId) refreshLookupList();
+      return;
+    }
     if (!target.hasAttribute('data-spell-input')) return;
     if (!session || session.kind !== 'spell') return;
     session.typed = target.value;
@@ -2187,8 +2558,14 @@
 
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Enter') return;
-    if (!session || session.kind !== 'spell' || view !== 'spell') return;
     var target = event.target;
+    if (target && typeof target.hasAttribute === 'function' && target.hasAttribute('data-lookup-input')) {
+      // 首頁輸入框撳 Enter ⇒ 跳去搵字畫面（結果已經即時更新，唔需要再計一次）。
+      event.preventDefault();
+      if (view !== 'lookup') openLookup();
+      return;
+    }
+    if (!session || session.kind !== 'spell' || view !== 'spell') return;
     if (!target || typeof target.hasAttribute !== 'function') return;
     if (!target.hasAttribute('data-spell-input')) return;
     event.preventDefault();

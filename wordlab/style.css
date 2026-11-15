@@ -1332,3 +1332,163 @@ a {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ---------- 搵字（查閱）：2026-11-03 ---------- */
+.search-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 172, 210, 0.32);
+  border-radius: 12px;
+  background: rgba(8, 14, 26, 0.55);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+
+.search-input::placeholder {
+  color: rgba(169, 184, 214, 0.75);
+}
+
+.search-input:focus-visible,
+.search-go:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.search-go {
+  flex: 0 0 auto;
+  min-width: 56px;
+}
+
+.lookup-panel .search-row {
+  margin-top: 0;
+}
+
+.lookup-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+.lookup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.lookup-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: stretch;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(22, 33, 58, 0.72);
+  text-align: left;
+  cursor: pointer;
+}
+
+.lookup-row:active {
+  transform: translateY(1px);
+}
+
+.lookup-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.lookup-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lookup-en {
+  font-size: 17px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.lookup-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.lookup-zh {
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.lookup-type {
+  color: rgba(169, 184, 214, 0.8);
+}
+
+.lookup-hit {
+  color: var(--accent-2);
+  font-size: 12px;
+}
+
+.lookup-more {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lookup-empty {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 16px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.detail-progress {
+  margin: 14px 0 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .search-row {
+    margin-top: 12px;
+  }
+
+  .search-input {
+    /* 16px：iOS 唔會因為字太細而自動放大 */
+    font-size: 16px;
+  }
+
+  .lookup-title {
+    font-size: 20px;
+  }
+}
