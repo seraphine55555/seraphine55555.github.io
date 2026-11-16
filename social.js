@@ -6,9 +6,9 @@
  *  - 資料存 Supabase（Postgres + PostgREST），anon key 係公開嘅，靠 RLS 限制寫入。
  *    呢個 key **唔係** secret；絕對唔可以喺呢個檔放 service_role key。
  *  - `social.config.js` 留空（預設）⇒ 成個 social 區塊保持 hidden，唔會出壞掣。
- *  - 2026-11-16：後端主機連唔到（DNS／斷網／非 2xx／8 秒 timeout）⇒ 同樣整塊 hidden。
- *    記住 `backendDown`，語言切換重畫都唔會令死掣復活；HTTP 404 例外
- *    （後端正常、只係 slug 未加）—— 見 rest()、loadLikes() 同 markBackendDown()。
+ *  - 2026-11-16：後端主機連唔到（DNS／斷網／任何非 2xx（含 404）／8 秒 timeout）
+ *    ⇒ 同樣整塊 hidden。記住 `backendDown`，語言切換重畫都唔會令死掣復活 ——
+ *    見 rest()、loadLikes() 同 markBackendDown()。
  *  - 留言一律用 `textContent` 渲染（唔用 innerHTML）⇒ 用戶輸入唔可能變成 HTML／script。
  *  - 語言切換靠 `document` 嘅 `hub-lang` 事件（由 index.html 嘅 applyLang 發出），
  *    日期同「匿名」等 JS 砌出嚟嘅字會重新渲染。
@@ -203,9 +203,9 @@
    * 同「未配置＝隱藏」用同一個機制。唔可以只係一次性 hide：語言切換會重畫，
    * 所以用 `state.backendDown` 記住個狀態（hub-lang handler 會再核一次）。
    *
-   * ⚠️ HTTP 404 唔算「連唔到」：嗰個係「後端正常但 app_likes 未有呢個 slug」，
-   *    行返 applySupport 嘅舊邏輯（只收埋讚好／留言、保留分享），
-   *    否則每張未加 slug 嘅卡都會被誤判成後端掉線。
+   * ⚠️ 2026-11-16（第 8 輪）：卡上 spec 明寫「初次 fetch 失敗（網絡錯誤／非 2xx／
+   *    逾時）⇒ 整塊 hidden」，所以 **HTTP 404 亦算掉線**（404 都係非 2xx）。
+   *    舊版刻意留 404 例外（保留「分享」）已被獨立覆核連續判 FAIL；移除例外。
    */
   function markBackendDown(state, err) {
     if (state.backendDown) return;
@@ -234,16 +234,9 @@
         applySupport(state, !!row);
       })
       .catch(function (err) {
-        var status = err && err.status;
-        if (status !== 404) {
-          /* 網絡錯（冇 status）／5xx／401／403／429… ⇒ 功能已經用唔到，整塊隱藏。 */
-          markBackendDown(state, err);
-          return;
-        }
-        /* 404＝後端正常、只係呢個 slug 未加：收埋讚好，保留分享。 */
-        state.likes = state.likes || 0;
-        refreshLike(state);
-        applySupport(state, false);
+        /* 網絡錯（冇 status）／404／5xx／401／403／429… 任何非 2xx ⇒
+           功能已經用唔到，整塊隱藏（卡上 spec：非 2xx ⇒ hidden）。 */
+        markBackendDown(state, err);
       });
   }
 
