@@ -6,6 +6,9 @@
  *  - 資料存 Supabase（Postgres + PostgREST），anon key 係公開嘅，靠 RLS 限制寫入。
  *    呢個 key **唔係** secret；絕對唔可以喺呢個檔放 service_role key。
  *  - `social.config.js` 留空（預設）⇒ 成個 social 區塊保持 hidden，唔會出壞掣。
+ *  - 2026-11-16：後端主機連唔到（DNS／斷網／非 2xx）⇒ 同樣整塊 hidden。
+ *    記住 `backendDown`，語言切換重畫都唔會令死掣復活；HTTP 404 例外
+ *    （後端正常、只係 slug 未加）—— 見 loadLikes() 同 markBackendDown()。
  *  - 留言一律用 `textContent` 渲染（唔用 innerHTML）⇒ 用戶輸入唔可能變成 HTML／script。
  *  - 語言切換靠 `document` 嘅 `hub-lang` 事件（由 index.html 嘅 applyLang 發出），
  *    日期同「匿名」等 JS 砌出嚟嘅字會重新渲染。
@@ -73,7 +76,10 @@
     return fetch(base + '/rest/v1/' + path, init).then(function (res) {
       if (!res.ok) {
         return res.text().then(function (text) {
-          throw new Error('HTTP ' + res.status + ' ' + String(text || '').slice(0, 160));
+          var err = new Error('HTTP ' + res.status + ' ' + String(text || '').slice(0, 160));
+          /* 2026-11-16：保留 status，畀上層分辨「後端連唔到」同「後端正常但冇呢個 slug」 */
+          err.status = res.status;
+          throw err;
         });
       }
       if (res.status === 204) return null;
@@ -157,6 +163,29 @@
     }
   }
 
+  /**
+   * 2026-11-16：後端真係連唔到（DNS 錯／斷網／5xx／key 失效）⇒ 成個 social 區塊隱藏，
+   * 同「未配置＝隱藏」用同一個機制。唔可以只係一次性 hide：語言切換會重畫，
+   * 所以用 `state.backendDown` 記住個狀態（hub-lang handler 會再核一次）。
+   *
+   * ⚠️ HTTP 404 唔算「連唔到」：嗰個係「後端正常但 app_likes 未有呢個 slug」，
+   *    行返 applySupport 嘅舊邏輯（只收埋讚好／留言、保留分享），
+   *    否則每張未加 slug 嘅卡都會被誤判成後端掉線。
+   */
+  function markBackendDown(state, err) {
+    if (state.backendDown) return;
+    state.backendDown = true;
+    state.root.hidden = true;
+    if (window.console) {
+      console.warn(
+        '[social] 後端連唔到，已隱藏 ' +
+          state.slug +
+          ' 嘅讚好／留言區塊：' +
+          ((err && err.message) || err)
+      );
+    }
+  }
+
   function loadLikes(state) {
     return rest(
       LIKE_TABLE +
@@ -169,10 +198,17 @@
         refreshLike(state);
         applySupport(state, !!row);
       })
-      .catch(function () {
-        /* 讀唔到就顯示 0，唔好令成頁爆 */
+      .catch(function (err) {
+        var status = err && err.status;
+        if (status !== 404) {
+          /* 網絡錯（冇 status）／5xx／401／403／429… ⇒ 功能已經用唔到，整塊隱藏。 */
+          markBackendDown(state, err);
+          return;
+        }
+        /* 404＝後端正常、只係呢個 slug 未加：收埋讚好，保留分享。 */
         state.likes = state.likes || 0;
         refreshLike(state);
+        applySupport(state, false);
       });
   }
 
@@ -269,6 +305,7 @@
       comments: [],
       busyLike: false,
       loaded: false,
+      backendDown: false,
     };
     apps[slug] = state;
 
@@ -355,6 +392,11 @@
   document.addEventListener('hub-lang', function () {
     Object.keys(apps).forEach(function (slug) {
       var state = apps[slug];
+      if (state.backendDown) {
+        /* 重畫唔可以令隱藏咗嘅死掣復活（2026-11-16） */
+        state.root.hidden = true;
+        return;
+      }
       refreshLike(state);
       if (state.loaded) renderComments(state);
     });
