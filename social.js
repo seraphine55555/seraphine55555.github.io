@@ -6,9 +6,9 @@
  *  - 資料存 Supabase（Postgres + PostgREST），anon key 係公開嘅，靠 RLS 限制寫入。
  *    呢個 key **唔係** secret；絕對唔可以喺呢個檔放 service_role key。
  *  - `social.config.js` 留空（預設）⇒ 成個 social 區塊保持 hidden，唔會出壞掣。
- *  - 2026-11-16：後端主機連唔到（DNS／斷網／非 2xx）⇒ 同樣整塊 hidden。
+ *  - 2026-11-16：後端主機連唔到（DNS／斷網／非 2xx／8 秒 timeout）⇒ 同樣整塊 hidden。
  *    記住 `backendDown`，語言切換重畫都唔會令死掣復活；HTTP 404 例外
- *    （後端正常、只係 slug 未加）—— 見 loadLikes() 同 markBackendDown()。
+ *    （後端正常、只係 slug 未加）—— 見 rest()、loadLikes() 同 markBackendDown()。
  *  - 留言一律用 `textContent` 渲染（唔用 innerHTML）⇒ 用戶輸入唔可能變成 HTML／script。
  *  - 語言切換靠 `document` 嘅 `hub-lang` 事件（由 index.html 嘅 applyLang 發出），
  *    日期同「匿名」等 JS 砌出嚟嘅字會重新渲染。
@@ -66,6 +66,15 @@
     return h;
   }
 
+  /**
+   * 2026-11-16：fetch 本身**冇** timeout。如果後端 host 冇回應（socket accept 咗但永遠
+   * 唔回覆／連線卡住），fetch 會一直 pending ⇒ 區塊永遠顯示「♡ 0 讚好」、撳落去零反應，
+   * 而 console 冇紅字、`requestfailed` 亦唔會觸發 —— 守衛只測 connection refused 就照綠。
+   * 實測呢種死掣可以撐 15 秒以上。所以每次請求都要 abort：
+   * abort 會以 DOMException 形式 reject（冇 status），同真網絡錯走同一條 markBackendDown()。
+   */
+  var TIMEOUT_MS = 8000;
+
   function rest(path, options) {
     var opts = options || {};
     var init = {
@@ -73,18 +82,44 @@
       headers: Object.assign({}, headers(), opts.headers || {}),
     };
     if (opts.body !== undefined) init.body = JSON.stringify(opts.body);
-    return fetch(base + '/rest/v1/' + path, init).then(function (res) {
-      if (!res.ok) {
-        return res.text().then(function (text) {
-          var err = new Error('HTTP ' + res.status + ' ' + String(text || '').slice(0, 160));
-          /* 2026-11-16：保留 status，畀上層分辨「後端連唔到」同「後端正常但冇呢個 slug」 */
-          err.status = res.status;
-          throw err;
-        });
+    var timer = null;
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    if (ctrl) {
+      init.signal = ctrl.signal;
+      timer = window.setTimeout(function () {
+        try {
+          ctrl.abort();
+        } catch (e) {
+          /* 唔可以因為 abort 失敗而拋錯中斷流程 */
+        }
+      }, TIMEOUT_MS);
+    }
+    function clearTimer() {
+      if (timer !== null) {
+        window.clearTimeout(timer);
+        timer = null;
       }
-      if (res.status === 204) return null;
-      return res.json();
-    });
+    }
+    return fetch(base + '/rest/v1/' + path, init).then(
+      function (res) {
+        clearTimer();
+        if (!res.ok) {
+          return res.text().then(function (text) {
+            var err = new Error('HTTP ' + res.status + ' ' + String(text || '').slice(0, 160));
+            /* 2026-11-16：保留 status，畀上層分辨「後端連唔到」同「後端正常但冇呢個 slug」 */
+            err.status = res.status;
+            throw err;
+          });
+        }
+        if (res.status === 204) return null;
+        return res.json();
+      },
+      function (err) {
+        /* 網絡錯／DNS 失敗／abort（timeout）都冇 status ⇒ 上層當「連唔到」 */
+        clearTimer();
+        throw err;
+      }
+    );
   }
 
   function fmtDate(iso) {
