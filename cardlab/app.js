@@ -197,6 +197,7 @@
     'err.timeout': { yue: '超時。網絡慢或者相片太大，試下再影或者分半影。', zh: '逾時。網絡慢或相片太大，試著再拍或分半拍。', en: 'Timed out. Slow network or large photo — retake or split the page.' },
     'err.not_json': { yue: 'AI 回傳格式有問題（唔係 JSON）。再試一次。', zh: 'AI 回傳格式有問題（不是 JSON）。再試一次。', en: 'AI returned invalid format (not JSON). Try again.' },
     'err.diag': { yue: '技術詳情：', zh: '技术详情：', en: 'Details:' },
+    'err.truncated_ai': { yue: 'AI 輸出用盡上限（截斷咗）。影半頁或者分開影，再試一次。', zh: 'AI 输出用尽上限（被截断）。拍半页或分开拍，再试一次。', en: 'AI hit the output limit and got cut off. Shoot half a page or split it.' },
     'err.bad_stage': { yue: 'AI 判斷嘅程度唔喺允許清單。', zh: 'AI 判斷的程度不在允許清單。', en: 'AI stage is not in the allowed list.' },
     'err.bad_grade': { yue: '年級同程度唔夾。', zh: '年級與程度不符。', en: 'Grade does not match stage.' },
     'err.bad_subject': { yue: 'AI 判斷嘅科目唔喺清單。', zh: 'AI 判斷的科目不在清單。', en: 'AI subject is not in the list.' },
@@ -1466,6 +1467,10 @@
     var finish = (choice && choice.finish_reason) || '';
     var rLen = msg && typeof msg.reasoning_content === 'string' ? msg.reasoning_content.length : 0;
     var diag = 'finish=' + (finish || '?') + ' · 字數=' + (content ? content.length : 0) + ' · reasoning=' + rLen;
+    if (finish === 'length') {
+      // 內容被截斷：唔好當係「格式錯」，直接叫家長影半頁（真機：thinking 會用晒 token）
+      return { ok: false, code: 'truncated_ai', diag: diag };
+    }
     if (!content) {
       diag += ' · envelope=' + (data ? Object.keys(data).join('/') : '?');
       return { ok: false, code: 'not_json', diag: diag };

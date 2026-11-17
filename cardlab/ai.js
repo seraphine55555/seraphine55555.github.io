@@ -715,12 +715,18 @@
     return parts.join('\n');
   }
 
-  /** 對話模型請求 body：model=deepseek-flash、temperature 0.2。 */
+  /** 對話模型請求 body：model=deepseek-flash、temperature 0.2。
+   * 關掉 thinking（`thinking:{type:'disabled'}`）：呢個任務係結構化抽取，thinking 版會先寫一長段
+   * CoT，真機實測 4096 token 用晒喺 reasoning（finish=length、content 空）→ 直接出唔到 JSON。
+   * 真機 2026-11-17 診斷：finish=length、reasoning=7747 字、content 0 字。
+   */
   function buildChatBody(ocrText, opts) {
     return {
       model: MODEL,
       temperature: 0.2,
-      max_tokens: 4096,
+      max_tokens: 8192,
+      thinking: { type: 'disabled' },
+      response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: systemPrompt() },
         { role: 'user', content: userContent(ocrText, opts) },
