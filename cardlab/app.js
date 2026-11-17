@@ -372,7 +372,8 @@
     html += '<section class="section"><h1 class="page-title">' + esc(t('photo.title')) + '</h1>';
     html += '<p class="hint">' + esc(t('photo.tips')) + '</p>';
     html += '<p class="hint hint--soft">' + esc(t('photo.auto')) + '</p>';
-    html += '<input id="file-input" class="sr-only" type="file" accept="image/*" capture="environment" />';
+    // 唔加 capture：加咗嘅話手機（Android/iOS）會直接開相機、揀唔到相簿。
+    html += '<input id="file-input" class="sr-only" type="file" accept="image/*" />';
     html += '<label class="btn btn--pick" for="file-input" id="btn-pick">' + esc(t('photo.pick')) + '</label>';
     html += '<div id="photo-slot">';
     if (state.photo) {
