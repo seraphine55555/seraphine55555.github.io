@@ -1,0 +1,15 @@
+{
+  "name": "卡冊 CardLab",
+  "short_name": "卡冊",
+  "description": "影一張課本相，OCR 認字，AI 判斷科目／年級／知識分類同知識點，再出易記卡；有掌握地圖同間隔重練。卡同進度只存本機，可離線練習。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e1729",
+  "theme_color": "#101a33",
+  "lang": "zh-HK",
+  "icons": [
+    { "src": "../icons/cardlab.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "../icons/cardlab-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

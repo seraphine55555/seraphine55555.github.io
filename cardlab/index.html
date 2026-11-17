@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>卡冊 CardLab</title>
+    <meta
+      name="description"
+      content="影一張課本相，OCR 認字，AI 判斷科目／年級／知識分類同知識點，再出易記卡；有掌握地圖同間隔重練。卡同進度只存本機，練習可離線。"
+    />
+    <meta name="theme-color" content="#101a33" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="../icons/cardlab.png" />
+    <link rel="apple-touch-icon" href="../icons/cardlab.png" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button type="button" class="iconbtn" id="btn-back" data-act="home" aria-label="返回" hidden>←</button>
+      <span class="brand">
+        <span class="brand__mark" aria-hidden="true">卡</span>
+        <span class="brand__text">
+          <strong>卡冊 CardLab</strong>
+          <small>影相出卡</small>
+        </span>
+      </span>
+      <div class="lang" role="group" aria-label="語言 / Language">
+        <button type="button" data-lang="yue" aria-pressed="false">粵</button>
+        <button type="button" data-lang="zh" aria-pressed="true">繁</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button type="button" class="iconbtn" id="btn-settings" data-act="settings" aria-label="設定">⚙</button>
+    </header>
+
+    <main id="view" class="wrap"></main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <noscript>呢個 app 需要 JavaScript。</noscript>
+
+    <script src="../progress.js"></script>
+    <script src="srs.js"></script>
+    <script src="parse.js"></script>
+    <script src="ai.js"></script>
+    <script src="store.js"></script>
+    <script src="map.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
