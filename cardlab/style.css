@@ -564,6 +564,60 @@ img { max-width: 100%; height: auto; display: block; }
   text-align: center;
 }
 
+/* ── P4：原文參考（A 卡組原文面板／B 每卡相關原文） ── */
+.srcpanel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card2);
+  padding: 8px 12px 4px;
+  margin: 6px 0 12px;
+  max-width: 100%;
+}
+.srcpanel__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--tap); }
+.srcpanel__title { font-size: 14px; margin: 0; color: var(--ink2); font-weight: 600; }
+.srcpanel__body {
+  margin: 0 0 6px;
+  max-height: 50vh;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.pctx {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 0 12px;
+  margin: 0 0 12px;
+  max-width: 100%;
+}
+.pctx > summary {
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--ink2);
+  font-size: 14px;
+  list-style: none;
+}
+.pctx > summary::-webkit-details-marker { display: none; }
+.pctx > summary::before { content: '▸'; color: var(--ink3); }
+.pctx[open] > summary::before { content: '▾'; }
+.pctx__body {
+  margin: 0 0 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink2);
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

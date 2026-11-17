@@ -37,6 +37,11 @@
     'decks.filterLabel': { yue: '按分類篩選卡冊', zh: '按分類篩選卡冊', en: 'Filter decks by category' },
     'decks.other': { yue: '其他', zh: '未分類', en: 'Other' },
     'decks.category': { yue: '分類', zh: '分類', en: 'Category' },
+    // P4：保留原文參考（A 卡組原文面板＋B 每卡相關原文節錄）
+    'source.open': { yue: '📄 原文', zh: '📄 原文', en: '📄 Source text' },
+    'source.title': { yue: '原文（OCR）', zh: '原文（OCR）', en: 'Source text (OCR)' },
+    'source.local': { yue: '原文只係文字，同卡組一齊存喺呢部機；冇相片。', zh: '原文只是文字，與卡組一起存在這部機；沒有相片。', en: 'Source is text only, stored on this device with the deck — no photos.' },
+    'practice.context': { yue: '📖 相關原文', zh: '📖 相關原文', en: '📖 Related source' },
     'home.empty': { yue: '仲未有卡。撳「影相出卡」開始。', zh: '還沒有卡。按「影相出卡」開始。', en: 'No cards yet. Tap "Photo to cards" to start.' },
     'home.paste': { yue: '貼上建卡', zh: '貼上建卡', en: 'Paste cards' },
     'home.import': { yue: '匯入', zh: '匯入', en: 'Import' },
@@ -56,9 +61,9 @@
       en: 'AI decides subject, grade, difficulty and knowledge categories.',
     },
     'photo.privacy': {
-      yue: '🔒 撳「開始分析」先會送出呢張相：文字會經 DeepSeek OCR 同對話模型分析。OCR 檔案唔會存入 Files API，亦唔會交給對話模型；相片唔會存喺我哋伺服器，分析完即棄。',
-      zh: '🔒 按「開始分析」才會送出這張相：文字會經 DeepSeek OCR 與對話模型分析。OCR 檔案不會存入 Files API，也不會交給對話模型；相片不會存在我們的伺服器，分析完即棄。',
-      en: '🔒 Only after you tap Start will this photo be sent: text goes through DeepSeek OCR and the chat model. OCR files are not stored in the Files API nor passed to the chat model; photos are never stored on our server and are discarded after analysis.',
+      yue: '🔒 撳「開始分析」先會送出呢張相：文字會經 DeepSeek OCR 同對話模型分析。OCR 檔案唔會存入 Files API，亦唔會交給對話模型；相片唔會存喺我哋伺服器，分析完即棄。認到嘅原文文字只會同卡組一齊存喺呢部機（冇相片）。',
+      zh: '🔒 按「開始分析」才會送出這張相：文字會經 DeepSeek OCR 與對話模型分析。OCR 檔案不會存入 Files API，也不會交給對話模型；相片不會存在我們的伺服器，分析完即棄。認到的原文文字只會與卡組一起存在這部機（沒有相片）。',
+      en: '🔒 Only after you tap Start will this photo be sent: text goes through DeepSeek OCR and the chat model. OCR files are not stored in the Files API nor passed to the chat model; photos are never stored on our server and are discarded after analysis. The OCR source text is kept on this device with the deck (text only, no photos).',
     },
     'photo.analyze': { yue: '開始 AI 分析', zh: '開始 AI 分析', en: 'Start AI analysis' },
     'photo.noKey': { yue: 'AI 未啟用：請喺設定頁入 DeepSeek API key（只存本機）。', zh: 'AI 未啟用：請在設定頁輸入 DeepSeek API key（只存本機）。', en: 'AI is not enabled: add a DeepSeek API key in Settings (stored locally only).' },
@@ -202,7 +207,7 @@
     'settings.save': { yue: '儲存', zh: '儲存', en: 'Save' },
     'settings.saved': { yue: '已儲存', zh: '已儲存', en: 'Saved' },
     'settings.ai': { yue: 'AI 供應商：DeepSeek · 模型 {m} · 每日上限 {cap} 張', zh: 'AI 供應商：DeepSeek · 模型 {m} · 每日上限 {cap} 張', en: 'Provider: DeepSeek · model {m} · daily cap {cap}' },
-    'settings.privacy': { yue: '相片只用一次：分析完即棄，唔入 localStorage／IndexedDB。練習頁完全離線。', zh: '相片只用一次：分析完即棄，不進 localStorage／IndexedDB。練習頁完全離線。', en: 'Photos are used once and discarded — never stored in localStorage/IndexedDB. Practice is fully offline.' },
+    'settings.privacy': { yue: '相片只用一次：分析完即棄，唔入 localStorage／IndexedDB。卡組原文只有文字（冇相片），同卡組一齊存喺呢部機。練習頁完全離線。', zh: '相片只用一次：分析完即棄，不進 localStorage／IndexedDB。卡組原文只有文字（沒有相片），與卡組一起存在這部機。練習頁完全離線。', en: 'Photos are used once and discarded — never stored in localStorage/IndexedDB. Deck source text (text only, no photos) is kept on this device with the deck. Practice is fully offline.' },
     'settings.data': { yue: '資料', zh: '資料', en: 'Data' },
     'settings.clear': { yue: '清除全部資料', zh: '清除全部資料', en: 'Clear all data' },
     'settings.clearConfirm': { yue: '確定清除全部卡同進度？', zh: '確定清除全部卡和進度？', en: 'Clear all cards and progress?' },
@@ -337,6 +342,8 @@
     kpPick: {},
     // P3：卡冊分類篩選（'' = 全部）
     deckFilter: '',
+    // P4：原文面板開關（卡組頁／練習頁共用，每次換頁重設）
+    sourceOpen: false,
   };
 
   function now() {
@@ -792,6 +799,8 @@
     html += '<button type="button" class="btn btn--primary" data-act="practice" data-id="' + esc(deck.id) + '">' + esc(t('deck.practice')) + '</button>';
     html += '<button type="button" class="btn btn--ghost" data-act="deck-map" data-id="' + esc(deck.id) + '">' + esc(t('deck.map')) + '</button>';
     html += '</div>';
+    // P4 A：卡組頁「📄 原文」（有 source 才顯示；舊卡組冇就唔會有掣）
+    html += sourcePanelHtml(deck.source);
     html += '<div class="toolbar"><button type="button" class="btn btn--danger btn--tiny" data-act="delete-deck" data-id="' + esc(deck.id) + '">' + esc(t('deck.delete')) + '</button></div>';
     html += '</section>';
     return html;
@@ -1089,6 +1098,13 @@
     // cloze 卡一律顯示填空線（＿＿），唔好顯示 {{answer}} 原文
     html += '<p class="pcard__front" id="practice-front">' + esc(P.displayFront(card.front)) + '</p>';
     html += '</article>';
+    // P4 A：練習頁都可以開返卡組原文（有 source 才顯示）
+    html += sourcePanelHtml(deck.source);
+    // P4 B：有 context 先出「📖 相關原文」；<details> 默認收起（唔好一開就爆答案），揭曉後仍然可看
+    if (card.context) {
+      html += '<details class="pctx" id="practice-context"><summary>' + esc(t('practice.context')) + '</summary>';
+      html += '<p class="pctx__body" id="practice-context-body">' + esc(card.context) + '</p></details>';
+    }
 
     if (session.needsContinue) {
       html += '<div class="feedback feedback--' + (session.feedback && session.feedback.correct ? 'ok' : 'bad') + '" id="practice-feedback">';
@@ -1332,12 +1348,35 @@
   }
 
   function go(hash) {
+    state.sourceOpen = false;
     if (location.hash === hash) { 
       routeFromHash();
       render();
       return;
     }
     location.hash = hash;
+  }
+
+  // ─────────────────────────── P4：原文面板 ───────────────────────────
+  /**
+   * 卡組原文面板：有 source 先出「📄 原文」掣；面板默認收起。
+   * 內容用 esc() 逐字轉義（即使 OCR 有 <script> 都只會顯示文字），
+   * white-space:pre-wrap 保留 OCR 換行，面板本身可捲動（CSS）。
+   */
+  function sourcePanelHtml(raw) {
+    var src = Ai.sanitizeSource(raw);
+    if (!src) return '';
+    var html = '';
+    html += '<div class="toolbar toolbar--tight"><button type="button" class="btn btn--ghost" id="btn-source" data-act="toggle-source" aria-expanded="' + (state.sourceOpen ? 'true' : 'false') + '" aria-controls="source-panel">' + esc(t('source.open')) + '</button></div>';
+    if (state.sourceOpen) {
+      html += '<section class="srcpanel" id="source-panel" aria-label="' + esc(t('source.title')) + '">';
+      html += '<div class="srcpanel__head"><h3 class="srcpanel__title">' + esc(t('source.title')) + '</h3>';
+      html += '<button type="button" class="btn btn--tiny btn--ghost" id="btn-source-close" data-act="toggle-source">' + esc(t('common.close')) + '</button></div>';
+      html += '<div class="srcpanel__body" id="source-text">' + esc(src.text) + '</div>';
+      html += '<p class="hint hint--soft">' + esc(t('source.local')) + '</p>';
+      html += '</section>';
+    }
+    return html;
   }
 
   function routeFromHash() {
@@ -1427,6 +1466,8 @@
       knowledgePoints: analysis.knowledgePoints,
       cards: analysis.cards,
       ocr: analysis.ocr || null,
+      // P4 A：快取都存原文（純文字）；命中先有原文睇。舊 entry 冇 source 照樣命中。
+      source: analysis.source || null,
     };
     var raw = S.readAiCache();
     var next = Ai.cachePut(raw, hash, value, now());
@@ -1622,6 +1663,8 @@
     state.confirm = {};
     state.analysis.cards.forEach(function (c) { state.confirm[c.id] = true; });
     state.analysis.ocr = { pages: allPages.length, chars: charsTotal, quality: mergedGate.code, photos: photoN };
+    // P4 A：由合併後 OCR 原文砌卡組 source（純文字；已經過品質閘同本機驗證）
+    state.analysis.source = Ai.sanitizeSource({ text: state.ocr.text, pages: allPages.length, chars: charsTotal, at: now() });
     // 驗證已過、分析已成形 → 先寫快取（任何失敗都行唔到呢一步）
     cacheSave(hash, state.analysis);
     S.clearDraft();
@@ -1718,7 +1761,10 @@
       value.topic = state.analysis.topic;
       value.cards = value.cards.filter(function (c) { return keptIds[c.kpId]; });
     }
+    // P4 A：重新出卡只換 cards，卡組原文 source 照舊保留（唔會因為 regen 冇咗原文）
+    var keptSource = state.analysis.source || null;
     state.analysis = value;
+    if (keptSource) state.analysis.source = keptSource;
     state.analysis.cached = false; // 重出卡已經再 call 過模型，唔再算「用快取」
     state.editKpId = null;
     state.newKp = false;
@@ -1749,7 +1795,9 @@
       seen[key] = 1;
       var type = Ai.CARD_TYPES.indexOf(c.type) >= 0 ? c.type : 'basic';
       if (type === 'cloze' && !/\{\{[^{}]*\}\}/.test(f.text)) return;
-      out.push({
+      // P4 B：cards-only 重出卡都保留 optional context（≤200 字、去 HTML）
+      var ctx = Ai.truncate(Ai.stripHtml(c.context || ''), 200).text;
+      var outCard = {
         id: 'c' + (i + 1),
         kpId: c.kpId,
         category: kp.category,
@@ -1760,7 +1808,9 @@
         mnemonic: Ai.truncate(Ai.stripHtml(c.mnemonic || ''), 30).text,
         example: Ai.truncate(Ai.stripHtml(c.example || ''), 80).text,
         uncertain: c.uncertain === true,
-      });
+      };
+      if (ctx) outCard.context = ctx;
+      out.push(outCard);
     });
     return out.length ? out : null;
   }
@@ -1942,6 +1992,11 @@
       case 'deck-filter':
         // P3：首頁卡冊分類篩選（'' = 全部）
         state.deckFilter = el.getAttribute('data-cat') || '';
+        render();
+        break;
+      case 'toggle-source':
+        // P4：卡組頁／練習頁「📄 原文」面板開／關（唔改 session，練習進度唔會斷）
+        state.sourceOpen = !state.sourceOpen;
         render();
         break;
       case 'practice':

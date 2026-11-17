@@ -119,6 +119,12 @@
     return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
   }
 
+  /** P4：原文正規化交 ai.js（單一真相）；ai.js 未載入時就當冇 source，唔會爛。 */
+  function sanitizeSource(raw) {
+    var Ai = global.CardLabAi;
+    return Ai && typeof Ai.sanitizeSource === 'function' ? Ai.sanitizeSource(raw) : null;
+  }
+
   /** 由 AI 驗證結果砌卡組（只喺用戶確認之後叫）。 */
   function createDeck(db, analysis, opts) {
     var o = opts || {};
@@ -144,6 +150,8 @@
           back: c.back,
           mnemonic: c.mnemonic || '',
           example: c.example || '',
+          // P4 B：optional 原文節錄（≤200 字）；冇就係空字串，練習頁自己判斷
+          context: c.context || '',
           uncertain: c.uncertain === true,
           source: 'ai',
         };
@@ -155,6 +163,9 @@
         ocr: analysis.ocr || { pages: 1, chars: 0, quality: 'ok' },
       },
     };
+    // P4 A：卡組保留 OCR 原文（純文字、冇相片）。舊 analysis 冇 source → 唔加 key，UI 自己隱藏原文掣。
+    var src = sanitizeSource(analysis && analysis.source);
+    if (src) deck.source = src;
     db.decks.unshift(deck);
     save(db);
     return deck;

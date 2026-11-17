@@ -38,6 +38,9 @@
   // 卡冊分類（P3）：AI 回 topic.category＝「科目＋範疇」2–10 字，例如 中文閱讀理解／數學乘法
   var CATEGORY_MAX = 10;
   var CATEGORY_MIN = 2;
+  // P4：保留原文參考 —— A：卡組 source（純文字、冇相片）；B：每卡 optional context（原文節錄 ≤200 字）
+  var SOURCE_MAX = 8000;
+  var CONTEXT_MAX = 200;
   var CARD_TYPES = ['basic', 'cloze', 'compare', 'trap'];
   var SYNONYMS = {
     '常見錯誤': '易錯',
@@ -94,6 +97,37 @@
   }
 
   function labelLen(s) { return Array.from(str(s)).length; }
+
+  // ── P4：原文參考（A 卡組 source＋B 每卡 context）──
+  /**
+   * 卡組原文（純文字）正規化：收 {text, pages, chars, at}。
+   * text 必須係非空字串；trim、\r\n → \n、上限 SOURCE_MAX（8000 字，超出截斷但唔會拒絕整份分析）。
+   * 非物件／冇文字 → null（舊卡組冇 source 就係 null，UI 自己隱藏原文掣）。
+   */
+  function sanitizeSource(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var text = str(raw.text).replace(/\r\n?/g, '\n').trim();
+    if (!text) return null;
+    var cut = truncate(text, SOURCE_MAX).text;
+    var pages = Math.floor(Number(raw.pages));
+    if (!isFinite(pages) || pages < 1) pages = 1;
+    if (pages > 100) pages = 100;
+    var at = Number(raw.at);
+    if (!isFinite(at) || at < 0) at = 0;
+    return { text: cut, pages: pages, chars: labelLen(cut), at: at };
+  }
+
+  /** 快取嚴格驗：source 只可以係「已正規化」嘅純文字物件（舊 entry 冇 source 仍然 OK）。 */
+  function sourceOk(raw) {
+    if (!raw || typeof raw !== 'object') return false;
+    if (typeof raw.text !== 'string') return false;
+    if (!raw.text.trim() || labelLen(raw.text) > SOURCE_MAX) return false;
+    if (raw.text !== raw.text.replace(/\r\n?/g, '\n').trim()) return false;
+    if (!isInt(raw.pages) || raw.pages < 1 || raw.pages > 100) return false;
+    if (!isInt(raw.chars) || raw.chars !== labelLen(raw.text)) return false;
+    if (!isFinite(Number(raw.at)) || Number(raw.at) < 0) return false;
+    return true;
+  }
 
   // ── stage ↔ grade 枚舉聯動（P1.1 理解頁改年級）──
 
@@ -393,7 +427,9 @@
       seen[key] = 1;
       emptyKp[kpId] = false;
       var cd = isInt(card.difficulty) ? clamp(card.difficulty, 1, 5) : clamp(Math.round(Number(card.difficulty) || 2), 1, 5);
-      cards.push({
+      // P4 B：optional context＝原文相關段落節錄；去 HTML、trim、≤200 字，空就唔加 key。
+      var ctx = truncate(stripHtml(card.context || ''), CONTEXT_MAX).text;
+      var outCard = {
         id: 'c' + (i + 1),
         kpId: kpId,
         category: normLabel(card.category) || OTHER,
@@ -404,7 +440,9 @@
         mnemonic: truncate(stripHtml(card.mnemonic || ''), 30).text,
         example: truncate(stripHtml(card.example || ''), 80).text,
         uncertain: card.uncertain === true,
-      });
+      };
+      if (ctx) outCard.context = ctx;
+      cards.push(outCard);
     });
     if (orphan) notes.push('orphan_cards:' + orphan);
     if (!cards.length) errors.push('no_cards');
@@ -546,6 +584,8 @@
       if (typeof tp.category !== 'string') return false;
       if (!sanitizeCategory(tp.category) || sanitizeCategory(tp.category) !== tp.category) return false;
     }
+    // P4 A：source 只做 optional 驗 —— 舊快取（冇 source）照命中；有就要係已正規化嘅純文字物件。
+    if (v.source !== undefined && v.source !== null && !sourceOk(v.source)) return false;
     var kps = asArray(v.knowledgePoints);
     if (!kps.length || kps.length > 10) return false;
     var ids = Object.create(null);
@@ -580,6 +620,12 @@
       var type = str(card.type).trim();
       if (CARD_TYPES.indexOf(type) < 0) return false;
       if (type === 'cloze' && !/\{\{[^{}]*\}\}/.test(front)) return false;
+      // P4 B：context 只做 optional 驗 —— 冇＝OK；有就要係非空、已去 HTML、≤200 字。
+      if (card.context !== undefined && card.context !== null) {
+        if (typeof card.context !== 'string') return false;
+        var cctx = stripHtml(card.context);
+        if (!cctx || labelLen(cctx) > CONTEXT_MAX) return false;
+      }
       var dk = str(card.kpId) + '\u0000' + front.toLowerCase();
       if (seen[dk]) return false;
       seen[dk] = 1;
@@ -786,16 +832,17 @@
       '14. 唔好照抄課文長句；要改寫成「問—答」。避免是非題。',
       '15. 可以加一句口訣（mnemonic，≤20 字）同一個例子。',
       '16. 每個知識點至少 1 張卡；冇卡嘅知識點要刪走。',
+      '17. 如果張卡要靠原文上文下理先答得到（例如閱讀理解問「作者點解咁講」），可以為佢加 context：原文相關段落節錄（≤200 字，照原文抄，唔好改寫、唔好連答案一齊抄）。其他卡冇需要就唔好加 context。',
       '',
       '四、誠實',
-      '17. 只根據提供嘅文字／圖片內容；唔好加內容以外嘅知識。',
-      '18. OCR 認唔清、有亂碼或者明顯缺字嘅位，標 uncertain:true，唔好猜。',
-      '19. 工作紙相片：出「解題所需知識」卡，唔好直接把答案抄成卡。',
-      '20. 如果內容唔係課本／筆記（例如自拍、食物），回 {"error":"not_study_material"}。',
-      '21. 如果文字殘缺到唔能夠理解，回 {"error":"low_legibility"}。',
+      '18. 只根據提供嘅文字／圖片內容；唔好加內容以外嘅知識。',
+      '19. OCR 認唔清、有亂碼或者明顯缺字嘅位，標 uncertain:true，唔好猜。',
+      '20. 工作紙相片：出「解題所需知識」卡，唔好直接把答案抄成卡。',
+      '21. 如果內容唔係課本／筆記（例如自拍、食物），回 {"error":"not_study_material"}。',
+      '22. 如果文字殘缺到唔能夠理解，回 {"error":"low_legibility"}。',
       '',
       '只輸出 JSON（物件），唔要 markdown、唔要解釋。',
-      'JSON 形狀：{"classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"cards":[{"type","kpId","category","difficulty","front","back","mnemonic","example","uncertain"}]}',
+      'JSON 形狀：{"classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"cards":[{"type","kpId","category","difficulty","front","back","mnemonic","example","context","uncertain"}]}',
     ].join('\n');
   }
 
@@ -1036,6 +1083,10 @@
     KP_LABEL_MAX: KP_LABEL_MAX,
     CATEGORY_MAX: CATEGORY_MAX,
     CATEGORY_MIN: CATEGORY_MIN,
+    SOURCE_MAX: SOURCE_MAX,
+    CONTEXT_MAX: CONTEXT_MAX,
+    sanitizeSource: sanitizeSource,
+    sourceOk: sourceOk,
     stageForGrade: stageForGrade,
     gradesForStage: gradesForStage,
     isValidPair: isValidPair,
