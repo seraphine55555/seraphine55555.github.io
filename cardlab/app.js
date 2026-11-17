@@ -958,13 +958,12 @@
   function modeFor(card, deck) {
     var g = (deck.classification && deck.classification.grade) || 'P4';
     var young = isYoung(g);
-    if (card.type === 'cloze' && P.parseCloze(card.front)) return young ? 'cloze' : 'typing';
     if (young) {
+      if (card.type === 'cloze' && P.parseCloze(card.front)) return 'cloze';
       if (card.type === 'basic' && choiceOptions(card, deck)) return 'choice';
       return 'flip';
     }
-    if (card.type === 'basic' && Array.from(String(card.back || '')).length <= 30) return 'typing';
-    if (card.type === 'basic' && choiceOptions(card, deck)) return 'choice';
+    // 家長問答：P3+ 一律「睇題 → 揭曉答案 → 記得／唔記得」，唔使打字
     return 'flip';
   }
 
