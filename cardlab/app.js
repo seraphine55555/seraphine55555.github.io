@@ -1322,6 +1322,28 @@
     if (next && next !== raw) S.writeAiCache(next);
   }
 
+  /** 一次 OCR 呼叫：回 {ok, payload} 或 {ok:false, code}。 */
+  async function ocrOnce(blob, filename, runCtrl) {
+    var form = new FormData();
+    form.append('purpose', 'text_recognition');
+    form.append('file', blob, filename);
+    var resp;
+    try {
+      resp = await fetchWithTimeout(Ai.OCR_URL, { method: 'POST', headers: authHeaders(), body: form }, OCR_TIMEOUT, runCtrl);
+    } catch (e) {
+      return { ok: false, code: e && e.name === 'AbortError' ? 'timeout' : 'network' };
+    }
+    if (!resp.ok) return { ok: false, code: apiError(resp.status).code };
+    try { return { ok: true, payload: await resp.json() }; } catch (e) { return { ok: false, code: 'not_json' }; }
+  }
+
+  function gateVars(gate) {
+    var vars = {};
+    if (gate && gate.stats && typeof gate.stats.chars === 'number') vars.n = gate.stats.chars;
+    if (gate && gate.stats && typeof gate.stats.garbage === 'number') vars.p = Math.round(gate.stats.garbage * 100);
+    return vars;
+  }
+
   async function runAnalysis() {
     state.error = null;
     state.ocr = null;
@@ -1369,30 +1391,41 @@
 
     // 2) OCR
     setStep('ocr', 'active');
-    var form = new FormData();
-    form.append('purpose', 'text_recognition');
-    form.append('file', state.photo.blob, 'page.jpg');
-    var resp;
-    try {
-      resp = await fetchWithTimeout(Ai.OCR_URL, { method: 'POST', headers: authHeaders(), body: form }, OCR_TIMEOUT, runCtrl);
-    } catch (e) {
-      if (stale()) return;
-      return fail(e && e.name === 'AbortError' ? 'timeout' : 'network');
-    }
+    var firstOcr = await ocrOnce(state.photo.blob, 'page.jpg', runCtrl);
     if (stale()) return;
-    if (!resp.ok) return fail(apiError(resp.status).code);
-    var payload;
-    try { payload = await resp.json(); } catch (e) { return fail('not_json'); }
-    if (stale()) return;
-    var pages = P.cleanPages(P.parseOcrPayload(payload));
+    if (!firstOcr.ok) { state.analyze.steps.ocr = 'error'; return fail(firstOcr.code); }
+    var pages = P.cleanPages(P.parseOcrPayload(firstOcr.payload));
     var gate = P.qualityGate(pages);
-    state.ocr = { pages: pages, text: P.cleanText(pages), gate: gate, raw: payload };
+    var split = false;
+    if (!gate.ok && gate.code === 'truncated') {
+      // 跨頁大圖：OCR 輸出被截斷 → 自動沿長邊切兩半、逐半再 OCR。
+      // 仍然係同一張相（每日配額只扣 1、快取 key 不變）。
+      try {
+        var halves = await Ai.splitInHalf(state.photo.blob);
+        var merged = [];
+        for (var hi = 0; hi < halves.length; hi++) {
+          var halfRes = await ocrOnce(halves[hi].blob, 'page-' + (hi + 1) + '.jpg', runCtrl);
+          if (stale()) return;
+          if (!halfRes.ok) { state.analyze.steps.ocr = 'error'; return fail(halfRes.code); }
+          var halfPages = P.cleanPages(P.parseOcrPayload(halfRes.payload));
+          var halfGate = P.qualityGate(halfPages);
+          if (!halfGate.ok) {
+            state.analyze.steps.ocr = 'error';
+            return fail('gate.' + halfGate.code, halfGate.code, gateVars(halfGate));
+          }
+          merged = merged.concat(halfPages);
+        }
+        pages = P.cleanPages(merged);
+        gate = P.qualityGate(pages);
+        split = true;
+      } catch (e) {
+        // 切圖失敗就照原本嘅截斷提示
+      }
+    }
+    state.ocr = { pages: pages, text: P.cleanText(pages), gate: gate, raw: firstOcr.payload, split: split };
     if (!gate.ok) {
-      var vars = {};
-      if (gate.stats && typeof gate.stats.chars === 'number') vars.n = gate.stats.chars;
-      if (gate.stats && typeof gate.stats.garbage === 'number') vars.p = Math.round(gate.stats.garbage * 100);
       state.analyze.steps.ocr = 'error';
-      return fail('gate.' + gate.code, gate.code, vars);
+      return fail('gate.' + gate.code, gate.code, gateVars(gate));
     }
     S.markPhotoUsed(state.db, now());
     setStep('ocr', 'done');

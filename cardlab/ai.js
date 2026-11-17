@@ -825,6 +825,37 @@
   }
 
   /**
+   * 大圖 OCR 被截斷（finish_reason=length）時，將相片沿長邊切成兩半：
+   * 橫向（跨頁）→ 左右切；直向 → 上下切。回 [{blob,width,height}, …]。
+   */
+  function splitInHalf(blob) {
+    return loadBitmap(blob).then(function (bmp) {
+      var w = bmp.width || bmp.naturalWidth;
+      var h = bmp.height || bmp.naturalHeight;
+      var horizontal = w >= h;
+      var halfW = horizontal ? Math.ceil(w / 2) : w;
+      var halfH = horizontal ? h : Math.ceil(h / 2);
+      var rects = horizontal
+        ? [[0, 0, halfW, h], [halfW, 0, w - halfW, h]]
+        : [[0, 0, w, halfH], [0, halfH, w, h - halfH]];
+      var jobs = rects.map(function (r) {
+        var canvas = document.createElement('canvas');
+        canvas.width = r[2];
+        canvas.height = r[3];
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, r[2], r[3]);
+        ctx.drawImage(bmp, r[0], r[1], r[2], r[3], 0, 0, r[2], r[3]);
+        return canvasToBlob(canvas, JPEG_QUALITY).then(function (b) {
+          return { blob: b, width: r[2], height: r[3] };
+        });
+      });
+      if (bmp.close) { try { bmp.close(); } catch (e) {} }
+      return Promise.all(jobs);
+    });
+  }
+
+  /**
    * 本機 preflight（設計 §7.3）：太細／矇／反光。唔會上傳、唔會 block，
    * 只回 issues 等 UI 提示家長重影。全部喺 canvas 做。
    */
@@ -929,6 +960,7 @@
     errorCode: errorCode,
     compressImage: compressImage,
     makePreview: makePreview,
+    splitInHalf: splitInHalf,
     preflight: preflight,
   };
 
