@@ -38,6 +38,8 @@
     'home.export': { yue: '備份', zh: '備份', en: 'Backup' },
     'photo.title': { yue: '影相出卡', zh: '影相出卡', en: 'Photo to cards' },
     'photo.pick': { yue: '📷 揀相／影相', zh: '📷 選相／拍照', en: '📷 Choose / take photo' },
+    'photo.camera': { yue: '📷 影相', zh: '📷 拍照', en: '📷 Take photo' },
+    'photo.album': { yue: '🖼️ 由相簿揀', zh: '🖼️ 从相册选', en: '🖼️ From album' },
     'photo.tips': {
       yue: '光線充足、平放、影正、避反光；影之前可以遮住姓名／學號。',
       zh: '光線充足、平放、拍正、避反光；拍照前可以遮住姓名／學號。',
@@ -372,9 +374,13 @@
     html += '<section class="section"><h1 class="page-title">' + esc(t('photo.title')) + '</h1>';
     html += '<p class="hint">' + esc(t('photo.tips')) + '</p>';
     html += '<p class="hint hint--soft">' + esc(t('photo.auto')) + '</p>';
-    // 唔加 capture：加咗嘅話手機（Android/iOS）會直接開相機、揀唔到相簿。
-    html += '<input id="file-input" class="sr-only" type="file" accept="image/*" />';
-    html += '<label class="btn btn--pick" for="file-input" id="btn-pick">' + esc(t('photo.pick')) + '</label>';
+    // 兩個明確入口：影相（capture=environment）／相簿（冇 capture，手機必定出相簿）。
+    html += '<div class="picker">';
+    html += '<input id="file-input" class="sr-only" type="file" accept="image/*" capture="environment" />';
+    html += '<label class="btn btn--pick" for="file-input" id="btn-pick-camera">' + esc(t('photo.camera')) + '</label>';
+    html += '<input id="file-input-album" class="sr-only" type="file" accept="image/*" />';
+    html += '<label class="btn btn--pick btn--pick--album" for="file-input-album" id="btn-pick-album">' + esc(t('photo.album')) + '</label>';
+    html += '</div>';
     html += '<div id="photo-slot">';
     if (state.photo) {
       html += '<figure class="preview"><img id="photo-preview" alt="preview" src="' + esc(state.photo.url) + '" />';
@@ -1990,8 +1996,10 @@
     document.addEventListener('change', function (e) {
       var el = e.target;
       if (!el) return;
-      if (el.id === 'file-input' && el.files && el.files[0]) {
-        onFile(el.files[0]);
+      if ((el.id === 'file-input' || el.id === 'file-input-album') && el.files && el.files[0]) {
+        var picked = el.files[0];
+        el.value = ''; // 清空 value：同一張相再揀都會再觸發 change
+        onFile(picked);
         return;
       }
       if (el.id === 'u-stage' && state.analysis) {

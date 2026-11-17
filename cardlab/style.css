@@ -133,6 +133,9 @@ img { max-width: 100%; height: auto; display: block; }
 .btn--tiny { min-height: var(--tap); padding: 6px 12px; font-size: 13px; }
 .btn--resume { width: 100%; margin-top: 8px; background: var(--card2); }
 .btn--pick { width: 100%; background: var(--card2); }
+.picker { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.picker .btn--pick { flex: 1 1 140px; width: auto; }
+.btn--pick--album { background: transparent; border: 1px solid var(--line); }
 
 .linkbtn {
   background: none;
