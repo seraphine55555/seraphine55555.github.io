@@ -229,6 +229,12 @@
     return { sentence: s.replace(m[0], '＿＿'), answer: m[1].trim(), raw: s };
   }
 
+  /** 顯示用 front：cloze 將 {{answer}} 換成填空線（＿＿）；其他原樣。 */
+  function displayFront(front) {
+    var c = parseCloze(front);
+    return c ? c.sentence : str(front);
+  }
+
   /** 由句子抽詞做填空選項（中文按標點斷詞、英文按空白），最多 n 個。 */
   function sentenceWords(sentence, n) {
     var words = str(sentence)
@@ -276,6 +282,7 @@
     qualityGate: qualityGate,
     parsePastedCards: parsePastedCards,
     parseCloze: parseCloze,
+    displayFront: displayFront,
     sentenceWords: sentenceWords,
     normalizeAnswer: normalizeAnswer,
     answersMatch: answersMatch,

@@ -634,7 +634,7 @@
           }
           html += '<li class="crow' + (on ? '' : ' crow--off') + '" data-card="' + esc(c.id) + '">';
           html += '<label class="crow__check"><input type="checkbox" class="card-check" data-card="' + esc(c.id) + '"' + (on ? ' checked' : '') + ' />';
-          html += '<span class="crow__text"><strong>' + esc(c.front) + '</strong><small>' + esc(c.back) + '</small></span></label>';
+          html += '<span class="crow__text"><strong>' + esc(P.displayFront(c.front)) + '</strong><small>' + esc(c.back) + '</small></span></label>';
           html += '<span class="crow__meta">' + esc(c.category) + ' · ' + esc(stars(c.difficulty)) + '</span>';
           if (c.uncertain) html += '<span class="badge badge--warn">' + esc(t('confirm.uncertain')) + '</span>';
           html += '<button type="button" class="btn btn--tiny" data-act="edit-card" data-card="' + esc(c.id) + '">' + esc(t('confirm.edit')) + '</button>';
@@ -679,7 +679,7 @@
     html += '<ol class="hardest" id="hardest-list">';
     hardest.forEach(function (c) {
       var s = Srs.normalize(state.db.srs[c.id]);
-      html += '<li>' + esc(c.front) + ' <small>' + esc(t('deck.learning')) + ' ' + (s.tries - s.ok) + '✗</small></li>';
+      html += '<li>' + esc(P.displayFront(c.front)) + ' <small>' + esc(t('deck.learning')) + ' ' + (s.tries - s.ok) + '✗</small></li>';
     });
     html += '</ol>';
     html += '<div class="toolbar">';
@@ -981,12 +981,8 @@
     html += '<div class="pbar"><span id="progress-text">' + esc(t('practice.progress', { i: session.index + 1, n: session.queue.length })) + '</span>';
     html += '<button type="button" class="linkbtn" data-act="exit-practice">' + esc(t('practice.exit')) + '</button></div>';
     html += '<article class="pcard" id="practice-card" data-mode="' + esc(session.mode) + '">';
-    if (session.mode === 'cloze') {
-      var cloze = P.parseCloze(card.front);
-      html += '<p class="pcard__front">' + esc(cloze ? cloze.sentence : card.front) + '</p>';
-    } else {
-      html += '<p class="pcard__front">' + esc(card.front) + '</p>';
-    }
+    // cloze 卡一律顯示填空線（＿＿），唔好顯示 {{answer}} 原文
+    html += '<p class="pcard__front" id="practice-front">' + esc(P.displayFront(card.front)) + '</p>';
     html += '</article>';
 
     if (session.needsContinue) {
@@ -1138,7 +1134,7 @@
       wrong.forEach(function (a) {
         var d = S.getDeck(state.db, a.deckId || state.doneDeckId);
         var card = d ? cardById(d, a.cardId) : null;
-        html += '<li>' + esc(card ? card.front : a.cardId) + '<small>' + esc(card ? card.back : '') + '</small></li>';
+        html += '<li>' + esc(card ? P.displayFront(card.front) : a.cardId) + '<small>' + esc(card ? card.back : '') + '</small></li>';
       });
       html += '</ul>';
     }
