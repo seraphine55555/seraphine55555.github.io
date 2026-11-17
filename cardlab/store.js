@@ -265,9 +265,12 @@
     return { used: ai.usedCount, cap: ai.dailyPhotoCap, remaining: Math.max(0, ai.dailyPhotoCap - ai.usedCount) };
   }
 
-  function markPhotoUsed(db, now) {
+  function markPhotoUsed(db, now, count) {
     photoCap(db, now);
-    db.settings.ai.usedCount += 1;
+    // P2.0：多張相合併一次分析時，每張相各扣 1 次（2 張 = 2）。
+    var n = Math.floor(Number(count));
+    if (!isFinite(n) || n < 1) n = 1;
+    db.settings.ai.usedCount += n;
     save(db);
   }
 

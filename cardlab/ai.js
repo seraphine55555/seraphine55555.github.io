@@ -12,6 +12,8 @@
   var MAX_BYTES = 4 * 1024 * 1024;
   var JPEG_QUALITY = 0.9;
   var PREVIEW_EDGE = 1300;
+  // P2.0：一次分析最多 4 張相（多頁合併成一個卡組）
+  var MAX_PHOTOS = 4;
 
   var STAGES = {
     kindergarten: ['K1', 'K2', 'K3'],
@@ -428,6 +430,54 @@
     return Promise.resolve(data)
       .then(function (buf) { return subtle.digest('SHA-256', buf); })
       .then(hexFromBuffer);
+  }
+
+  // ── P2.0：多張相合併成一個卡組（2–4 張，純函數）──
+  /** 一次最多幾張相（相簿入口；相機入口仍然單張）。 */
+  function photoCountCheck(n) {
+    var count = Math.floor(Number(n));
+    if (!isFinite(count) || count <= 0) return { ok: false, code: 'empty', count: 0, max: MAX_PHOTOS };
+    if (count > MAX_PHOTOS) return { ok: false, code: 'too_many', count: count, max: MAX_PHOTOS };
+    return { ok: true, code: 'ok', count: count, max: MAX_PHOTOS };
+  }
+
+  /** 將多段 bytes（Uint8Array／ArrayBuffer）按次序串接；空清單或壞輸入回 null。 */
+  function joinBytes(list) {
+    var arr = asArray(list);
+    var parts = [];
+    var total = 0;
+    var i;
+    for (i = 0; i < arr.length; i++) {
+      var chunk = arr[i];
+      if (!chunk) return null;
+      var u8;
+      try {
+        u8 = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
+      } catch (e) {
+        return null;
+      }
+      if (!u8 || typeof u8.length !== 'number') return null;
+      parts.push(u8);
+      total += u8.length;
+    }
+    if (!parts.length) return null;
+    var out = new Uint8Array(total);
+    var off = 0;
+    for (i = 0; i < parts.length; i++) {
+      out.set(parts[i], off);
+      off += parts[i].length;
+    }
+    return out;
+  }
+
+  /**
+   * 多張相嘅快取 key＝所有壓縮後 JPEG bytes「按次序串接」後嘅 SHA-256。
+   * 次序敏感（A+B ≠ B+A）、任何一張唔同 → key 唔同；空清單一律拒絕。
+   */
+  function photoSetHash(list) {
+    var joined = joinBytes(list);
+    if (!joined) return Promise.reject(new Error('empty_photo_set'));
+    return sha256Hex(joined);
   }
 
   function cacheEmpty() { return { schema: 1, entries: [] }; }
@@ -929,6 +979,7 @@
     GRADE_LABELS: GRADE_LABELS,
     CACHE_TTL: CACHE_TTL,
     CACHE_MAX: CACHE_MAX,
+    MAX_PHOTOS: MAX_PHOTOS,
     TOPIC_TITLE_MAX: TOPIC_TITLE_MAX,
     KP_LABEL_MAX: KP_LABEL_MAX,
     stageForGrade: stageForGrade,
@@ -936,6 +987,9 @@
     isValidPair: isValidPair,
     gradeLabelOf: gradeLabelOf,
     sha256Hex: sha256Hex,
+    photoCountCheck: photoCountCheck,
+    joinBytes: joinBytes,
+    photoSetHash: photoSetHash,
     cacheEmpty: cacheEmpty,
     cacheValueOk: cacheValueOk,
     cacheGet: cacheGet,

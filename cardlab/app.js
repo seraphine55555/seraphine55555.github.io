@@ -61,6 +61,32 @@
     'photo.compressed': { yue: '已壓縮 {size} · {w}×{h}', zh: '已壓縮 {size} · {w}×{h}', en: 'Compressed {size} · {w}×{h}' },
     'photo.chooseFirst': { yue: '先揀一張相', zh: '請先選一張相', en: 'Choose a photo first' },
     'photo.cap': { yue: '今日已用 {used}／{cap} 張', zh: '今日已用 {used}／{cap} 張', en: 'Used {used}/{cap} today' },
+    // P2.0：多張相合併成一個卡組（2–4 張）
+    'photo.multi': {
+      yue: '同一課分開幾頁影？相簿可以一次揀 2–4 張，逐張 OCR 之後合併成一個卡組。',
+      zh: '同一課分開幾頁拍？相冊可以一次選 2–4 張，逐張 OCR 之後合併成一個卡組。',
+      en: 'Several pages of the same lesson? Pick 2–4 photos from the album at once — each is OCRed, then merged into one deck.',
+    },
+    'photo.count': {
+      yue: '已揀 {n}／{max} 張相',
+      zh: '已選 {n}／{max} 張相',
+      en: 'Selected {n}/{max} photos',
+    },
+    'photo.nth': { yue: '第 {n} 張', zh: '第 {n} 張', en: 'Photo {n}' },
+    'photo.nthErr': { yue: '第 {n} 張相：', zh: '第 {n} 張相：', en: 'Photo {n}: ' },
+    'photo.remove': { yue: '移除第 {n} 張相', zh: '移除第 {n} 張相', en: 'Remove photo {n}' },
+    'photo.limit': {
+      yue: '一次最多 {max} 張相：只加咗頭 {max} 張，其餘請分開分析。',
+      zh: '一次最多 {max} 張相：只加了前 {max} 張，其餘請分開分析。',
+      en: 'Up to {max} photos at a time — only the first {max} were added.',
+    },
+    'photo.room': {
+      yue: '仲可以加 {n} 張（最多 {max} 張）',
+      zh: '還能加 {n} 張（最多 {max} 張）',
+      en: 'You can add {n} more (max {max})',
+    },
+    'photo.split': { yue: '第 {n} 張太大，已自動分半 OCR。', zh: '第 {n} 張太大，已自動分半 OCR。', en: 'Photo {n} was too long — split in half and OCRed.' },
+    'err.quota': { yue: '今日相片配額唔夠：今次要用 {n} 張，只剩 {left} 張。', zh: '今日相片配額不足：這次要用 {n} 張，只剩 {left} 張。', en: 'Not enough daily photos: this needs {n}, only {left} left.' },
     'preflight.title': { yue: '相片可能唔夠清楚（仍然可以試）：', zh: '相片可能不夠清楚（仍然可以試）：', en: 'The photo may be unclear (you can still try):' },
     'preflight.too_small': { yue: '解像度太低，影近啲或者用原相。', zh: '解像度太低，拍近一點或用原相。', en: 'Resolution is low — move closer or use the original photo.' },
     'preflight.blurry': { yue: '有啲矇，影多次。', zh: '有點模糊，再拍一次。', en: 'A bit blurry — take another shot.' },
@@ -282,7 +308,8 @@
     db: null,
     lang: 'zh',
     route: { name: 'home', id: null },
-    photo: null, // {blob,width,height,bytes,url}
+    photo: null, // {blob,width,height,bytes,url}：state.photos[0] 嘅鏡像（單張流程向後兼容）
+    photos: [], // P2.0：多張相（1–4 張），每張 {blob,width,height,bytes,url,preflight}
     ocr: null, // {pages,text,gate}
     analysis: null, // validated value
     confirm: {},
@@ -301,6 +328,8 @@
     editKpId: null,
     newKp: false,
     preflight: null,
+    // P2.0：理解頁知識點勾選狀態（唔好再靠 DOM checked attribute，遲到嘅重畫會冪走家長嘅勾選）
+    kpPick: {},
   };
 
   function now() {
@@ -367,33 +396,68 @@
   }
 
   // ─────────────────────────── 影相 ───────────────────────────
+  /** 頁面上所有已揀相片（舊流程只有 state.photo → 當一張）。 */
+  function photoList() {
+    if (state.photos && state.photos.length) return state.photos;
+    return state.photo ? [state.photo] : [];
+  }
+
   function viewPhoto() {
     var ai = state.db.settings.ai;
     var hasKey = !!String(ai.key || '').trim();
     var cap = S.photoCap(state.db, now());
+    var photos = photoList();
+    var max = Ai.MAX_PHOTOS;
     var html = '';
     html += '<section class="section"><h1 class="page-title">' + esc(t('photo.title')) + '</h1>';
     html += '<p class="hint">' + esc(t('photo.tips')) + '</p>';
     html += '<p class="hint hint--soft">' + esc(t('photo.auto')) + '</p>';
-    // 兩個明確入口：影相（capture=environment）／相簿（冇 capture，手機必定出相簿）。
+    html += '<p class="hint hint--soft" id="photo-multi">' + esc(t('photo.multi')) + '</p>';
+    // 兩個明確入口：影相（capture=environment，單張）／相簿（冇 capture＋multiple，2–4 張）。
     html += '<div class="picker">';
     html += '<input id="file-input" class="sr-only" type="file" accept="image/*" capture="environment" />';
     html += '<label class="btn btn--pick" for="file-input" id="btn-pick-camera">' + esc(t('photo.camera')) + '</label>';
-    html += '<input id="file-input-album" class="sr-only" type="file" accept="image/*" />';
+    html += '<input id="file-input-album" class="sr-only" type="file" accept="image/*" multiple />';
     html += '<label class="btn btn--pick btn--pick--album" for="file-input-album" id="btn-pick-album">' + esc(t('photo.album')) + '</label>';
     html += '</div>';
     html += '<div id="photo-slot">';
-    if (state.photo) {
-      html += '<figure class="preview"><img id="photo-preview" alt="preview" src="' + esc(state.photo.url) + '" />';
-      html += '<figcaption id="photo-size">' + esc(t('photo.compressed', { size: bytesLabel(state.photo.bytes), w: state.photo.width, h: state.photo.height })) + '</figcaption></figure>';
+    if (photos.length) {
+      html += '<ol class="thumbs" id="photo-thumbs">';
+      photos.forEach(function (p, i) {
+        html += '<li class="thumb-x" data-index="' + i + '">';
+        if (i === 0) html += '<img id="photo-preview" class="thumb-x__img" alt="preview" src="' + esc(p.url) + '" />';
+        else html += '<img class="thumb-x__img" alt="preview" src="' + esc(p.url) + '" />';
+        html += '<span class="thumb-x__n" id="thumb-n-' + i + '">' + esc(t('photo.nth', { n: i + 1 })) + '</span>';
+        html += '<button type="button" class="thumb-x__rm" data-act="remove-photo" data-index="' + i + '" aria-label="' + esc(t('photo.remove', { n: i + 1 })) + '">✕</button>';
+        html += '</li>';
+      });
+      html += '</ol>';
     }
     html += '</div>';
-    if (state.preflight && !state.preflight.ok) {
-      html += '<div class="notice notice--warn" id="preflight-warn"><strong>' + esc(t('preflight.title')) + '</strong><ul class="fixlist">';
-      state.preflight.issues.forEach(function (code) {
-        html += '<li>' + esc(t('preflight.' + code)) + '</li>';
+    if (photos.length) {
+      var first = photos[0];
+      var sumBytes = 0;
+      photos.forEach(function (p) { sumBytes += Number(p.bytes) || 0; });
+      html += '<p class="hint" id="photo-size">' + esc(t('photo.compressed', { size: bytesLabel(sumBytes), w: first.width, h: first.height }));
+      if (photos.length > 1) html += ' · ' + esc(t('photo.count', { n: photos.length, max: max }));
+      html += '</p>';
+      if (photos.length < max) html += '<p class="hint hint--soft" id="photo-room">' + esc(t('photo.room', { n: max - photos.length, max: max })) + '</p>';
+    }
+    var warns = [];
+    photos.forEach(function (p, i) {
+      if (p.preflight && !p.preflight.ok) warns.push({ n: i + 1, issues: p.preflight.issues });
+    });
+    if (warns.length) {
+      html += '<div class="notice notice--warn" id="preflight-warn"><strong>' + esc(t('preflight.title')) + '</strong>';
+      warns.forEach(function (w) {
+        html += '<ul class="fixlist">';
+        if (photos.length > 1) html += '<li class="fixlist__n">' + esc(t('photo.nth', { n: w.n })) + '</li>';
+        w.issues.forEach(function (code) {
+          html += '<li>' + esc(t('preflight.' + code)) + '</li>';
+        });
+        html += '</ul>';
       });
-      html += '</ul></div>';
+      html += '</div>';
     }
     html += '<p class="privacy" id="privacy">' + esc(t('photo.privacy')) + '</p>';
     if (!hasKey) {
@@ -401,7 +465,7 @@
       html += '<button type="button" class="linkbtn" data-act="settings">' + esc(t('photo.toSettings')) + '</button></div>';
     }
     html += '<button type="button" class="btn btn--primary btn--wide" id="btn-analyze" data-act="analyze"';
-    if (!state.photo || !hasKey) html += ' disabled';
+    if (!photos.length || !hasKey) html += ' disabled';
     html += '>' + esc(hasKey ? t('photo.analyze') : 'AI 未啟用') + '</button>';
     html += '<p class="hint hint--soft" id="photo-cap">' + esc(t('photo.cap', { used: cap.used, cap: cap.cap })) + '</p>';
     html += '</section>';
@@ -419,8 +483,12 @@
   function viewAnalyze() {
     var html = '';
     html += '<section class="section"><h1 class="page-title">' + esc(t('analyze.title')) + '</h1>';
-    if (state.photo) {
-      html += '<figure class="thumb"><img alt="preview" src="' + esc(state.photo.url) + '" /></figure>';
+    if (photoList().length) {
+      html += '<figure class="thumb" id="analyze-thumbs">';
+      photoList().forEach(function (p) {
+        html += '<img alt="preview" src="' + esc(p.url) + '" />';
+      });
+      html += '</figure>';
     }
     html += '<ol class="steps" id="analyze-steps">';
     html += stepRow('compress', t('analyze.step.compress'));
@@ -432,7 +500,12 @@
       var code = state.error.code || 'unknown';
       var key = 'err.' + code;
       if (!DICT[key]) key = DICT[code] ? code : 'err.unknown';
-      html += '<div class="notice notice--error" id="analyze-error">' + esc(t(key, state.error.vars || {})) + '</div>';
+      var errMsg = t(key, state.error.vars || {});
+      // P2.0：多張相時錯誤要指出第幾張相（單張唔加前綴，維持原本文案）。
+      if (state.error.vars && state.error.vars.photo && Number(state.error.vars.total) > 1) {
+        errMsg = t('photo.nthErr', { n: state.error.vars.photo }) + errMsg;
+      }
+      html += '<div class="notice notice--error" id="analyze-error">' + esc(errMsg) + '</div>';
       if (state.error.diag) {
         // 真機診斷：finish_reason／字數／reasoning 長度／回覆開頭，幫手判斷係截斷定格式錯。
         html += '<p class="hint hint--soft" id="ai-diag">' + esc(t('err.diag')) + ' ' + esc(state.error.diag) + '</p>';
@@ -544,7 +617,7 @@
       var n = a.cards.filter(function (x) { return x.kpId === kp.id; }).length;
       var editing = state.editKpId === kp.id;
       html += '<li class="kp' + (editing ? ' kp--editing' : '') + '" data-kp="' + esc(kp.id) + '">';
-      html += '<label class="kp__pick"><input type="checkbox" class="kp-check" data-kp="' + esc(kp.id) + '" checked />' +
+      html += '<label class="kp__pick"><input type="checkbox" class="kp-check" data-kp="' + esc(kp.id) + '"' + (state.kpPick[kp.id] !== false ? ' checked' : '') + ' />' +
         '<span class="kp__label">' + esc(kp.label) + '</span><span class="kp__n">' + n + '</span></label>';
       html += '<button type="button" class="btn btn--tiny kp__edit" data-act="edit-kp" data-kp="' + esc(kp.id) + '">' + esc(t('understand.kpEdit')) + '</button>';
       if (editing) {
@@ -1283,18 +1356,24 @@
     render();
   }
 
-  async function photoHash() {
-    var p = state.photo;
-    if (!p) return '';
-    if (p.hash) return p.hash;
+  /**
+   * P2.0：快取 key＝所有壓縮後 JPEG bytes 按次序串接後嘅 SHA-256。
+   * 單張時等於該張 bytes 嘅 SHA-256（同 P1.1 逐字兼容）；任何一張唔同／次序調換 → key 都唔同。
+   */
+  async function photosHash() {
+    var list = photoList();
+    if (!list.length) return '';
     try {
-      var bytes = p.blob && p.blob.arrayBuffer ? await p.blob.arrayBuffer() : null;
-      if (!bytes) return '';
-      p.hash = await Ai.sha256Hex(bytes);
+      var bufs = [];
+      for (var i = 0; i < list.length; i++) {
+        var blob = list[i].blob;
+        if (!blob || !blob.arrayBuffer) return '';
+        bufs.push(new Uint8Array(await blob.arrayBuffer()));
+      }
+      return await Ai.photoSetHash(bufs);
     } catch (e) {
-      p.hash = ''; // 冇 crypto.subtle 就當冇快取，唔會阻流程
+      return ''; // 冇 crypto.subtle 就當冇快取，唔會阻流程
     }
-    return p.hash;
   }
 
   /** 讀 24 小時同相快取；命中回 analysis value，否則 null。 */
@@ -1344,6 +1423,14 @@
     return vars;
   }
 
+  function mergeVars(a, b) {
+    var out = {};
+    var k;
+    for (k in a || {}) if (Object.prototype.hasOwnProperty.call(a, k)) out[k] = a[k];
+    for (k in b || {}) if (Object.prototype.hasOwnProperty.call(b, k)) out[k] = b[k];
+    return out;
+  }
+
   async function runAnalysis() {
     state.error = null;
     state.ocr = null;
@@ -1352,6 +1439,7 @@
     state.editCardId = null;
     state.editKpId = null;
     state.newKp = false;
+    state.kpPick = {};
     // 每次分析一條獨立 AbortController + run token：取消真 abort，舊 response 亦唔會再推進。
     var runCtrl = new AbortController();
     state.abort = runCtrl;
@@ -1361,7 +1449,9 @@
     state.route = { name: 'analyze', id: null };
     if (location.hash !== '#/analyze') location.hash = '#/analyze';
     else render();
-    if (!state.photo) { fail('unknown'); return; }
+    if (!photoList().length) { fail('unknown'); return; }
+    var photos = photoList().slice();
+    var photoN = photos.length;
     var key = String(state.db.settings.ai.key || '').trim();
     if (!key) { fail('auth'); return; }
 
@@ -1369,8 +1459,9 @@
     setStep('compress', 'done');
 
     // P1.1：同一張相 24 小時內用本機快取（設計 §7.6／§18.9）
-    // key＝壓縮後 JPEG bytes 嘅 SHA-256；命中就零 OCR／零對話，亦唔扣每日相片上限。
-    var hash = await photoHash();
+    // P2.0：key＝所有相片壓縮後 JPEG bytes 串接嘅 SHA-256（單張時同 P1.1 一樣）。
+    // 命中就零 OCR／零對話，亦唔扣每日相片上限。
+    var hash = await photosHash();
     if (stale()) return;
     var cachedValue = cacheLookup(hash);
     if (cachedValue) {
@@ -1388,46 +1479,75 @@
     }
     var cap = S.photoCap(state.db, now());
     if (cap.remaining <= 0) { fail('rate'); return; }
+    // P2.0：每張相扣 1 次配額（2 張 = 2）→ 唔夠就講清要用幾張、剩幾張，一張都唔好扣。
+    if (photoN > cap.remaining) { return fail('quota', null, { n: photoN, left: cap.remaining }); }
 
-    // 2) OCR
+    // 2) 逐張 OCR（保留頁序），任何一張失敗都指出第幾張、唔入快取
     setStep('ocr', 'active');
-    var firstOcr = await ocrOnce(state.photo.blob, 'page.jpg', runCtrl);
-    if (stale()) return;
-    if (!firstOcr.ok) { state.analyze.steps.ocr = 'error'; return fail(firstOcr.code); }
-    var pages = P.cleanPages(P.parseOcrPayload(firstOcr.payload));
-    var gate = P.qualityGate(pages);
-    var split = false;
-    if (!gate.ok && gate.code === 'truncated') {
-      // 跨頁大圖：OCR 輸出被截斷 → 自動沿長邊切兩半、逐半再 OCR。
-      // 仍然係同一張相（每日配額只扣 1、快取 key 不變）。
-      try {
-        var halves = await Ai.splitInHalf(state.photo.blob);
-        var merged = [];
-        for (var hi = 0; hi < halves.length; hi++) {
-          var halfRes = await ocrOnce(halves[hi].blob, 'page-' + (hi + 1) + '.jpg', runCtrl);
-          if (stale()) return;
-          if (!halfRes.ok) { state.analyze.steps.ocr = 'error'; return fail(halfRes.code); }
-          var halfPages = P.cleanPages(P.parseOcrPayload(halfRes.payload));
-          var halfGate = P.qualityGate(halfPages);
-          if (!halfGate.ok) {
-            state.analyze.steps.ocr = 'error';
-            return fail('gate.' + halfGate.code, halfGate.code, gateVars(halfGate));
+    var mergedPages = [];
+    var perPhoto = [];
+    var splitAny = false;
+    var charsTotal = 0;
+    for (var pi = 0; pi < photoN; pi++) {
+      var photo = photos[pi];
+      var photoVars = { photo: pi + 1, total: photoN };
+      var one = await ocrOnce(photo.blob, 'page-' + (pi + 1) + '.jpg', runCtrl);
+      if (stale()) return;
+      if (!one.ok) { state.analyze.steps.ocr = 'error'; return fail(one.code, null, photoVars); }
+      var pages = P.cleanPages(P.parseOcrPayload(one.payload));
+      var gate = P.qualityGate(pages);
+      var split = false;
+      if (!gate.ok && gate.code === 'truncated') {
+        // 跨頁大圖：OCR 輸出被截斷 → 自動沿長邊切兩半、逐半再 OCR。
+        // 仍然係同一張相（配額只扣 1、快取 key 不變）。
+        try {
+          var halves = await Ai.splitInHalf(photo.blob);
+          var merged = [];
+          for (var hi = 0; hi < halves.length; hi++) {
+            var halfRes = await ocrOnce(halves[hi].blob, 'page-' + (pi + 1) + '-' + (hi + 1) + '.jpg', runCtrl);
+            if (stale()) return;
+            if (!halfRes.ok) { state.analyze.steps.ocr = 'error'; return fail(halfRes.code, null, photoVars); }
+            var halfPages = P.cleanPages(P.parseOcrPayload(halfRes.payload));
+            var halfGate = P.qualityGate(halfPages);
+            if (!halfGate.ok) {
+              state.analyze.steps.ocr = 'error';
+              return fail('gate.' + halfGate.code, halfGate.code, mergeVars(gateVars(halfGate), photoVars));
+            }
+            merged = merged.concat(halfPages);
           }
-          merged = merged.concat(halfPages);
+          pages = P.cleanPages(merged);
+          gate = P.qualityGate(pages);
+          split = true;
+        } catch (e) {
+          // 切圖失敗就照原本嘅截斷提示
         }
-        pages = P.cleanPages(merged);
-        gate = P.qualityGate(pages);
-        split = true;
-      } catch (e) {
-        // 切圖失敗就照原本嘅截斷提示
       }
+      if (!gate.ok) {
+        state.analyze.steps.ocr = 'error';
+        return fail('gate.' + gate.code, gate.code, mergeVars(gateVars(gate), photoVars));
+      }
+      charsTotal += Number(gate.stats && gate.stats.chars) || 0;
+      if (split) splitAny = true;
+      perPhoto.push({ index: pi + 1, pages: pages.length, chars: gate.stats.chars, quality: gate.code, split: split });
+      mergedPages = mergedPages.concat(pages);
     }
-    state.ocr = { pages: pages, text: P.cleanText(pages), gate: gate, raw: firstOcr.payload, split: split };
-    if (!gate.ok) {
+    var allPages = P.cleanPages(mergedPages);
+    var mergedGate = P.qualityGate(allPages);
+    // 逐張已各自過閘；合併後再過一次（防止單張都合格但合併後文字壞掉）
+    if (!mergedGate.ok) {
       state.analyze.steps.ocr = 'error';
-      return fail('gate.' + gate.code, gate.code, gateVars(gate));
+      return fail('gate.' + mergedGate.code, mergedGate.code, mergeVars(gateVars(mergedGate), { total: photoN }));
     }
-    S.markPhotoUsed(state.db, now());
+    state.ocr = {
+      pages: allPages,
+      text: P.cleanText(allPages),
+      gate: mergedGate,
+      raw: null,
+      split: splitAny,
+      photos: perPhoto,
+      count: photoN,
+    };
+    S.markPhotoUsed(state.db, now(), photoN);
     setStep('ocr', 'done');
 
     // 3) 理解
@@ -1469,7 +1589,7 @@
     state.analysis = validated.value;
     state.confirm = {};
     state.analysis.cards.forEach(function (c) { state.confirm[c.id] = true; });
-    state.analysis.ocr = { pages: pages.length, chars: gate.stats.chars, quality: gate.code };
+    state.analysis.ocr = { pages: allPages.length, chars: charsTotal, quality: mergedGate.code, photos: photoN };
     // 驗證已過、分析已成形 → 先寫快取（任何失敗都行唔到呢一步）
     cacheSave(hash, state.analysis);
     S.clearDraft();
@@ -1614,38 +1734,91 @@
   }
 
   // ─────────────────────────── 相片 ───────────────────────────
-  async function onFile(file) {
-    if (!file) return;
+  /**
+   * P2.0：相簿可以一次揀 2–4 張（append；相機入口維持單張 → replace）。
+   * 逐張壓縮（長邊 2048／JPEG 0.9）＋縮圖；超過 4 張只取頭 4 張並提示。
+   */
+  async function onFiles(files, opts) {
+    var o = opts || {};
+    var picked = Array.prototype.slice.call(files || []).filter(Boolean);
+    if (!picked.length) return;
     state.error = null;
-    var before = state.photo && state.photo.url ? state.photo.url : null;
-    var compressed;
-    try {
-      compressed = await Ai.compressImage(file, { maxEdge: Ai.MAX_EDGE, quality: Ai.JPEG_QUALITY, maxBytes: Ai.MAX_BYTES });
-    } catch (e) {
-      toast(t('toast.imageDecode'));
-      return;
-    }
-    if (before) { try { URL.revokeObjectURL(before); } catch (e) {} }
-    state.photo = {
-      blob: compressed.blob,
-      width: compressed.width,
-      height: compressed.height,
-      bytes: compressed.bytes,
-      quality: compressed.quality,
-      url: URL.createObjectURL(compressed.blob),
-    };
     state.preflight = null;
+    var cur = o.replace ? [] : photoList().slice();
+    var max = Ai.MAX_PHOTOS;
+    var room = Math.max(0, max - cur.length);
+    if (!room) { toast(t('photo.limit', { max: max })); return; }
+    if (picked.length > room) toast(t('photo.limit', { max: max }));
+    var take = picked.slice(0, room);
+    // 上限用純函數再守一次（同 node 單元測試同一把尺：1–4 張才放行）
+    if (!Ai.photoCountCheck(cur.length + take.length).ok) return;
+    if (o.replace) releasePhotoUrls(photoList().slice());
+    var added = [];
+    for (var i = 0; i < take.length; i++) {
+      var compressed;
+      try {
+        compressed = await Ai.compressImage(take[i], { maxEdge: Ai.MAX_EDGE, quality: Ai.JPEG_QUALITY, maxBytes: Ai.MAX_BYTES });
+      } catch (e) {
+        toast(t('toast.imageDecode'));
+        continue;
+      }
+      var photo = {
+        blob: compressed.blob,
+        width: compressed.width,
+        height: compressed.height,
+        bytes: compressed.bytes,
+        quality: compressed.quality,
+        url: URL.createObjectURL(compressed.blob),
+        preflight: null,
+      };
+      cur.push(photo);
+      added.push(photo);
+    }
+    state.photos = cur;
+    state.photo = cur.length ? cur[0] : null;
     render();
-    // 本機 preflight（太細／矇／反光）：只提示，唔上傳、唔阻擋
-    try {
-      var snapshot = state.photo;
-      Ai.preflight(compressed.blob).then(function (res) {
-        if (state.photo === snapshot) {
-          state.preflight = res;
-          render();
-        }
-      }).catch(function () { /* preflight 失敗唔影響主流程 */ });
-    } catch (e) { /* 舊瀏覽器 */ }
+    // 本機 preflight（太細／矇／反光）：只提示，唔上傳、唔阻擋；逐張各自記住結果
+    added.forEach(function (photo) {
+      try {
+        Ai.preflight(photo.blob).then(function (res) {
+          photo.preflight = res;
+          state.preflight = (state.photos[0] && state.photos[0].preflight) || null;
+          // 只喺影相頁重畫：遲到嘅 preflight 結果唔應該重畫理解／確認頁
+          // （會冪走家長未儲存嘅勾選／輸入）。
+          if (state.photos.indexOf(photo) >= 0 && state.route.name === 'photo') render();
+        }).catch(function () { /* preflight 失敗唔影響主流程 */ });
+      } catch (e) { /* 舊瀏覽器 */ }
+    });
+  }
+
+  /** 逐張移除（P2.0）。移除最後一張 → 影相頁回到未揀相。 */
+  function removePhoto(index) {
+    var list = photoList().slice();
+    var i = Math.floor(Number(index));
+    if (!isFinite(i) || i < 0 || i >= list.length) return;
+    var gone = list.splice(i, 1)[0];
+    releasePhotoUrls(gone ? [gone] : []);
+    state.photos = list;
+    state.photo = list.length ? list[0] : null;
+    state.preflight = state.photo ? state.photo.preflight : null;
+    state.error = null;
+    render();
+  }
+
+  /**
+   * 釋放縮圖 objectURL（只喺確認畫面唔再引用之後）。
+   * 立即 revoke 會令仍然掛喺 DOM 嘅 <img> 變成 ERR_FILE_NOT_FOUND，
+   * 所以延後少少、而且 revoke 之前再確認一次「已經冇任何相用緊呢條 URL」。
+   */
+  function releasePhotoUrls(gone) {
+    var urls = (gone || []).map(function (p) { return p && p.url; }).filter(Boolean);
+    if (!urls.length) return;
+    setTimeout(function () {
+      var live = photoList().map(function (p) { return p.url; });
+      urls.forEach(function (u) {
+        if (live.indexOf(u) < 0) { try { URL.revokeObjectURL(u); } catch (e) {} }
+      });
+    }, 3000);
   }
 
   // ─────────────────────────── 事件 ───────────────────────────
@@ -1666,13 +1839,16 @@
         go('#/photo');
         break;
       case 'analyze':
-        if (!state.photo) { toast(t('photo.chooseFirst')); return; }
+        if (!photoList().length) { toast(t('photo.chooseFirst')); return; }
         if (!String(state.db.settings.ai.key || '').trim()) { toast(t('toast.notEnabled')); return; }
         runAnalysis();
         break;
       case 'retry':
-        if (!state.photo) { go('#/photo'); return; }
+        if (!photoList().length) { go('#/photo'); return; }
         runAnalysis();
+        break;
+      case 'remove-photo':
+        removePhoto(el.getAttribute('data-index'));
         break;
       case 'cancel':
         state.runToken = (state.runToken || 0) + 1;
@@ -1879,6 +2055,7 @@
         var deckNew = S.createDeck(state.db, state.analysis, { allow: state.confirm });
         state.analysis = null;
         state.photo = null;
+        state.photos = [];
         state.ocr = null;
         state.preflight = null;
         state.editCardId = null;
@@ -2029,10 +2206,12 @@
     document.addEventListener('change', function (e) {
       var el = e.target;
       if (!el) return;
-      if ((el.id === 'file-input' || el.id === 'file-input-album') && el.files && el.files[0]) {
-        var picked = el.files[0];
+      if ((el.id === 'file-input' || el.id === 'file-input-album') && el.files && el.files.length) {
+        var pickedFiles = Array.prototype.slice.call(el.files);
+        var fromAlbum = el.id === 'file-input-album';
         el.value = ''; // 清空 value：同一張相再揀都會再觸發 change
-        onFile(picked);
+        // P2.0：相機入口維持單張（取代）；相簿入口可以一次揀 2–4 張（累加）。
+        onFiles(pickedFiles, { replace: !fromAlbum });
         return;
       }
       if (el.id === 'u-stage' && state.analysis) {
@@ -2056,6 +2235,11 @@
         cGrade.gradeLabel = Ai.gradeLabelOf(pickedGrade);
         markEdited();
         render();
+        return;
+      }
+      if (el.classList && el.classList.contains('kp-check')) {
+        // 記住勾選狀態：任何遲到嘅 render 都唔會冪走家長嘅選擇
+        state.kpPick[el.getAttribute('data-kp')] = el.checked;
         return;
       }
       if (el.classList && el.classList.contains('card-check')) {
