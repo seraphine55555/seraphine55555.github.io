@@ -41,6 +41,9 @@
   // P4：保留原文參考 —— A：卡組 source（純文字、冇相片）；B：每卡 optional context（原文節錄 ≤200 字）
   var SOURCE_MAX = 8000;
   var CONTEXT_MAX = 200;
+  // 原文顯示層分段：每段大約 110 字或最多 3 句（純顯示，唔改 source.text）
+  var SOURCE_PARA_CHARS = 110;
+  var SOURCE_PARA_SENTENCES = 3;
   var CARD_TYPES = ['basic', 'cloze', 'compare', 'trap'];
   var SYNONYMS = {
     '常見錯誤': '易錯',
@@ -127,6 +130,50 @@
     if (!isInt(raw.chars) || raw.chars !== labelLen(raw.text)) return false;
     if (!isFinite(Number(raw.at)) || Number(raw.at) < 0) return false;
     return true;
+  }
+
+  /**
+   * 原文「可讀化」（純顯示層，唔改 source.text）：
+   * 1) 去 OCR 當成普通字元回傳嘅 markdown 殘骸（**bold**、__bold__、行首 #、內文孤立 #）；
+   * 2) 章節標題（日期 成績／學習重點／詞語角…）前斷行；
+   * 3) 按句號／問號／感嘆號／分號分句，再砌成每段約 110 字或最多 3 句；
+   * 英文（冇 CJK 句號）維持現有換行，唔會逐字亂切。
+   * 回傳只係文字（呼叫者負責 esc），除標記外內容同原文一致。
+   */
+  function formatSourceText(raw) {
+    var s = str(raw).replace(/\r\n?/g, '\n').trim();
+    if (!s) return '';
+    // 1) markdown 殘骸
+    s = s.replace(/\*\*/g, '').replace(/__/g, '');
+    s = s.replace(/^[ \t]*#{1,6}[ \t]*/gm, '');
+    s = s.replace(/[ \t]+#[ \t]*(?=\S)/g, ' ');
+    s = s.replace(/[ \t]+/g, ' ');
+    s = s.replace(/[ \t]*\n[ \t]*/g, '\n');
+    // 2) 章節標題前斷行（OCR 會將標題同正文黏埋一段）
+    s = s.replace(/(?=日期[ 　]?成績|學習重點|思維策略|詞語角|語文增值站|邊讀邊思考)/g, '\n');
+    // 3) 分句 → 砌段
+    var blocks = s.split(/\n+/).map(function (b) { return b.trim(); }).filter(Boolean);
+    var out = [];
+    blocks.forEach(function (block) {
+      var sentences = block.match(/[^。！？!?；;…]+[。！？!?；;…]+[」』”）)]?|[^。！？!?；;…]+$/g) || [block];
+      var para = '';
+      var n = 0;
+      sentences.forEach(function (sent) {
+        var part = sent.trim();
+        if (!part) return;
+        var on = para ? para + part : part;
+        if (para && (labelLen(on) > SOURCE_PARA_CHARS || n >= SOURCE_PARA_SENTENCES)) {
+          out.push(para);
+          para = part;
+          n = 1;
+        } else {
+          para = on;
+          n += 1;
+        }
+      });
+      if (para) out.push(para);
+    });
+    return out.join('\n\n');
   }
 
   // ── stage ↔ grade 枚舉聯動（P1.1 理解頁改年級）──
@@ -1085,8 +1132,11 @@
     CATEGORY_MIN: CATEGORY_MIN,
     SOURCE_MAX: SOURCE_MAX,
     CONTEXT_MAX: CONTEXT_MAX,
+    SOURCE_PARA_CHARS: SOURCE_PARA_CHARS,
+    SOURCE_PARA_SENTENCES: SOURCE_PARA_SENTENCES,
     sanitizeSource: sanitizeSource,
     sourceOk: sourceOk,
+    formatSourceText: formatSourceText,
     stageForGrade: stageForGrade,
     gradesForStage: gradesForStage,
     isValidPair: isValidPair,

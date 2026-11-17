@@ -1372,7 +1372,7 @@
       html += '<section class="srcpanel" id="source-panel" aria-label="' + esc(t('source.title')) + '">';
       html += '<div class="srcpanel__head"><h3 class="srcpanel__title">' + esc(t('source.title')) + '</h3>';
       html += '<button type="button" class="btn btn--tiny btn--ghost" id="btn-source-close" data-act="toggle-source">' + esc(t('common.close')) + '</button></div>';
-      html += '<div class="srcpanel__body" id="source-text">' + esc(src.text) + '</div>';
+      html += '<div class="srcpanel__body" id="source-text">' + esc(Ai.formatSourceText(src.text)) + '</div>';
       html += '<p class="hint hint--soft">' + esc(t('source.local')) + '</p>';
       html += '</section>';
     }
