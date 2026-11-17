@@ -187,18 +187,76 @@
     return { taxonomy: order, knowledgePoints: kps, cards: cardList };
   }
 
+  /**
+   * 由一段文字抽出第一個「完整」JSON 物件／陣列：
+   * 追蹤字串狀態同括號深度，所以字串入面嘅 { } 唔會影響，前後雜訊都唔會截錯。
+   */
+  function balancedJson(s) {
+    var text = str(s);
+    var open = -1;
+    for (var i = 0; i < text.length; i++) {
+      var c0 = text.charAt(i);
+      if (c0 === '{' || c0 === '[') { open = i; break; }
+    }
+    if (open < 0) return '';
+    var ob = text.charAt(open);
+    var cb = ob === '{' ? '}' : ']';
+    var depth = 0;
+    var inStr = false;
+    var esc = false;
+    for (var j = open; j < text.length; j++) {
+      var ch = text.charAt(j);
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') { inStr = true; continue; }
+      if (ch === ob) depth += 1;
+      else if (ch === cb) {
+        depth -= 1;
+        if (depth === 0) return text.slice(open, j + 1);
+      }
+    }
+    return '';
+  }
+
   function parseJsonLoose(raw) {
     if (raw && typeof raw === 'object') return raw;
-    var s = str(raw).trim();
+    // BOM／零寬字元：模型偶爾會夾喺開頭
+    var s = str(raw).replace(/^\uFEFF/, '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
     if (!s) return null;
-    s = s.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-    try { return JSON.parse(s); } catch (e) { /* 再試抽第一個 {…} */ }
-    var start = s.indexOf('{');
-    var end = s.lastIndexOf('}');
-    if (start >= 0 && end > start) {
-      try { return JSON.parse(s.slice(start, end + 1)); } catch (e) { return null; }
+    // code fence 可能喺中間（有前導文字）；一律拆走
+    s = s.replace(/```[a-z0-9_-]*\s*/gi, ' ').replace(/```/g, ' ').trim();
+    try { return JSON.parse(s); } catch (e) { /* 再試抽第一個完整 JSON */ }
+    var chunk = balancedJson(s) || s;
+    try { return JSON.parse(chunk); } catch (e) { /* 尾逗號修一次 */ }
+    try { return JSON.parse(chunk.replace(/,\s*([}\]])/g, '$1')); } catch (e) { return null; }
+  }
+
+  /**
+   * 由 chat completion 嘅 message 抽文字：正常係 content 字串；
+   * 有啲 endpoint 會回多段陣列，thinking model 亦可能只填 reasoning_content。
+   */
+  function messageText(msg) {
+    if (!msg || typeof msg !== 'object') return '';
+    var c = msg.content;
+    if (typeof c === 'string' && c.trim()) return c;
+    if (Array.isArray(c)) {
+      var parts = [];
+      c.forEach(function (p) {
+        if (typeof p === 'string') parts.push(p);
+        else if (p && typeof p === 'object') {
+          if (typeof p.text === 'string') parts.push(p.text);
+          else if (typeof p.content === 'string') parts.push(p.content);
+        }
+      });
+      var joined = parts.join('').trim();
+      if (joined) return joined;
     }
-    return null;
+    if (typeof msg.reasoning_content === 'string' && msg.reasoning_content.trim()) return msg.reasoning_content;
+    return '';
   }
 
   /**
@@ -651,6 +709,9 @@
         str(ocrText).slice(0, 4000),
       ];
     }
+    if (o.retry) {
+      parts.push('', '重要：上一次回覆唔係有效 JSON。今次只准輸出一個完整 JSON 物件，唔要 markdown、唔要解釋、唔要前後任何文字。');
+    }
     return parts.join('\n');
   }
 
@@ -659,7 +720,7 @@
     return {
       model: MODEL,
       temperature: 0.2,
-      max_tokens: 3000,
+      max_tokens: 4096,
       messages: [
         { role: 'system', content: systemPrompt() },
         { role: 'user', content: userContent(ocrText, opts) },
@@ -854,6 +915,8 @@
     normLabel: normLabel,
     normalizeTaxonomy: normalizeTaxonomy,
     parseJsonLoose: parseJsonLoose,
+    balancedJson: balancedJson,
+    messageText: messageText,
     validateResult: validateResult,
     systemPrompt: systemPrompt,
     buildChatBody: buildChatBody,

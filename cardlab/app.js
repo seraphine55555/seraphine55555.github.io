@@ -194,6 +194,7 @@
     'err.bad_request': { yue: 'AI 唔接受呢個請求（400）。檢查 key 同 model。', zh: 'AI 不接受這個請求（400）。檢查 key 和 model。', en: 'AI rejected the request (400). Check the key and model.' },
     'err.timeout': { yue: '超時。網絡慢或者相片太大，試下再影或者分半影。', zh: '逾時。網絡慢或相片太大，試著再拍或分半拍。', en: 'Timed out. Slow network or large photo — retake or split the page.' },
     'err.not_json': { yue: 'AI 回傳格式有問題（唔係 JSON）。再試一次。', zh: 'AI 回傳格式有問題（不是 JSON）。再試一次。', en: 'AI returned invalid format (not JSON). Try again.' },
+    'err.diag': { yue: '技術詳情：', zh: '技术详情：', en: 'Details:' },
     'err.bad_stage': { yue: 'AI 判斷嘅程度唔喺允許清單。', zh: 'AI 判斷的程度不在允許清單。', en: 'AI stage is not in the allowed list.' },
     'err.bad_grade': { yue: '年級同程度唔夾。', zh: '年級與程度不符。', en: 'Grade does not match stage.' },
     'err.bad_subject': { yue: 'AI 判斷嘅科目唔喺清單。', zh: 'AI 判斷的科目不在清單。', en: 'AI subject is not in the list.' },
@@ -424,6 +425,10 @@
       var key = 'err.' + code;
       if (!DICT[key]) key = DICT[code] ? code : 'err.unknown';
       html += '<div class="notice notice--error" id="analyze-error">' + esc(t(key, state.error.vars || {})) + '</div>';
+      if (state.error.diag) {
+        // 真機診斷：finish_reason／字數／reasoning 長度／回覆開頭，幫手判斷係截斷定格式錯。
+        html += '<p class="hint hint--soft" id="ai-diag">' + esc(t('err.diag')) + ' ' + esc(state.error.diag) + '</p>';
+      }
       if (state.error.gate) {
         html += '<p class="hint">' + esc(t('gate.fixTitle')) + '</p>';
         html += '<ul class="fixlist">';
@@ -1269,8 +1274,8 @@
     return { code: code, status: status, detail: err && err.message ? String(err.message).slice(0, 200) : '' };
   }
 
-  function fail(code, gateCode, vars) {
-    state.error = { code: code, gate: gateCode || null, vars: vars || {} };
+  function fail(code, gateCode, vars, diag) {
+    state.error = { code: code, gate: gateCode || null, vars: vars || {}, diag: diag || '' };
     setStep(state.analyze.step, 'error');
     render();
   }
@@ -1396,14 +1401,22 @@
     if (stale()) return;
     if (!result.ok) {
       state.analyze.steps.understand = 'error';
-      return fail(result.code, null, result.vars);
+      return fail(result.code, null, result.vars, result.diag);
     }
     var validated = Ai.validateResult(result.text);
+    var lastText = result.text;
+    var lastDiag = result.diag;
     if (!validated.ok && !validated.aiError) {
-      // 格式問題：重試一次（設計 §7.4）
-      var retry = await callChat(body, key, runCtrl);
+      // 格式問題：重試一次（設計 §7.4），今次明確叫佢只回 JSON
+      var retry = await callChat(Ai.buildChatBody(state.ocr.text, { retry: true }), key, runCtrl);
       if (stale()) return;
-      if (retry.ok) validated = Ai.validateResult(retry.text);
+      if (retry.ok) {
+        validated = Ai.validateResult(retry.text);
+        lastText = retry.text;
+        lastDiag = retry.diag;
+      } else if (retry.diag) {
+        lastDiag = retry.diag;
+      }
     }
     if (stale()) return;
     if (!validated.ok) {
@@ -1411,7 +1424,7 @@
       var errKey = validated.aiError ? 'err.ai_' + validated.aiError : 'err.' + (validated.errors[0] || 'unknown');
       if (!DICT[errKey]) errKey = 'err.not_json';
       state.error = { code: errKey.replace('err.', ''), vars: {} };
-      return fail(state.error.code);
+      return fail(state.error.code, null, null, lastDiag || ('JSON 解析失敗 · 開頭：' + String(lastText || '').slice(0, 100)));
     }
     setStep('understand', 'done');
 
@@ -1441,12 +1454,22 @@
     } catch (e) {
       return { ok: false, code: e && e.name === 'AbortError' ? 'timeout' : 'network' };
     }
-    if (!resp.ok) return { ok: false, code: apiError(resp.status).code };
+    if (!resp.ok) return { ok: false, code: apiError(resp.status).code, diag: 'HTTP ' + resp.status };
     var data;
-    try { data = await resp.json(); } catch (e) { return { ok: false, code: 'not_json' }; }
-    var content = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    if (!content) return { ok: false, code: 'not_json' };
-    return { ok: true, text: content, raw: data };
+    try { data = await resp.json(); } catch (e) { return { ok: false, code: 'not_json', diag: 'HTTP ' + resp.status + ' envelope 唔係 JSON' }; }
+    var choice = data && data.choices && data.choices[0];
+    var msg = choice && choice.message;
+    // content 可能係字串、多段陣列，或者 thinking model 只填 reasoning_content
+    var content = Ai.messageText(msg);
+    var finish = (choice && choice.finish_reason) || '';
+    var rLen = msg && typeof msg.reasoning_content === 'string' ? msg.reasoning_content.length : 0;
+    var diag = 'finish=' + (finish || '?') + ' · 字數=' + (content ? content.length : 0) + ' · reasoning=' + rLen;
+    if (!content) {
+      diag += ' · envelope=' + (data ? Object.keys(data).join('/') : '?');
+      return { ok: false, code: 'not_json', diag: diag };
+    }
+    diag += ' · 開頭=' + content.slice(0, 80).replace(/\s+/g, ' ');
+    return { ok: true, text: content, raw: data, diag: diag, finish: finish };
   }
 
   /** 第二次 call：只回 cards，帶已修正嘅 understanding。 */
