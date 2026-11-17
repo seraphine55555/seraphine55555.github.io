@@ -32,6 +32,11 @@
     'home.all': { yue: '全部卡', zh: '全部卡', en: 'All cards' },
     'home.resume': { yue: '繼續上次溫習（第 {n} 張）', zh: '繼續上次溫習（第 {n} 張）', en: 'Resume last session (card {n})' },
     'home.decks': { yue: '卡冊', zh: '卡冊', en: 'Decks' },
+    // P3：卡冊按 AI 分類（科目＋範疇）分組＋篩選
+    'decks.filterAll': { yue: '全部', zh: '全部', en: 'All' },
+    'decks.filterLabel': { yue: '按分類篩選卡冊', zh: '按分類篩選卡冊', en: 'Filter decks by category' },
+    'decks.other': { yue: '其他', zh: '未分類', en: 'Other' },
+    'decks.category': { yue: '分類', zh: '分類', en: 'Category' },
     'home.empty': { yue: '仲未有卡。撳「影相出卡」開始。', zh: '還沒有卡。按「影相出卡」開始。', en: 'No cards yet. Tap "Photo to cards" to start.' },
     'home.paste': { yue: '貼上建卡', zh: '貼上建卡', en: 'Paste cards' },
     'home.import': { yue: '匯入', zh: '匯入', en: 'Import' },
@@ -330,6 +335,8 @@
     preflight: null,
     // P2.0：理解頁知識點勾選狀態（唔好再靠 DOM checked attribute，遲到嘅重畫會冪走家長嘅勾選）
     kpPick: {},
+    // P3：卡冊分類篩選（'' = 全部）
+    deckFilter: '',
   };
 
   function now() {
@@ -345,6 +352,11 @@
   }
 
   // ─────────────────────────── 主頁 ───────────────────────────
+  /** 分類顯示名：AI 嘅 fallback「其他」用「未分類」講清楚（三語）。 */
+  function catLabel(cat) {
+    return cat === Ai.OTHER ? t('decks.other') : cat;
+  }
+
   function viewHome() {
     var db = state.db;
     var due = todayEntries(db).length;
@@ -371,19 +383,35 @@
     html += '</div></section>';
 
     html += '<section class="section" id="deck-list"><h2 class="section__title">' + esc(t('home.decks')) + '</h2>';
+    var groups = Ai.groupDecks(db.decks);
+    // 篩選咗嘅分類冇晒（例如刪咗最後一個卡組）→ 自動回復「全部」，唔會空白一片。
+    var filterOk = state.deckFilter && groups.some(function (g) { return g.category === state.deckFilter; });
+    if (!filterOk) state.deckFilter = '';
     if (!db.decks.length) {
-      html += '<p class="empty">' + esc(t('home.empty')) + '</p>';
+      html += '<p class="empty" id="deck-empty">' + esc(t('home.empty')) + '</p>';
     } else {
-      html += '<ul class="decks">';
-      db.decks.forEach(function (d) {
-        var stats = M.deckStats(d, now(), db.srs);
-        html += '<li><button type="button" class="deck" data-act="deck" data-id="' + esc(d.id) + '">';
-        html += '<span class="deck__title">' + esc(d.title) + '</span>';
-        html += '<span class="deck__meta">' + esc((d.classification && d.classification.gradeLabel) || '') + ' · ' + esc(t('deck.cards', { n: stats.total })) + '</span>';
-        html += '<span class="deck__due">' + esc(t('deck.due', { n: stats.dueToday })) + '</span>';
-        html += '</button></li>';
+      html += '<div class="deck-filter" id="deck-filter" role="group" aria-label="' + esc(t('decks.filterLabel')) + '">';
+      html += '<button type="button" class="chip' + (state.deckFilter ? '' : ' chip--on') + '" data-act="deck-filter" data-cat="" aria-pressed="' + (state.deckFilter ? 'false' : 'true') + '">' + esc(t('decks.filterAll')) + '</button>';
+      groups.forEach(function (g) {
+        var on = g.category === state.deckFilter;
+        html += '<button type="button" class="chip' + (on ? ' chip--on' : '') + '" data-act="deck-filter" data-cat="' + esc(g.category) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(catLabel(g.category)) + '<span class="chip__n">' + g.decks.length + '</span></button>';
       });
-      html += '</ul>';
+      html += '</div>';
+      groups.forEach(function (g) {
+        if (state.deckFilter && g.category !== state.deckFilter) return;
+        html += '<div class="deck-group" data-cat="' + esc(g.category) + '">';
+        html += '<h3 class="deck-group__title">' + esc(catLabel(g.category)) + '</h3>';
+        html += '<ul class="decks">';
+        g.decks.forEach(function (d) {
+          var stats = M.deckStats(d, now(), db.srs);
+          html += '<li><button type="button" class="deck" data-act="deck" data-id="' + esc(d.id) + '">';
+          html += '<span class="deck__title">' + esc(d.title) + '</span>';
+          html += '<span class="deck__meta"><span class="deck__cat">' + esc(catLabel(Ai.deckCategory(d))) + '</span> · ' + esc((d.classification && d.classification.gradeLabel) || '') + ' · ' + esc(t('deck.cards', { n: stats.total })) + '</span>';
+          html += '<span class="deck__due">' + esc(t('deck.due', { n: stats.dueToday })) + '</span>';
+          html += '</button></li>';
+        });
+        html += '</ul></div>';
+      });
     }
     html += '</section>';
 
@@ -588,6 +616,8 @@
       html += '<div class="notice notice--warn" id="u-lowconf">' + esc(t('understand.lowConfidence', { grade: c.gradeLabel || Ai.gradeLabelOf(c.grade) })) + '</div>';
     }
     html += '<p class="summary" id="u-summary">' + esc(a.topic.summary || '') + '</p>';
+    // P3：卡冊分類（科目＋範疇）——AI 冇回／超長就 fallback 科目 label
+    html += '<p class="meta" id="u-category" aria-label="' + esc(t('decks.category')) + '"><span class="chip chip--static">' + esc(catLabel(Ai.categoryOf(a.topic, c))) + '</span></p>';
 
     // P1.1：主題／年級可改（改咗標 classification.edited = true）
     html += '<div class="uedit" id="u-edit">';
@@ -678,6 +708,8 @@
     html += '<section class="section"><h1 class="page-title">' + esc(t('confirm.title')) + '</h1>';
     html += '<div class="banner" id="confirm-banner"><span>' + esc(t('confirm.banner', { n: a.knowledgePoints.length })) + '</span>';
     html += '<button type="button" class="linkbtn" data-act="understand">' + esc(t('understand.mastery')) + '</button></div>';
+    // P3：確認頁都見到今次會存入邊個卡冊分類
+    html += '<p class="meta" id="confirm-category" aria-label="' + esc(t('decks.category')) + '"><span class="chip chip--static">' + esc(catLabel(Ai.categoryOf(a.topic, a.classification))) + '</span></p>';
     if (a.cached) html += '<div class="notice notice--ok" id="cache-hit">' + esc(t('confirm.cached')) + '</div>';
     html += '<div class="toolbar toolbar--tight">';
     html += '<button type="button" class="btn btn--tiny" data-act="select-all">' + esc(t('confirm.selectAll')) + '</button>';
@@ -1907,6 +1939,11 @@
       case 'deck':
         go('#/deck/' + encodeURIComponent(el.getAttribute('data-id')));
         break;
+      case 'deck-filter':
+        // P3：首頁卡冊分類篩選（'' = 全部）
+        state.deckFilter = el.getAttribute('data-cat') || '';
+        render();
+        break;
       case 'practice':
         startPractice(el.getAttribute('data-id'), 'all');
         break;
@@ -2053,6 +2090,7 @@
         var n = selectedCount();
         if (!n) return;
         var deckNew = S.createDeck(state.db, state.analysis, { allow: state.confirm });
+        state.deckFilter = ''; // 新卡組任何分類都要即刻見返
         state.analysis = null;
         state.photo = null;
         state.photos = [];
@@ -2165,13 +2203,14 @@
             stage: 'primary', grade: 'P4', gradeLabel: '小四', subject: 'general', subjectLabel: '常識',
             difficulty: 2, confidence: 1, taxonomy: ['定義', '應用'], taxonomyVersion: 1,
           },
-          topic: { title: t('paste.title2'), summary: '' },
+          topic: { title: t('paste.title2'), summary: '', category: '其他' },
           knowledgePoints: [{ id: 'kp_manual', label: t('paste.title2'), category: '定義', difficulty: 2, detail: '' }],
           cards: parsed.map(function (c, i) {
             return { id: 'c' + (i + 1), kpId: 'kp_manual', category: '定義', difficulty: 2, type: 'basic', front: c.front, back: c.back, mnemonic: '', example: '', uncertain: false, source: 'manual' };
           }),
         };
         var deck2 = S.createDeck(state.db, analysis, {});
+        state.deckFilter = '';
         toast(t('paste.created', { n: parsed.length }));
         go('#/deck/' + encodeURIComponent(deck2.id));
         break;

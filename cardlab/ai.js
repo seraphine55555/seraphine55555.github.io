@@ -35,6 +35,9 @@
   // 理解頁編輯上限（設計 §S4）：主題 ≤60 字、知識點名 ≤16 字、難度 1–5
   var TOPIC_TITLE_MAX = 60;
   var KP_LABEL_MAX = 16;
+  // 卡冊分類（P3）：AI 回 topic.category＝「科目＋範疇」2–10 字，例如 中文閱讀理解／數學乘法
+  var CATEGORY_MAX = 10;
+  var CATEGORY_MIN = 2;
   var CARD_TYPES = ['basic', 'cloze', 'compare', 'trap'];
   var SYNONYMS = {
     '常見錯誤': '易錯',
@@ -118,6 +121,46 @@
   function gradeLabelOf(grade) {
     var g = str(grade).trim().toUpperCase();
     return GRADE_LABELS[g] || g;
+  }
+
+  // ── 卡冊分類（P3）：科目＋範疇，例如 中文閱讀理解／英文文法／數學乘法 ──
+  /** 去 HTML、全形→半形、壓空白；只有 2–10 字先算合法，其餘回 ''（唔會拋錯）。 */
+  function sanitizeCategory(raw) {
+    var text = toHalfWidth(stripHtml(raw)).replace(/\s+/g, ' ').trim();
+    var n = labelLen(text);
+    if (n < CATEGORY_MIN || n > CATEGORY_MAX) return '';
+    return text;
+  }
+
+  /** analysis 嘅分類：topic.category → 科目中文 label（subjectLabel）→「其他」。 */
+  function categoryOf(topic, classification) {
+    var cat = sanitizeCategory(topic && topic.category);
+    if (cat) return cat;
+    var fallback = sanitizeCategory(classification && classification.subjectLabel);
+    if (fallback) return fallback;
+    return OTHER;
+  }
+
+  /** 卡組分類：舊卡組冇 topic.category 都用同一條 fallback 次序，唔會爛。 */
+  function deckCategory(deck) {
+    if (!deck || typeof deck !== 'object') return OTHER;
+    return categoryOf(deck.topic, deck.classification);
+  }
+
+  /** 按 category 分組，組次序＝卡組首次出現次序（首頁卡冊列表用）。 */
+  function groupDecks(decks) {
+    var groups = [];
+    var at = Object.create(null);
+    asArray(decks).forEach(function (d) {
+      if (!d || typeof d !== 'object') return;
+      var cat = deckCategory(d);
+      if (!(cat in at)) {
+        at[cat] = groups.length;
+        groups.push({ category: cat, decks: [] });
+      }
+      groups[at[cat]].decks.push(d);
+    });
+    return groups;
   }
 
   /**
@@ -388,13 +431,15 @@
       taxonomy: normalized.taxonomy,
       taxonomyVersion: 1,
     };
+    // P3：卡冊分類只係「顯示用標籤」，空／超長／缺一律 fallback，唔會因此拒絕整份分析。
+    var category = categoryOf(topicRaw, classification);
     return {
       ok: true,
       errors: [],
       notes: notes,
       value: {
         classification: classification,
-        topic: { title: title, summary: summary },
+        topic: { title: title, summary: summary, category: category },
         taxonomy: normalized.taxonomy,
         knowledgePoints: normalized.knowledgePoints,
         cards: normalized.cards.map(function (card) {
@@ -495,6 +540,12 @@
     if (!tp || typeof tp !== 'object') return false;
     var titleText = stripHtml(tp.title || '');
     if (!titleText || labelLen(titleText) > TOPIC_TITLE_MAX) return false;
+    // P3：topic.category 只做 optional 驗 —— 舊快取（冇 category）照樣 OK；
+    //     有就要係已正規化嘅 2–10 字字串，否則拒收（唔會因此清走其他舊 entry）。
+    if (tp.category !== undefined && tp.category !== null) {
+      if (typeof tp.category !== 'string') return false;
+      if (!sanitizeCategory(tp.category) || sanitizeCategory(tp.category) !== tp.category) return false;
+    }
     var kps = asArray(v.knowledgePoints);
     if (!kps.length || kps.length > 10) return false;
     var ids = Object.create(null);
@@ -718,32 +769,33 @@
       '1. stage：kindergarten / primary / secondary / university。',
       '2. grade：K1–K3、P1–P6、S1–S6、U1–U4；用香港學制。內容跨級就揀最接近嘅一級。',
       '3. subject：chinese / english / maths / science / general / humanities / other，同時俾中文 subjectLabel。',
-      '4. difficulty（1–5 星）：1=課本直接寫出、認得就答到；2=要記一個定義；3=要理解因果／過程；4=要比較／應用；5=跨概念綜合／易錯陷阱。呢個係「內容難度」，唔係小朋友能力。',
-      '5. confidence：你對 stage/grade 嘅把握（0–1）。唔肯定就低分，唔好扮肯定。',
-      '6. taxonomy：自己設計 3–6 個知識分類（每類 2–6 字），要覆蓋所有知識點；唔好用「其他」除非真係無辦法分類。',
+      '4. category（topic.category）：2–10 字嘅「科目＋範疇」，例如 中文閱讀理解、英文閱讀理解、英文文法、數學乘法、常識科學。同一類內容要用同一個名，唔好自創新同義詞（唔好一時「英文文法」一時「英文語法」）；寧願粗都唔好長過 10 字。',
+      '5. difficulty（1–5 星）：1=課本直接寫出、認得就答到；2=要記一個定義；3=要理解因果／過程；4=要比較／應用；5=跨概念綜合／易錯陷阱。呢個係「內容難度」，唔係小朋友能力。',
+      '6. confidence：你對 stage/grade 嘅把握（0–1）。唔肯定就低分，唔好扮肯定。',
+      '7. taxonomy：自己設計 3–6 個知識分類（每類 2–6 字），要覆蓋所有知識點；唔好用「其他」除非真係無辦法分類。',
       '',
       '二、理解',
-      '7. 一句話講出呢一頁教緊咩（≤40 字）。',
-      '8. 抽 4–8 個知識點：名稱（≤8 字）、分類（必須喺 taxonomy 入面）、難度星、一句解釋（≤40 字）。',
-      '9. 一個知識點只講一件事；唔好把成段課文當一個知識點。',
+      '8. 一句話講出呢一頁教緊咩（≤40 字）。',
+      '9. 抽 4–8 個知識點：名稱（≤8 字）、分類（必須喺 taxonomy 入面）、難度星、一句解釋（≤40 字）。',
+      '10. 一個知識點只講一件事；唔好把成段課文當一個知識點。',
       '',
       '三、出卡（總數由你按內容決定，4–12 張）',
-      '10. 一張卡只考一個概念；正面係問題（≤25 字），背面係答案（≤40 字）。',
-      '11. 卡嘅 difficulty 預設跟知識點；明顯更深／更淺可以自己改。',
-      '12. 卡類型由你揀（basic / cloze / compare / trap）。cloze 卡正面必須含 {{answer}} 佔位符。',
-      '13. 唔好照抄課文長句；要改寫成「問—答」。避免是非題。',
-      '14. 可以加一句口訣（mnemonic，≤20 字）同一個例子。',
-      '15. 每個知識點至少 1 張卡；冇卡嘅知識點要刪走。',
+      '11. 一張卡只考一個概念；正面係問題（≤25 字），背面係答案（≤40 字）。',
+      '12. 卡嘅 difficulty 預設跟知識點；明顯更深／更淺可以自己改。',
+      '13. 卡類型由你揀（basic / cloze / compare / trap）。cloze 卡正面必須含 {{answer}} 佔位符。',
+      '14. 唔好照抄課文長句；要改寫成「問—答」。避免是非題。',
+      '15. 可以加一句口訣（mnemonic，≤20 字）同一個例子。',
+      '16. 每個知識點至少 1 張卡；冇卡嘅知識點要刪走。',
       '',
       '四、誠實',
-      '16. 只根據提供嘅文字／圖片內容；唔好加內容以外嘅知識。',
-      '17. OCR 認唔清、有亂碼或者明顯缺字嘅位，標 uncertain:true，唔好猜。',
-      '18. 工作紙相片：出「解題所需知識」卡，唔好直接把答案抄成卡。',
-      '19. 如果內容唔係課本／筆記（例如自拍、食物），回 {"error":"not_study_material"}。',
-      '20. 如果文字殘缺到唔能夠理解，回 {"error":"low_legibility"}。',
+      '17. 只根據提供嘅文字／圖片內容；唔好加內容以外嘅知識。',
+      '18. OCR 認唔清、有亂碼或者明顯缺字嘅位，標 uncertain:true，唔好猜。',
+      '19. 工作紙相片：出「解題所需知識」卡，唔好直接把答案抄成卡。',
+      '20. 如果內容唔係課本／筆記（例如自拍、食物），回 {"error":"not_study_material"}。',
+      '21. 如果文字殘缺到唔能夠理解，回 {"error":"low_legibility"}。',
       '',
       '只輸出 JSON（物件），唔要 markdown、唔要解釋。',
-      'JSON 形狀：{"classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"cards":[{"type","kpId","category","difficulty","front","back","mnemonic","example","uncertain"}]}',
+      'JSON 形狀：{"classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"cards":[{"type","kpId","category","difficulty","front","back","mnemonic","example","uncertain"}]}',
     ].join('\n');
   }
 
@@ -982,10 +1034,16 @@
     MAX_PHOTOS: MAX_PHOTOS,
     TOPIC_TITLE_MAX: TOPIC_TITLE_MAX,
     KP_LABEL_MAX: KP_LABEL_MAX,
+    CATEGORY_MAX: CATEGORY_MAX,
+    CATEGORY_MIN: CATEGORY_MIN,
     stageForGrade: stageForGrade,
     gradesForStage: gradesForStage,
     isValidPair: isValidPair,
     gradeLabelOf: gradeLabelOf,
+    sanitizeCategory: sanitizeCategory,
+    categoryOf: categoryOf,
+    deckCategory: deckCategory,
+    groupDecks: groupDecks,
     sha256Hex: sha256Hex,
     photoCountCheck: photoCountCheck,
     joinBytes: joinBytes,

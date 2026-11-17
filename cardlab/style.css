@@ -192,6 +192,60 @@ img { max-width: 100%; height: auto; display: block; }
 .deck__meta { grid-area: meta; color: var(--ink3); font-size: 12px; }
 .deck__due { grid-area: due; color: var(--accent); font-size: 12px; white-space: nowrap; }
 
+/* ── P3：卡冊分類（科目＋範疇）分組＋篩選 ── */
+.deck-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chip--on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.chip--static {
+  min-height: 32px;
+  padding: 0 12px;
+  cursor: default;
+  font-weight: 600;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.chip__n { font-weight: 400; opacity: 0.75; }
+.deck-group { margin: 0 0 16px; }
+.deck-group__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink2);
+  margin: 0 0 6px;
+}
+.deck-group__title::before { content: "▸ "; color: var(--accent); }
+.deck__cat {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg2, rgba(127, 127, 127, 0.08));
+  color: var(--ink2);
+  font-size: 11px;
+}
+
 .empty { color: var(--ink3); font-size: 14px; }
 .empty--tiny { font-size: 12px; margin: 4px 0 8px; }
 .hint { color: var(--ink2); font-size: 13px; margin: 8px 0; }
