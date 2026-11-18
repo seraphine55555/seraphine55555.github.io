@@ -44,6 +44,8 @@
   // 原文顯示層分段：每段大約 110 字或最多 3 句（純顯示，唔改 source.text）
   var SOURCE_PARA_CHARS = 110;
   var SOURCE_PARA_SENTENCES = 3;
+  // P6：AI 整理原文 —— 只可以由用戶撳先 call；整理結果少過原文 30% 視為可疑（保留原文）
+  var SOURCE_CLEAN_MIN_RATIO = 0.3;
   var CARD_TYPES = ['basic', 'cloze', 'compare', 'trap'];
   var SYNONYMS = {
     '常見錯誤': '易錯',
@@ -176,8 +178,53 @@
     return out.join('\n\n');
   }
 
-  // ── stage ↔ grade 枚舉聯動（P1.1 理解頁改年級）──
+  // ── P6：AI 整理原文（用戶撳先 call；只回 JSON {clean}，唔會覆蓋原文） ──
+  function sourceCleanPrompt() {
+    return [
+      '你係香港教材助理。下面係一張工作紙／課本頁 OCR 出嘅文字，可能夾雜工作紙格式同雜訊。',
+      '請整理成「只需要睇課文就可以用」嘅純文字：',
+      '保留：故事／文章正文全文、詞語解釋（例如「詞語角」）、課後問題同選項、屬於課文一部分嘅章節小標題。',
+      '刪走：日期／成績／姓名／班別欄、頁碼、分數、工作紙指示（例如「閱讀下面的文字，然後回答問題」）、教學標籤（例如「學習重點」「思維策略」「語文增值站」呢類唔係課文內容嘅標題）、重複嘅頁眉頁腳、markdown 符號（**、#、-）。',
+      '規則：唔好改寫、唔好簡化、唔好加內容、唔好改錯字；保留原本文字同次序；用空行分段；如果冇嘢好刪就原樣回傳。',
+      '只輸出 JSON：{"clean":"整理後嘅文字"}，唔要 markdown、唔要解釋。',
+    ].join('\n');
+  }
 
+  /** 整理原文嘅請求 body（同對話模型一樣關 thinking＋JSON mode）。 */
+  function buildSourceCleanBody(text) {
+    return {
+      model: MODEL,
+      temperature: 0.2,
+      max_tokens: 8192,
+      thinking: { type: 'disabled' },
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: sourceCleanPrompt() },
+        { role: 'user', content: '以下係 OCR 文字：\n\n' + str(text) },
+      ],
+    };
+  }
+
+  /**
+   * 驗證 AI 整理結果：只收 JSON {clean:string}。
+   * 去 markdown 殘骸（**、__）、trim、上限 SOURCE_MAX；
+   * 整理後少過原文 30%（原文 ≥100 字）→ 當 AI 可能刪走課文，拒收並保留原文。
+   */
+  function validateSourceClean(raw, opts) {
+    var o = opts || {};
+    var obj = parseJsonLoose(raw);
+    if (!obj || typeof obj !== 'object') return { ok: false, errors: ['not_json'] };
+    var clean = str(obj.clean).replace(/\r\n?/g, '\n').replace(/\*\*/g, '').replace(/__/g, '').trim();
+    if (!clean) return { ok: false, errors: ['empty_clean'] };
+    clean = truncate(clean, SOURCE_MAX).text;
+    var original = str(o.original);
+    if (labelLen(original) >= 100 && labelLen(clean) < Math.floor(labelLen(original) * SOURCE_CLEAN_MIN_RATIO)) {
+      return { ok: false, errors: ['clean_too_short'] };
+    }
+    return { ok: true, clean: clean };
+  }
+
+  // ── stage ↔ grade 枚舉聯動（P1.1 理解頁改年級）──
   /** grade → stage；唔認識回 ''。 */
   function stageForGrade(grade) {
     var g = str(grade).trim().toUpperCase();
@@ -1134,6 +1181,9 @@
     CONTEXT_MAX: CONTEXT_MAX,
     SOURCE_PARA_CHARS: SOURCE_PARA_CHARS,
     SOURCE_PARA_SENTENCES: SOURCE_PARA_SENTENCES,
+    SOURCE_CLEAN_MIN_RATIO: SOURCE_CLEAN_MIN_RATIO,
+    buildSourceCleanBody: buildSourceCleanBody,
+    validateSourceClean: validateSourceClean,
     sanitizeSource: sanitizeSource,
     sourceOk: sourceOk,
     formatSourceText: formatSourceText,

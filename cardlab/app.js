@@ -42,6 +42,15 @@
     'source.title': { yue: '原文（OCR）', zh: '原文（OCR）', en: 'Source text (OCR)' },
     'source.local': { yue: '原文只係文字，同卡組一齊存喺呢部機；冇相片。', zh: '原文只是文字，與卡組一起存在這部機；沒有相片。', en: 'Source is text only, stored on this device with the deck — no photos.' },
     'practice.context': { yue: '📖 相關原文', zh: '📖 相關原文', en: '📖 Related source' },
+    // P6：AI 整理原文（用戶撳先 call；原文照留，可切換）
+    'source.clean': { yue: '✨ AI 整理原文', zh: '✨ AI 整理原文', en: '✨ Tidy up with AI' },
+    'source.cleaning': { yue: '整理緊…', zh: '整理中…', en: 'Tidying…' },
+    'source.cleanView': { yue: '睇整理後', zh: '看整理後', en: 'Cleaned' },
+    'source.rawView': { yue: '睇原文', zh: '看原文', en: 'Original' },
+    'source.cleanTitle': { yue: '原文（已整理）', zh: '原文（已整理）', en: 'Source text (tidied)' },
+    'source.cleanDone': { yue: '已整理：刪走工作紙標題／指示，原文仍然保留。', zh: '已整理：刪走工作紙標題／指示，原文仍然保留。', en: 'Tidied: worksheet headings/instructions removed; the original is kept.' },
+    'source.cleanFail': { yue: '整理失敗，原文冇改到。再試一次。', zh: '整理失敗，原文沒有改動。再試一次。', en: 'Tidy-up failed — original kept. Try again.' },
+    'source.cleanShort': { yue: 'AI 刪得太多，為安全起見保留原文。', zh: 'AI 刪掉太多，為安全起見保留原文。', en: 'AI removed too much — original kept for safety.' },
     'home.empty': { yue: '仲未有卡。撳「影相出卡」開始。', zh: '還沒有卡。按「影相出卡」開始。', en: 'No cards yet. Tap "Photo to cards" to start.' },
     'home.paste': { yue: '貼上建卡', zh: '貼上建卡', en: 'Paste cards' },
     'home.import': { yue: '匯入', zh: '匯入', en: 'Import' },
@@ -344,6 +353,9 @@
     deckFilter: '',
     // P4：原文面板開關（卡組頁／練習頁共用，每次換頁重設）
     sourceOpen: false,
+    // P6：原文「AI 整理」狀態（busy＝有 call 進行中；view＝raw/clean）
+    sourceBusy: false,
+    sourceView: 'raw',
   };
 
   function now() {
@@ -800,7 +812,7 @@
     html += '<button type="button" class="btn btn--ghost" data-act="deck-map" data-id="' + esc(deck.id) + '">' + esc(t('deck.map')) + '</button>';
     html += '</div>';
     // P4 A：卡組頁「📄 原文」（有 source 才顯示；舊卡組冇就唔會有掣）
-    html += sourcePanelHtml(deck.source);
+    html += sourcePanelHtml(deck);
     html += '<div class="toolbar"><button type="button" class="btn btn--danger btn--tiny" data-act="delete-deck" data-id="' + esc(deck.id) + '">' + esc(t('deck.delete')) + '</button></div>';
     html += '</section>';
     return html;
@@ -1099,7 +1111,7 @@
     html += '<p class="pcard__front" id="practice-front">' + esc(P.displayFront(card.front)) + '</p>';
     html += '</article>';
     // P4 A：練習頁都可以開返卡組原文（有 source 才顯示）
-    html += sourcePanelHtml(deck.source);
+    html += sourcePanelHtml(deck);
     // P4 B：有 context 先出「📖 相關原文」；<details> 默認收起（唔好一開就爆答案），揭曉後仍然可看
     if (card.context) {
       html += '<details class="pctx" id="practice-context"><summary>' + esc(t('practice.context')) + '</summary>';
@@ -1349,6 +1361,7 @@
 
   function go(hash) {
     state.sourceOpen = false;
+    state.sourceView = 'raw';
     if (location.hash === hash) { 
       routeFromHash();
       render();
@@ -1358,25 +1371,90 @@
   }
 
   // ─────────────────────────── P4：原文面板 ───────────────────────────
+  /** 由 deck.source 取顯示用原文（sanitize 之後補返 AI 整理版 clean）。 */
+  function sourceOf(deck) {
+    var raw = deck && deck.source;
+    var base = Ai.sanitizeSource(raw);
+    if (!base) return null;
+    base.clean = raw && typeof raw.clean === 'string' && raw.clean.trim() ? raw.clean : '';
+    return base;
+  }
+
   /**
    * 卡組原文面板：有 source 先出「📄 原文」掣；面板默認收起。
-   * 內容用 esc() 逐字轉義（即使 OCR 有 <script> 都只會顯示文字），
-   * white-space:pre-wrap 保留 OCR 換行，面板本身可捲動（CSS）。
+   * P6：未整理時有「✨ AI 整理原文」掣（撳先 call）；整理完可以「睇原文／睇整理後」切換。
+   * 內容用 esc() 逐字轉義；格式交 Ai.formatSourceText（分段＋去殘骸）。
    */
-  function sourcePanelHtml(raw) {
-    var src = Ai.sanitizeSource(raw);
+  function sourcePanelHtml(deck) {
+    var src = sourceOf(deck);
     if (!src) return '';
+    var showClean = state.sourceView === 'clean' && !!src.clean;
+    var bodyText = showClean ? src.clean : src.text;
     var html = '';
-    html += '<div class="toolbar toolbar--tight"><button type="button" class="btn btn--ghost" id="btn-source" data-act="toggle-source" aria-expanded="' + (state.sourceOpen ? 'true' : 'false') + '" aria-controls="source-panel">' + esc(t('source.open')) + '</button></div>';
+    html += '<div class="toolbar toolbar--tight"><button type="button" class="btn btn--ghost" id="btn-source" data-act="toggle-source" aria-expanded="' + (state.sourceOpen ? 'true' : 'false') + '" aria-controls="source-panel">' + esc(t('source.open')) + '</button>';
+    if (src.clean) {
+      html += '<button type="button" class="btn btn--tiny" id="btn-source-view" data-act="source-view">' + esc(t(showClean ? 'source.rawView' : 'source.cleanView')) + '</button>';
+    } else if (state.sourceBusy) {
+      html += '<span class="meta" id="source-busy">' + esc(t('source.cleaning')) + '</span>';
+    } else {
+      html += '<button type="button" class="btn btn--tiny" id="btn-clean-source" data-act="clean-source" data-id="' + esc(deck.id) + '">' + esc(t('source.clean')) + '</button>';
+    }
+    html += '</div>';
     if (state.sourceOpen) {
       html += '<section class="srcpanel" id="source-panel" aria-label="' + esc(t('source.title')) + '">';
-      html += '<div class="srcpanel__head"><h3 class="srcpanel__title">' + esc(t('source.title')) + '</h3>';
+      html += '<div class="srcpanel__head"><h3 class="srcpanel__title">' + esc(t(showClean ? 'source.cleanTitle' : 'source.title')) + '</h3>';
       html += '<button type="button" class="btn btn--tiny btn--ghost" id="btn-source-close" data-act="toggle-source">' + esc(t('common.close')) + '</button></div>';
-      html += '<div class="srcpanel__body" id="source-text">' + esc(Ai.formatSourceText(src.text)) + '</div>';
+      html += '<div class="srcpanel__body" id="source-text">' + esc(Ai.formatSourceText(bodyText)) + '</div>';
       html += '<p class="hint hint--soft">' + esc(t('source.local')) + '</p>';
       html += '</section>';
     }
     return html;
+  }
+
+  /**
+   * P6：叫 AI 整理原文（用戶撳掣先 call；一次文字 call，冇相片、唔扣每日相片上限）。
+   * 成功 → 存 deck.source.clean（原文 source.text 照留），自動開面板顯示整理後。
+   * 失敗／整理後太短（<30%）→ 保留原文，只出 toast。
+   */
+  async function cleanSource(deck) {
+    if (!deck || !deck.source) return;
+    var key = String(state.db.settings.ai.key || '').trim();
+    if (!key) { toast(t('toast.notEnabled')); return; }
+    if (state.sourceBusy) return;
+    state.sourceBusy = true;
+    state.sourceOpen = true;
+    render();
+    var resp = null;
+    try {
+      resp = await fetchWithTimeout(Ai.CHAT_URL, {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(Ai.buildSourceCleanBody(deck.source.text)),
+      }, CHAT_TIMEOUT, null);
+    } catch (e) {
+      state.sourceBusy = false;
+      render();
+      toast(t('source.cleanFail'));
+      return;
+    }
+    state.sourceBusy = false;
+    if (!resp.ok) { render(); toast(t('source.cleanFail')); return; }
+    var data = null;
+    try { data = await resp.json(); } catch (e) { data = null; }
+    var choice = data && data.choices && data.choices[0];
+    var content = Ai.messageText(choice && choice.message);
+    var finish = (choice && choice.finish_reason) || '';
+    var res = Ai.validateSourceClean(content, { original: deck.source.text });
+    if (finish === 'length' || !res.ok) {
+      toast(!res.ok && res.errors && res.errors[0] === 'clean_too_short' ? t('source.cleanShort') : t('source.cleanFail'));
+      return;
+    }
+    deck.source.clean = res.clean;
+    deck.source.cleanAt = now();
+    S.save(state.db);
+    state.sourceView = 'clean';
+    toast(t('source.cleanDone'));
+    render();
   }
 
   function routeFromHash() {
@@ -1999,6 +2077,17 @@
         state.sourceOpen = !state.sourceOpen;
         render();
         break;
+      case 'source-view':
+        // P6：原文 ↔ AI 整理後 切換
+        state.sourceView = state.sourceView === 'clean' ? 'raw' : 'clean';
+        render();
+        break;
+      case 'clean-source': {
+        // P6：用戶撳先叫 AI 整理原文（唔會自動 call／唔會覆蓋原文）
+        var srcDeck = S.getDeck(state.db, el.getAttribute('data-id'));
+        if (srcDeck) cleanSource(srcDeck);
+        break;
+      }
       case 'practice':
         startPractice(el.getAttribute('data-id'), 'all');
         break;
