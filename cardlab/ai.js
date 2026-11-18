@@ -47,6 +47,9 @@
   // P6：AI 整理原文 —— 只可以由用戶撳先 call；整理結果少過原文 30% 視為可疑（保留原文）
   var SOURCE_CLEAN_MIN_RATIO = 0.3;
   var CARD_TYPES = ['basic', 'cloze', 'compare', 'trap'];
+  // P11：用戶要求「出卡盡量多」。硬上限由 24 放寬到 40（仍然係防爆閘，唔係目標），
+  // prompt 目標改 8–20 張，並允許同一知識點由唔同角度出 2–3 張。
+  var MAX_CARDS = 40;
   var SYNONYMS = {
     '常見錯誤': '易錯',
     '易錯點': '易錯',
@@ -503,7 +506,7 @@
     // ── cards ──
     var cardRaw = asArray(obj.cards);
     if (!cardRaw.length) errors.push('no_cards');
-    if (cardRaw.length > 24) errors.push('too_many_cards');
+    if (cardRaw.length > MAX_CARDS) errors.push('too_many_cards');
     var cards = [];
     var seen = Object.create(null);
     var orphan = 0;
@@ -730,7 +733,7 @@
       if (!isInt(kp.difficulty) || kp.difficulty < 1 || kp.difficulty > 5) return false;
     }
     var cards = asArray(v.cards);
-    if (!cards.length || cards.length > 24) return false;
+    if (!cards.length || cards.length > MAX_CARDS) return false;
     var seen = Object.create(null);
     var cardIds = Object.create(null);
     for (i = 0; i < cards.length; i++) {
@@ -955,13 +958,13 @@
       '9. 抽 4–8 個知識點：名稱（≤8 字）、分類（必須喺 taxonomy 入面）、難度星、一句解釋（≤40 字）。',
       '10. 一個知識點只講一件事；唔好把成段課文當一個知識點。',
       '',
-      '三、出卡（總數由你按內容決定，4–12 張）',
+      '三、出卡（盡量多：一般 8–20 張；內容豐富就出更多，硬上限 40 張）',
       '11. 一張卡只考一個概念；正面係問題（≤25 字），背面係答案（≤40 字）。',
       '12. 卡嘅 difficulty 預設跟知識點；明顯更深／更淺可以自己改。',
       '13. 卡類型由你揀（basic / cloze / compare / trap）。cloze 卡正面必須含 {{answer}} 佔位符。',
       '14. 唔好照抄課文長句；要改寫成「問—答」。避免是非題。',
       '15. 可以加一句口訣（mnemonic，≤20 字）同一個例子。',
-      '16. 每個知識點至少 1 張卡；冇卡嘅知識點要刪走。',
+      '16. 每個知識點至少 1 張卡；內容夠嘅知識點可以出 2–3 張（由定義／應用／易錯／比較等唔同角度問），但唔好用同一個問法重複；冇卡嘅知識點要刪走。',
       '17. 如果張卡要靠原文上文下理先答得到（例如閱讀理解問「作者點解咁講」），可以為佢加 context：原文相關段落節錄（≤200 字，照原文抄，唔好改寫、唔好連答案一齊抄）。其他卡冇需要就唔好加 context。',
       '',
       '四、誠實',
@@ -1250,6 +1253,7 @@
     addKp: addKp,
     stripHtml: stripHtml,
     isPlaceholderAnswer: isPlaceholderAnswer,
+    MAX_CARDS: MAX_CARDS,
     truncate: truncate,
     toHalfWidth: toHalfWidth,
     normLabel: normLabel,
