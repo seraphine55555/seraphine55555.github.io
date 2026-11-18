@@ -235,8 +235,17 @@
     return c ? c.sentence : str(front);
   }
 
-  /** 由句子抽詞做填空選項（中文按標點斷詞、英文按空白），最多 n 個。 */
-  function sentenceWords(sentence, n) {
+  /** 佔位符字面值：模型有時照抄 {{answer}} 落 back，或 back 只有底線／空白。
+   *  呢啲都唔可以當答案（P10，用戶真機見到選項出現字面值 "answer"）。 */
+  var PLACEHOLDER_WORDS = ['answer', 'blank', 'fill', '答案', '填空'];
+  function isPlaceholderAnswer(v) {
+    var t = str(v).trim();
+    if (!t) return true;
+    if (/^[＿_\-—]{1,}$/.test(t)) return true;
+    return PLACEHOLDER_WORDS.indexOf(t.toLowerCase()) >= 0;
+  }
+
+  /** 由句子抽詞做填空選項（中文按標點斷詞、英文按空白），最多 n 個。 */  function sentenceWords(sentence, n) {
     var words = str(sentence)
       .replace(/[＿＿]+/g, ' ')
       .split(/[\s，。、；：？！,.;:?!「」『』（）()〔〕【】《》…—\-]+/)
@@ -283,6 +292,7 @@
     parsePastedCards: parsePastedCards,
     parseCloze: parseCloze,
     displayFront: displayFront,
+    isPlaceholderAnswer: isPlaceholderAnswer,
     sentenceWords: sentenceWords,
     normalizeAnswer: normalizeAnswer,
     answersMatch: answersMatch,

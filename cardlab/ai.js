@@ -67,8 +67,17 @@
   function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
   function isInt(n) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n; }
 
-  /** 去 HTML ＋壓空白；唔會用 innerHTML，所以連 <script> 都當文字。 */
-  function stripHtml(s) {
+  /** P10：cloze 佔位符字面值（模型有時照抄 {{answer}} 做 back）。
+   *  規則必須同 parse.js 嘅 isPlaceholderAnswer 一致（兩邊都有單元測試互相對照）。 */
+  var PLACEHOLDER_WORDS = ['answer', 'blank', 'fill', '答案', '填空'];
+  function isPlaceholderAnswer(v) {
+    var t = str(v).trim();
+    if (!t) return true;
+    if (/^[＿_\-—]{1,}$/.test(t)) return true;
+    return PLACEHOLDER_WORDS.indexOf(t.toLowerCase()) >= 0;
+  }
+
+  /** 去 HTML ＋壓空白；唔會用 innerHTML，所以連 <script> 都當文字。 */  function stripHtml(s) {
     return str(s)
       .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/gi, ' ')
@@ -516,6 +525,11 @@
         notes.push('drop_cloze_without_blank');
         return;
       }
+      // P10：cloze 卡 back 係佔位符字面值／空 ⇒ 唔可以入庫（練習會出現「answer」選項）
+      if (type === 'cloze' && isPlaceholderAnswer(b.text)) {
+        notes.push('drop_cloze_placeholder_back');
+        return;
+      }
       var key = kpId + '\u0000' + f.text.toLowerCase();
       if (seen[key]) { notes.push('drop_duplicate_card'); return; }
       seen[key] = 1;
@@ -734,6 +748,8 @@
       var type = str(card.type).trim();
       if (CARD_TYPES.indexOf(type) < 0) return false;
       if (type === 'cloze' && !/\{\{[^{}]*\}\}/.test(front)) return false;
+      // P10：cloze back 係佔位符字面值 ⇒ 呢張卡唔合格
+      if (type === 'cloze' && isPlaceholderAnswer(back)) return false;
       // P4 B：context 只做 optional 驗 —— 冇＝OK；有就要係非空、已去 HTML、≤200 字。
       if (card.context !== undefined && card.context !== null) {
         if (typeof card.context !== 'string') return false;
@@ -1233,6 +1249,7 @@
     deleteKp: deleteKp,
     addKp: addKp,
     stripHtml: stripHtml,
+    isPlaceholderAnswer: isPlaceholderAnswer,
     truncate: truncate,
     toHalfWidth: toHalfWidth,
     normLabel: normLabel,

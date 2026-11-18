@@ -1079,8 +1079,14 @@
   function clozeOptions(card, deck) {
     var cloze = P.parseCloze(card.front);
     if (!cloze) return null;
+    // P10（用戶真機截圖）：正解唔可以攞 `{{ }}` 括號內文字——模型成日照抄
+    // `{{answer}}`，令選項出現字面值 "answer"。卡片規格係 back 才是答案
+    // （flip／打字模式一直用 card.back）。back 空或者係佔位符字面值 ⇒ 回 null，
+    // 由呼叫方退回 flip，寧願翻卡都唔出一條揀唔到正解嘅選擇題。
+    var answer = String(card.back == null ? '' : card.back).trim();
+    if (P.isPlaceholderAnswer(answer)) return null;
     var extra = P.sentenceWords(cloze.sentence, 3);
-    var opts = choiceOptions({ id: card.id, front: card.front, back: cloze.answer }, deck, extra);
+    var opts = choiceOptions({ id: card.id, front: card.front, back: answer }, deck, extra);
     return opts;
   }
 
