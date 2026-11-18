@@ -198,6 +198,11 @@
     'practice.submit': { yue: '提交', zh: '提交', en: 'Submit' },
     'practice.tooHard': { yue: '改為翻卡', zh: '改為翻卡', en: 'Switch to flip' },
     'practice.pickOne': { yue: '揀一個答案', zh: '選一個答案', en: 'Pick one answer' },
+    'practice.speakFront': { yue: '🔊 讀題目', zh: '🔊 讀題目', en: '🔊 Read question' },
+    'practice.speakBack': { yue: '🔊 讀答案', zh: '🔊 讀答案', en: '🔊 Read answer' },
+    'practice.noSpeech': { yue: '呢部機未有語音；仍然可以繼續做。', zh: '這台裝置沒有語音；仍然可以繼續做。', en: 'No voice on this device — you can still continue.' },
+    'settings.voice': { yue: '朗讀', zh: '朗讀', en: 'Read aloud' },
+    'settings.autoRead': { yue: '每次出新題目自動讀出（用本機語音）', zh: '每次出新題目自動讀出（用本機語音）', en: 'Auto-read each new question (device voice)' },
     'practice.progress': { yue: '{i} / {n}', zh: '{i} / {n}', en: '{i} / {n}' },
     'practice.exit': { yue: '退出', zh: '退出', en: 'Exit' },
     'practice.exitConfirm': { yue: '退出會保留進度，下次可以繼續。', zh: '退出會保留進度，下次可以繼續。', en: 'Progress is kept — you can resume next time.' },
@@ -1111,6 +1116,8 @@
     // cloze 卡一律顯示填空線（＿＿），唔好顯示 {{answer}} 原文
     html += '<p class="pcard__front" id="practice-front">' + esc(P.displayFront(card.front)) + '</p>';
     html += '</article>';
+    // P9：讀題目（所有模式都有；冇語音時 handleSpeak 會 toast 提示）
+    html += '<div class="toolbar toolbar--tight"><button type="button" class="btn btn--ghost btn--wide" data-act="speak-front" id="btn-speak-front">' + esc(t('practice.speakFront')) + '</button></div>';
     // P4 A：練習頁都可以開返卡組原文（有 source 才顯示）
     html += sourcePanelHtml(deck);
     // P4 B：有 context 先出「📖 相關原文」；<details> 默認收起（唔好一開就爆答案），揭曉後仍然可看
@@ -1135,6 +1142,8 @@
         if (card.mnemonic) html += '<p class="mnemonic">💡 ' + esc(card.mnemonic) + '</p>';
         if (card.example) html += '<p class="example">' + esc(card.example) + '</p>';
         html += '</div>';
+        // P9：揭曉後可以讀答案
+        html += '<div class="toolbar toolbar--tight"><button type="button" class="btn btn--ghost btn--wide" data-act="speak-back" id="btn-speak-back">' + esc(t('practice.speakBack')) + '</button></div>';
         html += '<div class="toolbar toolbar--split">';
         html += '<button type="button" class="btn btn--danger" data-act="answer" data-correct="0" id="btn-forget">' + esc(t('practice.forget')) + '</button>';
         html += '<button type="button" class="btn btn--ok" data-act="answer" data-correct="1" id="btn-remember">' + esc(t('practice.remember')) + '</button>';
@@ -1291,6 +1300,8 @@
     html += '<button type="button" class="btn btn--primary" data-act="save-key" id="btn-save-key">' + esc(t('settings.save')) + '</button>';
     html += '<p class="meta">' + esc(t('settings.ai', { m: ai.model, cap: ai.dailyPhotoCap })) + '</p>';
     html += '<p class="privacy">' + esc(t('settings.privacy')) + '</p>';
+    html += '<h3 class="sub">' + esc(t('settings.voice')) + '</h3>';
+    html += '<label class="check"><input id="autoread-input" type="checkbox" data-act="toggle-autoread"' + (state.db.settings.autoRead ? ' checked' : '') + ' /> <span>' + esc(t('settings.autoRead')) + '</span></label>';
     html += '<h3 class="sub">' + esc(t('settings.data')) + '</h3>';
     html += '<div class="toolbar">';
     html += '<button type="button" class="btn btn--ghost" data-act="export">' + esc(t('home.export')) + '</button>';
@@ -1362,6 +1373,51 @@
       toastEl.textContent = state.toast || '';
       toastEl.hidden = !state.toast;
     }
+    autoSpeakCurrent();
+  }
+
+  // ── P9 朗讀（本機 speechSynthesis，零第三方；冇語音就靜靜唔做）──
+  function hasSpeech() {
+    return typeof window !== 'undefined' && !!window.speechSynthesis && !!window.SpeechSynthesisUtterance;
+  }
+
+  function isCJKText(text) {
+    return /[\u3400-\u9fff]/.test(String(text || ''));
+  }
+
+  /** 讀一段文字：中文 zh-HK、英文 en-US；每次先 cancel 上一次，唔會疊聲。 */
+  function speakText(text) {
+    var txt = String(text == null ? '' : text).replace(/＿+/g, ' ').trim();
+    if (!txt) return false;
+    if (!hasSpeech()) {
+      toast(t('practice.noSpeech'));
+      return false;
+    }
+    try {
+      var u = new window.SpeechSynthesisUtterance(txt);
+      var cjk = isCJKText(txt);
+      u.lang = cjk ? 'zh-HK' : 'en-US';
+      u.rate = cjk ? 0.85 : 0.75;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+      state.lastSpoken = { text: txt, lang: u.lang, rate: u.rate };
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** 自動讀新卡題目：同一個 index 只讀一次（揭示答案都唔會重讀）。 */
+  function autoSpeakCurrent() {
+    if (!state.session || !state.db || !state.db.settings.autoRead) return;
+    if (!hasSpeech()) return;
+    var entry = currentEntry();
+    var card = entryCard(entry);
+    if (!card) return;
+    var key = (state.session.deckId || '') + '|' + card.id + '|' + state.session.index;
+    if (state.spokeKey === key) return;
+    state.spokeKey = key;
+    speakText(P.displayFront(card.front));
   }
 
   function go(hash) {
@@ -2255,6 +2311,16 @@
         startPractice(deckNew.id, 'all');
         break;
       }
+      case 'speak-front': {
+        var sc = entryCard(currentEntry());
+        if (sc) speakText(P.displayFront(sc.front));
+        break;
+      }
+      case 'speak-back': {
+        var sb = entryCard(currentEntry());
+        if (sb) speakText(sb.back);
+        break;
+      }
       case 'reveal':
         state.session.revealed = true;
         render();
@@ -2412,6 +2478,11 @@
         el.value = ''; // 清空 value：同一張相再揀都會再觸發 change
         // P2.0：相機入口維持單張（取代）；相簿入口可以一次揀 2–4 張（累加）。
         onFiles(pickedFiles, { replace: !fromAlbum });
+        return;
+      }
+      if (el.id === 'autoread-input') {
+        state.db.settings.autoRead = !!el.checked;
+        S.save(state.db);
         return;
       }
       if (el.id === 'u-stage' && state.analysis) {

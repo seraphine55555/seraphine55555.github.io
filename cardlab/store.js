@@ -50,6 +50,8 @@
       settings: {
         lang: 'zh',
         dailyGoal: DEFAULT_GOAL,
+        // P9 朗讀：默認唔自動讀（唔想一出題就出聲），用戶可喺設定開
+        autoRead: false,
         ai: {
           mode: 'direct',
           endpoint: 'https://api.deepseek.com',
@@ -71,6 +73,7 @@
     var s = db.settings || {};
     out.settings.lang = ['yue', 'zh', 'en'].indexOf(s.lang) >= 0 ? s.lang : 'zh';
     out.settings.dailyGoal = Math.max(1, Math.min(100, Number(s.dailyGoal) || DEFAULT_GOAL));
+    out.settings.autoRead = s.autoRead === true;
     var ai = s.ai || {};
     out.settings.ai = {
       mode: ai.mode === 'proxy' ? 'proxy' : 'direct',
@@ -292,7 +295,7 @@
 
   function exportJson(db) {
     return JSON.stringify(
-      { schema: SCHEMA, exportedAt: Date.now(), decks: db.decks, srs: db.srs, settings: { lang: db.settings.lang, dailyGoal: db.settings.dailyGoal } },
+      { schema: SCHEMA, exportedAt: Date.now(), decks: db.decks, srs: db.srs, settings: { lang: db.settings.lang, dailyGoal: db.settings.dailyGoal, autoRead: !!db.settings.autoRead } },
       null,
       2
     );

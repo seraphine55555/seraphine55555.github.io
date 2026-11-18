@@ -538,6 +538,9 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* ── 設定／貼上 ── */
 .field { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+/* P9 朗讀：設定頁勾選行（觸控目標 ≥44px） */
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; margin: 4px 0; font-size: 15px; color: var(--ink); }
+.check input { width: 22px; height: 22px; flex: 0 0 auto; }
 .field > span { font-size: 13px; color: var(--ink2); }
 .input, .textarea {
   width: 100%;
