@@ -504,6 +504,8 @@ img { max-width: 100%; height: auto; display: block; }
 .mnemonic { text-align: center; color: var(--accent); font-size: 13px; margin: 4px 0; }
 .example { text-align: center; color: var(--ink2); font-size: 13px; margin: 4px 0; }
 .options { display: grid; gap: 8px; }
+/* 4 選 1／填空：一句提示，避免用戶以為壞機（2026-11-18） */
+.phint { text-align: center; color: var(--ink2); font-size: 13px; margin: 2px 0 6px; }
 .choice {
   min-height: 52px;
   padding: 12px 14px;

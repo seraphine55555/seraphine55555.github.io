@@ -197,6 +197,7 @@
     'practice.typing': { yue: '打答案', zh: '輸入答案', en: 'Type the answer' },
     'practice.submit': { yue: '提交', zh: '提交', en: 'Submit' },
     'practice.tooHard': { yue: '改為翻卡', zh: '改為翻卡', en: 'Switch to flip' },
+    'practice.pickOne': { yue: '揀一個答案', zh: '選一個答案', en: 'Pick one answer' },
     'practice.progress': { yue: '{i} / {n}', zh: '{i} / {n}', en: '{i} / {n}' },
     'practice.exit': { yue: '退出', zh: '退出', en: 'Exit' },
     'practice.exitConfirm': { yue: '退出會保留進度，下次可以繼續。', zh: '退出會保留進度，下次可以繼續。', en: 'Progress is kept — you can resume next time.' },
@@ -1154,11 +1155,15 @@
         session.optsCache = opts;
         session.optsKey = key;
       }
+      html += '<p class="phint" id="choice-hint">' + esc(t('practice.pickOne')) + '</p>';
       html += '<div class="options" id="choice-list">';
       opts.forEach(function (o, i) {
         html += '<button type="button" class="choice" data-act="choose" data-i="' + i + '">' + esc(o.text) + '</button>';
       });
       html += '</div>';
+      // 逃生掣（2026-11-18 用戶回報）：4 選 1／填空模式冇「顯示答案」⇒ 用戶以為壞機。
+      // 撳一下即轉 flip 並直接揭曉（之後照樣用「記得／唔記得」記 SRS）。
+      html += '<div class="toolbar"><button type="button" class="btn btn--ghost btn--wide" data-act="show-answer" id="btn-show-answer">' + esc(t('practice.flip')) + '</button></div>';
     } else if (session.mode === 'typing') {
       html += '<label class="sr-only" for="type-input">' + esc(t('practice.typing')) + '</label>';
       html += '<input id="type-input" class="type-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(t('practice.typing')) + '" />';
@@ -2282,6 +2287,14 @@
       case 'to-flip':
         state.session.mode = 'flip';
         state.session.optsCache = null;
+        render();
+        break;
+      case 'show-answer':
+        // 由 4 選 1／填空轉翻卡並即刻揭曉（唔使撳兩次）
+        state.session.mode = 'flip';
+        state.session.revealed = true;
+        state.session.optsCache = null;
+        state.session.optsKey = null;
         render();
         break;
       case 'exit-practice':
