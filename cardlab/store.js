@@ -166,6 +166,11 @@
     // P4 A：卡組保留 OCR 原文（純文字、冇相片）。舊 analysis 冇 source → 唔加 key，UI 自己隱藏原文掣。
     var src = sanitizeSource(analysis && analysis.source);
     if (src) deck.source = src;
+    // P7：分析 call 同時回嘅「整理後原文」→ 存喺 source.clean（原文 source.text 照留）
+    if (src && analysis.source && typeof analysis.source.clean === 'string') {
+      var cleanSrc = sanitizeSource({ text: analysis.source.clean });
+      if (cleanSrc) deck.source.clean = cleanSrc.text;
+    }
     db.decks.unshift(deck);
     save(db);
     return deck;

@@ -353,9 +353,9 @@
     deckFilter: '',
     // P4：原文面板開關（卡組頁／練習頁共用，每次換頁重設）
     sourceOpen: false,
-    // P6：原文「AI 整理」狀態（busy＝有 call 進行中；view＝raw/clean）
+    // P6：原文「AI 整理」狀態（busy＝有 call 進行中；view＝auto（有整理版就顯示整理版）／raw／clean）
     sourceBusy: false,
-    sourceView: 'raw',
+    sourceView: 'auto',
   };
 
   function now() {
@@ -1361,7 +1361,7 @@
 
   function go(hash) {
     state.sourceOpen = false;
-    state.sourceView = 'raw';
+    state.sourceView = 'auto';
     if (location.hash === hash) { 
       routeFromHash();
       render();
@@ -1388,7 +1388,7 @@
   function sourcePanelHtml(deck) {
     var src = sourceOf(deck);
     if (!src) return '';
-    var showClean = state.sourceView === 'clean' && !!src.clean;
+    var showClean = !!src.clean && state.sourceView !== 'raw';
     var bodyText = showClean ? src.clean : src.text;
     var html = '';
     html += '<div class="toolbar toolbar--tight"><button type="button" class="btn btn--ghost" id="btn-source" data-act="toggle-source" aria-expanded="' + (state.sourceOpen ? 'true' : 'false') + '" aria-controls="source-panel">' + esc(t('source.open')) + '</button>';
@@ -1710,7 +1710,7 @@
       state.analyze.steps.understand = 'error';
       return fail(result.code, null, result.vars, result.diag);
     }
-    var validated = Ai.validateResult(result.text);
+    var validated = Ai.validateResult(result.text, { ocrText: state.ocr.text });
     var lastText = result.text;
     var lastDiag = result.diag;
     if (!validated.ok && !validated.aiError) {
@@ -1718,7 +1718,7 @@
       var retry = await callChat(Ai.buildChatBody(state.ocr.text, { retry: true }), key, runCtrl);
       if (stale()) return;
       if (retry.ok) {
-        validated = Ai.validateResult(retry.text);
+        validated = Ai.validateResult(retry.text, { ocrText: state.ocr.text });
         lastText = retry.text;
         lastDiag = retry.diag;
       } else if (retry.diag) {
@@ -1743,6 +1743,10 @@
     state.analysis.ocr = { pages: allPages.length, chars: charsTotal, quality: mergedGate.code, photos: photoN };
     // P4 A：由合併後 OCR 原文砌卡組 source（純文字；已經過品質閘同本機驗證）
     state.analysis.source = Ai.sanitizeSource({ text: state.ocr.text, pages: allPages.length, chars: charsTotal, at: now() });
+    // P7：同一個分析 call 已經回咗「整理後原文」→ 存喺 source.clean（原文 source.text 照留，可切換）
+    var cleanSource = validated.value.cleanSource || '';
+    if (state.analysis.source && cleanSource) state.analysis.source.clean = cleanSource;
+    delete state.analysis.cleanSource;
     // 驗證已過、分析已成形 → 先寫快取（任何失敗都行唔到呢一步）
     cacheSave(hash, state.analysis);
     S.clearDraft();
@@ -2078,8 +2082,8 @@
         render();
         break;
       case 'source-view':
-        // P6：原文 ↔ AI 整理後 切換
-        state.sourceView = state.sourceView === 'clean' ? 'raw' : 'clean';
+        // P7：原文 ↔ AI 整理後 切換（默認顯示整理後；第一下切去原文）
+        state.sourceView = state.sourceView === 'raw' ? 'clean' : 'raw';
         render();
         break;
       case 'clean-source': {

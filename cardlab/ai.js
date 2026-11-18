@@ -565,6 +565,19 @@
     };
     // P3：卡冊分類只係「顯示用標籤」，空／超長／缺一律 fallback，唔會因此拒絕整份分析。
     var category = categoryOf(topicRaw, classification);
+    // P7：AI 同一 call 回「同卡片相關嘅原文」整理版（optional）。
+    // 去 HTML／markdown 殘骸、trim、封頂；整理後少過 OCR 原文 30%（原文 ≥100 字）→ 當刪走課文，唔採用（保留 OCR 原文）。
+    var cleanSource = '';
+    var ocrRaw = str(o.ocrText).replace(/\r\n?/g, '\n').trim();
+    if (typeof obj.source === 'string') {
+      var cs = stripHtml(obj.source).replace(/\r\n?/g, '\n').replace(/\*\*/g, '').replace(/__/g, '').trim();
+      cs = truncate(cs, SOURCE_MAX).text;
+      if (cs && (labelLen(ocrRaw) < 100 || labelLen(cs) >= Math.floor(labelLen(ocrRaw) * SOURCE_CLEAN_MIN_RATIO))) {
+        cleanSource = cs;
+      } else if (cs) {
+        notes.push('drop_clean_source_too_short');
+      }
+    }
     return {
       ok: true,
       errors: [],
@@ -572,6 +585,7 @@
       value: {
         classification: classification,
         topic: { title: title, summary: summary, category: category },
+        cleanSource: cleanSource,
         taxonomy: normalized.taxonomy,
         knowledgePoints: normalized.knowledgePoints,
         cards: normalized.cards.map(function (card) {
@@ -680,6 +694,12 @@
     }
     // P4 A：source 只做 optional 驗 —— 舊快取（冇 source）照命中；有就要係已正規化嘅純文字物件。
     if (v.source !== undefined && v.source !== null && !sourceOk(v.source)) return false;
+    // P7：AI 整理後原文（source.clean）optional 驗 —— 有就要係非空、≤8000 字純文字。
+    if (v.source && v.source.clean !== undefined && v.source.clean !== null) {
+      if (typeof v.source.clean !== 'string') return false;
+      var sclean = stripHtml(v.source.clean);
+      if (!sclean || labelLen(sclean) > SOURCE_MAX) return false;
+    }
     var kps = asArray(v.knowledgePoints);
     if (!kps.length || kps.length > 10) return false;
     var ids = Object.create(null);
@@ -935,8 +955,11 @@
       '21. 如果內容唔係課本／筆記（例如自拍、食物），回 {"error":"not_study_material"}。',
       '22. 如果文字殘缺到唔能夠理解，回 {"error":"low_legibility"}。',
       '',
+      '五、原文（source）',
+      '23. 同時回一個 source：由 OCR 原文整理出「同呢批卡片相關」嘅課文——刪走工作紙標題／指示（例如「日期 成績」「學習重點」「思維策略」「閱讀下面的文字，然後回答問題」）、頁碼／分數／姓名欄、重複頁眉頁腳；保留故事／文章正文、詞語解釋、課後問題同選項。照原文抄，唔好改寫、唔好簡化、唔好加內容；用空行分段；冇嘢好刪就原樣回傳。',
+      '',
       '只輸出 JSON（物件），唔要 markdown、唔要解釋。',
-      'JSON 形狀：{"classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"cards":[{"type","kpId","category","difficulty","front","back","mnemonic","example","context","uncertain"}]}',
+      'JSON 形狀：{"source":"整理後原文","classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"cards":[{"type","kpId","category","difficulty","front","back","mnemonic","example","context","uncertain"}]}',
     ].join('\n');
   }
 
