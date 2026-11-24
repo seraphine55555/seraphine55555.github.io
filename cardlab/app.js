@@ -297,6 +297,28 @@
     'vocab.example': { yue: '範例：', zh: '范例：', en: 'Example: ' },
     'vocab.lang.zh': { yue: '中文', zh: '中文', en: 'Chinese' },
     'vocab.lang.en': { yue: '英文', zh: '英文', en: 'English' },
+    // P14：詞語生字練習（英文聽寫／中文自評，獨立 SRS key space，唔會污染知識點卡進度）
+    'vocab.practice': { yue: '🔤 練詞語（{n}）', zh: '🔤 练词语（{n}）', en: '🔤 Practise vocabulary ({n})' },
+    'vocab.practiceTitle': { yue: '🔤 詞語練習', zh: '🔤 词语练习', en: '🔤 Vocabulary practice' },
+    'vocab.progress': { yue: '詞語 {i}／{n} · 答對 {ok}', zh: '词语 {i}／{n} · 答对 {ok}', en: 'Word {i}/{n} · correct {ok}' },
+    'vocab.enPrompt': { yue: '睇中文解釋，打返英文生字（可以撳 🔊 聽發音）', zh: '看中文解释，输入英文生字（可按 🔊 听发音）', en: 'Read the Chinese meaning, type the English word (tap 🔊 to listen).' },
+    'vocab.zhPrompt': { yue: '呢個詞語點解？撳「睇解釋」自己對。', zh: '这个词语什么意思？按「看解释」自己核对。', en: 'What does this word mean? Tap Reveal to check yourself.' },
+    'vocab.listen': { yue: '🔊 聽發音', zh: '🔊 听发音', en: '🔊 Listen' },
+    'vocab.inputLabel': { yue: '英文生字', zh: '英文生字', en: 'English word' },
+    'vocab.check': { yue: '對答案', zh: '对答案', en: 'Check' },
+    'vocab.giveup': { yue: '睇答案', zh: '看答案', en: 'Show answer' },
+    'vocab.reveal': { yue: '睇解釋', zh: '看解释', en: 'Reveal' },
+    'vocab.correct': { yue: '✓ 答對', zh: '✓ 答对', en: '✓ Correct' },
+    'vocab.wrong': { yue: '✗ 正確答案：{w}', zh: '✗ 正确答案：{w}', en: '✗ Answer: {w}' },
+    'vocab.remember': { yue: '記得', zh: '记得', en: 'Got it' },
+    'vocab.forget': { yue: '唔記得', zh: '不记得', en: 'Not yet' },
+    'vocab.next': { yue: '下一題', zh: '下一题', en: 'Next' },
+    'vocab.finish': { yue: '完成', zh: '完成', en: 'Finish' },
+    'vocab.done': { yue: '詞語練習完成：答對 {ok}／{n}', zh: '词语练习完成：答对 {ok}／{n}', en: 'Vocabulary practice done: {ok}/{n} correct' },
+    'vocab.again': { yue: '再練一次', zh: '再练一次', en: 'Practise again' },
+    'vocab.backDeck': { yue: '返卡組', zh: '回卡组', en: 'Back to deck' },
+    'vocab.answer': { yue: '解釋：', zh: '解释：', en: 'Meaning: ' },
+    'vocab.none': { yue: '呢個卡組仲未有詞語生字。', zh: '这个卡组还没有词语生字。', en: 'This deck has no vocabulary yet.' },
     'toast.noDeck': { yue: '先加入卡組。', zh: '請先加入卡組。', en: 'Add a deck first.' },
     'toast.notEnabled': { yue: 'AI 未啟用。', zh: 'AI 未啟用。', en: 'AI is not enabled.' },
     'toast.imageDecode': { yue: '讀唔到呢張相，試下另一張。', zh: '讀不到這張相，試另一張。', en: 'Could not read that photo — try another.' },
@@ -365,6 +387,7 @@
     toast: '',
     error: null,
     analyze: { step: 'idle', steps: { compress: 'idle', ocr: 'idle', understand: 'idle', cards: 'idle' }, batch: null, photoAt: null },
+    vsession: null,
     abort: null,
     nowFn: null,
     seed: null,
@@ -863,6 +886,10 @@
     html += '</ol>';
     html += '<div class="toolbar">';
     html += '<button type="button" class="btn btn--primary" data-act="practice" data-id="' + esc(deck.id) + '">' + esc(t('deck.practice')) + '</button>';
+    // P14：有詞語生字先出「練詞語」掣
+    if ((deck.vocabulary || []).length) {
+      html += '<button type="button" class="btn btn--ghost" id="btn-vocab-practice" data-act="start-vocab" data-id="' + esc(deck.id) + '">' + esc(t('vocab.practice', { n: deck.vocabulary.length })) + '</button>';
+    }
     html += '<button type="button" class="btn btn--ghost" data-act="deck-map" data-id="' + esc(deck.id) + '">' + esc(t('deck.map')) + '</button>';
     html += '</div>';
     // P4 A：卡組頁「📄 原文」（有 source 才顯示；舊卡組冇就唔會有掣）
@@ -1156,6 +1183,130 @@
     return 'flip';
   }
 
+  // ── P14：詞語生字練習（英文：睇中文打英文；中文：翻卡自評）──
+  function vocabSrsKey(deckId, id) { return 'vocab|' + deckId + '|' + id; }
+
+  function startVocabPractice(deckId) {
+    var deck = S.getDeck(state.db, deckId);
+    if (!deck) return;
+    var vocab = Ai.sanitizeVocabulary(deck.vocabulary);
+    if (!vocab.length) { toast(t('vocab.none')); return; }
+    state.vsession = {
+      deckId: deckId,
+      ids: vocab.map(function (v) { return v.id; }),
+      index: 0,
+      revealed: false,
+      answered: false,
+      last: null,
+      ok: 0,
+      done: false,
+    };
+    state.route = { name: 'vocab-practice', id: deckId };
+    go('#/vocab-practice/' + deckId);
+  }
+
+  function currentVocabItem() {
+    var s = state.vsession;
+    if (!s) return null;
+    var deck = S.getDeck(state.db, s.deckId);
+    if (!deck) return null;
+    var vocab = Ai.sanitizeVocabulary(deck.vocabulary);
+    var id = s.ids[s.index];
+    for (var i = 0; i < vocab.length; i++) if (vocab[i].id === id) return { deck: deck, item: vocab[i] };
+    return null;
+  }
+
+  function recordVocab(deckId, id, ok) {
+    var key = vocabSrsKey(deckId, id);
+    state.db.srs[key] = Srs.review(Srs.normalize(state.db.srs[key]), !!ok, now());
+    S.save(state.db);
+  }
+
+  function answerVocab(correct) {
+    var s = state.vsession;
+    var cur = currentVocabItem();
+    if (!s || !cur || s.answered) return;
+    recordVocab(s.deckId, cur.item.id, correct);
+    s.answered = true;
+    s.last = { correct: !!correct };
+    if (correct) s.ok += 1;
+    render();
+  }
+
+  function vocabNext() {
+    var s = state.vsession;
+    if (!s) return;
+    s.index += 1;
+    s.revealed = false;
+    s.answered = false;
+    s.last = null;
+    if (s.index >= s.ids.length) { s.done = true; s.index = s.ids.length - 1; }
+    render();
+  }
+
+  function viewVocabPractice() {
+    var s = state.vsession;
+    if (!s) return '<p class="empty">' + esc(t('vocab.none')) + '</p>';
+    var html = '';
+    html += '<section class="section"><h1 class="page-title">' + esc(t('vocab.practiceTitle')) + '</h1>';
+    if (s.done) {
+      html += '<div class="notice notice--ok" id="vocab-done">' + esc(t('vocab.done', { ok: s.ok, n: s.ids.length })) + '</div>';
+      html += '<div class="toolbar"><button type="button" class="btn btn--primary" data-act="start-vocab" data-id="' + esc(s.deckId) + '">' + esc(t('vocab.again')) + '</button>';
+      html += '<button type="button" class="btn btn--ghost" data-act="deck" data-id="' + esc(s.deckId) + '">' + esc(t('vocab.backDeck')) + '</button></div></section>';
+      return html;
+    }
+    var cur = currentVocabItem();
+    if (!cur) return '<p class="empty">' + esc(t('vocab.none')) + '</p>';
+    var v = cur.item;
+    html += '<p class="meta" id="vocab-progress">' + esc(t('vocab.progress', { i: s.index + 1, n: s.ids.length, ok: s.ok })) + '</p>';
+    html += '<div class="vcard" id="vocab-card" data-lang="' + esc(v.lang) + '">';
+    if (v.lang === 'en') {
+      html += '<p class="hint hint--soft">' + esc(t('vocab.enPrompt')) + '</p>';
+      html += '<p class="vocab__meaning" id="vocab-prompt">' + esc(v.meaning) + '</p>';
+      html += '<button type="button" class="btn btn--tiny" data-act="say" data-say="' + esc(v.word) + '" aria-label="' + esc(t('vocab.listen')) + '">' + esc(t('vocab.listen')) + '</button>';
+      if (!s.answered) {
+        html += '<label class="hint" for="vocab-input">' + esc(t('vocab.inputLabel')) + '</label>';
+        html += '<input class="input" id="vocab-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" />';
+        html += '<div class="toolbar"><button type="button" class="btn btn--primary" id="btn-vocab-check" data-act="vocab-check">' + esc(t('vocab.check')) + '</button>';
+        html += '<button type="button" class="btn btn--ghost" id="btn-vocab-giveup" data-act="vocab-giveup">' + esc(t('vocab.giveup')) + '</button></div>';
+      }
+    } else {
+      html += '<p class="hint hint--soft">' + esc(t('vocab.zhPrompt')) + '</p>';
+      html += '<p class="vocab__word" id="vocab-prompt">' + esc(v.word) + '</p>';
+      html += '<button type="button" class="btn btn--tiny" data-act="say" data-say="' + esc(v.word) + '" aria-label="' + esc(t('vocab.read')) + '">' + esc(t('vocab.read')) + '</button>';
+      if (!s.revealed && !s.answered) {
+        html += '<div class="toolbar"><button type="button" class="btn btn--primary" id="btn-vocab-reveal" data-act="vocab-reveal">' + esc(t('vocab.reveal')) + '</button></div>';
+      }
+    }
+    if (s.answered) {
+      var correct = !!(s.last && s.last.correct);
+      html += '<div class="notice ' + (correct ? 'notice--ok' : 'notice--warn') + '" id="vocab-result" data-correct="' + (correct ? '1' : '0') + '">' + esc(correct ? t('vocab.correct') : t('vocab.wrong', { w: v.word })) + '</div>';
+    }
+    if (s.revealed || s.answered) {
+      if (v.lang !== 'en' || s.answered) {
+        html += '<p class="vocab__meaning" id="vocab-answer">' + esc(t('vocab.answer')) + esc(v.meaning) + '</p>';
+      }
+      if (v.example) {
+        html += '<p class="vocab__ex">' + esc(t('vocab.example')) + '<span lang="' + (v.lang === 'en' ? 'en' : 'zh-HK') + '">' + esc(v.example) + '</span>';
+        html += ' <button type="button" class="btn btn--tiny" data-act="say" data-say="' + esc(v.example) + '" aria-label="' + esc(t('vocab.readEx')) + '">🔊</button></p>';
+      }
+    }
+    if (s.answered) {
+      var lastItem = s.index + 1 >= s.ids.length;
+      html += '<div class="toolbar">';
+      html += '<button type="button" class="btn btn--primary" id="btn-vocab-next" data-act="vocab-next">' + esc(lastItem ? t('vocab.finish') : t('vocab.next')) + '</button>';
+      html += '</div>';
+    } else if (s.revealed) {
+      // 中文：揭曉後自評（記得／唔記得）→ 記 SRS 再落下一題
+      html += '<div class="toolbar">';
+      html += '<button type="button" class="btn btn--primary" data-act="vocab-self" data-ok="1">' + esc(t('vocab.remember')) + '</button>';
+      html += '<button type="button" class="btn btn--ghost" data-act="vocab-self" data-ok="0">' + esc(t('vocab.forget')) + '</button>';
+      html += '</div>';
+    }
+    html += '</div></section>';
+    return html;
+  }
+
   function viewPractice() {
     var session = state.session;
     if (!session) return '<p class="empty">' + esc(t('practice.empty')) + '</p>';
@@ -1401,6 +1552,7 @@
       case 'map': return viewMap();
       case 'map-preview': return viewMap();
       case 'practice': return viewPractice();
+    case 'vocab-practice': return viewVocabPractice();
       case 'done': return viewDone();
       case 'settings': return viewSettings();
       case 'paste': return viewPaste();
@@ -1413,6 +1565,17 @@
     var view = document.getElementById('view');
     if (!view) return;
     view.innerHTML = currentView();
+    // P14：英文詞語聽寫 —— 自動聚焦，Enter 直接對答案
+    var vInput = document.getElementById('vocab-input');
+    if (vInput) {
+      try { vInput.focus(); } catch (e) {}
+      vInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+          e.preventDefault();
+          doAction('vocab-check', vInput);
+        }
+      });
+    }
     var backBtn = document.getElementById('btn-back');
     if (backBtn) backBtn.hidden = state.route.name === 'home';
     document.querySelectorAll('[data-lang]').forEach(function (b) {
@@ -1607,7 +1770,7 @@
     var parts = raw.split('/');
     var name = parts[0] || 'home';
     var id = parts[1] || null;
-    var known = ['home', 'photo', 'analyze', 'understand', 'confirm', 'deck', 'map', 'map-preview', 'practice', 'done', 'settings', 'paste', 'import'];
+    var known = ['home', 'photo', 'analyze', 'understand', 'confirm', 'deck', 'map', 'map-preview', 'practice', 'done', 'settings', 'paste', 'import', 'vocab-practice'];
     if (known.indexOf(name) < 0) name = 'home';
     state.route = { name: name, id: id ? decodeURIComponent(id) : null };
     if (name === 'home' || name === 'photo') {
@@ -2566,6 +2729,29 @@
         speakText(el.getAttribute('data-say') || '');
         break;
       }
+      case 'start-vocab':
+        startVocabPractice(el.getAttribute('data-id') || '');
+        break;
+      case 'vocab-check': {
+        var cur = currentVocabItem();
+        var input = document.getElementById('vocab-input');
+        var typed = input ? input.value : '';
+        if (!cur || !String(typed).trim()) { toast(t('photo.chooseFirst')); break; }
+        answerVocab(P.answersMatch(typed, cur.item.word));
+        break;
+      }
+      case 'vocab-giveup':
+        answerVocab(false);
+        break;
+      case 'vocab-reveal':
+        if (state.vsession) { state.vsession.revealed = true; render(); }
+        break;
+      case 'vocab-self':
+        answerVocab(el.getAttribute('data-ok') === '1');
+        break;
+      case 'vocab-next':
+        vocabNext();
+        break;
       case 'reveal':
         state.session.revealed = true;
         render();

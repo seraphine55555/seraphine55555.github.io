@@ -644,3 +644,9 @@ img { max-width: 100%; height: auto; display: block; }
 .vocab__meaning { margin: 6px 0 0; font-size: 15px; line-height: 1.7; }
 .vocab__ex { margin: 6px 0 0; font-size: 14px; line-height: 1.7; color: #4a463d; }
 .vocab__ex span { font-style: italic; }
+/* ── P14：詞語生字練習（英文聽寫／中文自評） ── */
+.vcard { margin: 14px 0 0; background: #fff; border: 1px solid var(--line, #e3e0d8); border-radius: 16px; padding: 14px 14px 8px; }
+.vcard .input { margin: 6px 0 10px; font-size: 16px; }
+.vcard .vocab__word { font-size: 26px; margin: 4px 0 8px; }
+.vcard .vocab__meaning { font-size: 16px; }
+#vocab-progress { margin-bottom: 4px; }
