@@ -161,6 +161,11 @@
       zh: '沿用 24 小時內的分析結果（沒有再 call OCR／AI，不扣每日相片上限）。',
       en: 'Reusing the analysis from the last 24 hours (no OCR/AI call, no daily photo used).',
     },
+    'confirm.trimmed': {
+      yue: '合併時撞到上限：有 {kp} 個知識點、{cards} 張卡冇納入（其餘全部保留）。',
+      zh: '合併時遇到上限：有 {kp} 個知識點、{cards} 張卡未納入（其餘全部保留）。',
+      en: 'Merge hit the hard cap: {kp} knowledge points and {cards} cards were left out (everything else kept).',
+    },
     'confirm.banner': {
       yue: 'AI 抽到 {n} 個知識點 · 睇地圖／改重點',
       zh: 'AI 抽到 {n} 個知識點 · 看地圖／改重點',
@@ -673,7 +678,9 @@
     html += '</div></div>';
 
     if (a.knowledgePoints.length < 4) html += '<p class="hint hint--warn">' + esc(t('understand.tooFew')) + '</p>';
-    if (a.knowledgePoints.length > 8) html += '<p class="hint hint--warn">' + esc(t('understand.tooMany')) + '</p>';
+    // P12.1：多頁分批之後知識點自然多過 8；門檻按批數放大，唔好把正常結果當錯誤
+    var kpHintMax = Math.max(Ai.MAX_KP, (Number(a.ocr && a.ocr.batches) || 1) * Ai.MAX_KP);
+    if (a.knowledgePoints.length > kpHintMax) html += '<p class="hint hint--warn">' + esc(t('understand.tooMany')) + '</p>';
 
     html += '<h3 class="sub">' + esc(t('understand.kps', { n: a.knowledgePoints.length })) + '</h3>';
     html += '<p class="hint hint--soft">' + esc(t('understand.editKp')) + '</p>';
@@ -730,6 +737,17 @@
   }
 
   // ─────────────────────────── 確認頁 ───────────────────────────
+  /** P12.1：合併時若真係撞到硬上限，要講出嚟（唔可以靜靜砍走多頁內容）。 */
+  function trimNotes(notes) {
+    var out = { kp: 0, cards: 0 };
+    (notes || []).forEach(function (n) {
+      var s = String(n);
+      if (s.indexOf('trimmed_kp:') === 0) out.kp = Number(s.slice(11)) || 0;
+      if (s.indexOf('trimmed_cards:') === 0) out.cards = Number(s.slice(14)) || 0;
+    });
+    return out;
+  }
+
   function selectedCount() {
     if (!state.analysis) return 0;
     return state.analysis.cards.filter(function (c) { return state.confirm[c.id] !== false; }).length;
@@ -746,6 +764,10 @@
     // P3：確認頁都見到今次會存入邊個卡冊分類
     html += '<p class="meta" id="confirm-category" aria-label="' + esc(t('decks.category')) + '"><span class="chip chip--static">' + esc(catLabel(Ai.categoryOf(a.topic, a.classification))) + '</span></p>';
     if (a.cached) html += '<div class="notice notice--ok" id="cache-hit">' + esc(t('confirm.cached')) + '</div>';
+    // P12.1：萬一真係撞到合併硬上限（每批 12 kp／40 卡 × 批數），要講清楚少咗幾多，唔靜靜砍
+    if (a.trimmed && (a.trimmed.kp || a.trimmed.cards)) {
+      html += '<div class="notice notice--warn" id="confirm-trimmed">' + esc(t('confirm.trimmed', a.trimmed)) + '</div>';
+    }
     html += '<div class="toolbar toolbar--tight">';
     html += '<button type="button" class="btn btn--tiny" data-act="select-all">' + esc(t('confirm.selectAll')) + '</button>';
     html += '<button type="button" class="btn btn--tiny" data-act="select-none">' + esc(t('confirm.none')) + '</button>';
@@ -1864,6 +1886,9 @@
       return fail(mergedValue.errors[0] || 'no_cards');
     }
     state.analysis = mergedValue.value;
+    // P12.1：合併上限係「每批 12 kp／40 卡 × 批數」，正常唔會撞；萬一撞到要喺確認頁講清楚
+    var trimmed = trimNotes(mergedValue.notes);
+    if (trimmed.kp || trimmed.cards) state.analysis.trimmed = trimmed;
     state.confirm = {};
     state.analysis.cards.forEach(function (c) { state.confirm[c.id] = true; });
     state.analysis.ocr = { pages: allPages.length, chars: charsTotal, quality: mergedGate.code, photos: photoN, batches: plan.length };
@@ -1990,7 +2015,7 @@
         },
       });
     }
-    var mergedRegen = Ai.mergeAnalyses(regenRuns, { maxKp: Ai.MAX_KP });
+    var mergedRegen = Ai.mergeAnalyses(regenRuns);
     if (!mergedRegen.ok) {
       state.analyze.steps.cards = 'error';
       state.analyze.batch = null;

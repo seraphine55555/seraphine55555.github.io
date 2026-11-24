@@ -54,10 +54,16 @@
   var CARD_TYPES = ['basic', 'cloze', 'compare', 'trap'];
   // P11：用戶要求「出卡盡量多」。硬上限由 24 放寬到 40（仍然係防爆閘，唔係目標），
   // prompt 目標改 8–20 張，並允許同一知識點由唔同角度出 2–3 張。
+  // P12.1：40 係「每批」上限；合併總上限另計（見 MAX_CARDS_TOTAL）。
   var MAX_CARDS = 40;
-  // P12：知識點上限 10 → 12（多頁分批合併後，每頁各自 4–8 個會撞 10 個上限；
-  //      上限仍然要存在，否則理解頁／快取驗證擋唔住失控輸出）。
+  // P12：知識點上限 10 → 12，但 12 只係**每批**上限。
+  // P12.1：之前用固定 12 做合并上限，8 張相（3 批）各出 4–8 個就爆，會靜靜砍走知識點
+  //        同佢嘅卡 ⇒ 用戶多上傳幾頁反而少咗內容。總上限要隨批數放大：
+  //        每批 12 個 × 最多 3 批 = 36；每批 40 張卡 × 3 批 = 120（純防爆閘，正常用唔到）。
   var MAX_KP = 12;
+  var MAX_BATCHES = planBatches(MAX_PHOTOS, PHOTO_BATCH).length; // 8 張 → 3 批
+  var MAX_KP_TOTAL = MAX_BATCHES * MAX_KP;
+  var MAX_CARDS_TOTAL = MAX_BATCHES * MAX_CARDS;
   var SYNONYMS = {
     '常見錯誤': '易錯',
     '易錯點': '易錯',
@@ -717,17 +723,19 @@
    *  - classification／topic 跟第一批（同一份功課，免多頁之間搖擺）；
    *  - 知識點按 label 對齊（同一 label 重用已有 id），新 id 加批次前綴避撞；
    *  - 卡以 (kpId, front lowercase) 去重（同 validateResult 同一把尺）；
-   *  - kp 上限 MAX_KP（保留最多卡嘅）、卡上限 maxCards（預設 MAX_CARDS）；
+   *  - 上限隨批數放大（P12.1）：kp = 批數 × MAX_KP（最多 MAX_KP_TOTAL）、
+   *    卡 = 批數 × MAX_CARDS（最多 MAX_CARDS_TOTAL），唔會因為固定 12 砍走多頁內容；
    *  - card.id 重新由 c1 排到 cN（確認頁 checkbox 嘅 key，唔可以跨批撞）。
    */
   function mergeAnalyses(list, opts) {
     var o = opts || {};
-    var maxCards = isInt(o.maxCards) ? clamp(o.maxCards, 1, MAX_CARDS) : MAX_CARDS;
-    var maxKp = isInt(o.maxKp) ? clamp(o.maxKp, 1, MAX_KP) : MAX_KP;
     var notes = [];
     var runs = asArray(list).filter(function (r) { return r && r.value && asArray(r.value.cards).length; });
     if (!runs.length) return { ok: false, errors: ['no_cards'], notes: notes };
-
+    var nBatches = Math.max(1, runs.length);
+    // 預設總上限隨批數放大；呼叫方仍可指定較細嘅上限（測試／特殊情況），但唔可以超過硬上限。
+    var maxCards = isInt(o.maxCards) ? clamp(o.maxCards, 1, MAX_CARDS_TOTAL) : Math.min(MAX_CARDS_TOTAL, nBatches * MAX_CARDS);
+    var maxKp = isInt(o.maxKp) ? clamp(o.maxKp, 1, MAX_KP_TOTAL) : Math.min(MAX_KP_TOTAL, nBatches * MAX_KP);
     var first = runs[0].value;
     var kps = [];
     var byId = Object.create(null);
@@ -871,7 +879,7 @@
       if (!sclean || labelLen(sclean) > SOURCE_MAX) return false;
     }
     var kps = asArray(v.knowledgePoints);
-    if (!kps.length || kps.length > MAX_KP) return false;
+    if (!kps.length || kps.length > MAX_KP_TOTAL) return false;
     var ids = Object.create(null);
     var i;
     for (i = 0; i < kps.length; i++) {
@@ -886,7 +894,7 @@
       if (!isInt(kp.difficulty) || kp.difficulty < 1 || kp.difficulty > 5) return false;
     }
     var cards = asArray(v.cards);
-    if (!cards.length || cards.length > MAX_CARDS) return false;
+    if (!cards.length || cards.length > MAX_CARDS_TOTAL) return false;
     var seen = Object.create(null);
     var cardIds = Object.create(null);
     for (i = 0; i < cards.length; i++) {
@@ -1385,6 +1393,9 @@
     MAX_PHOTOS: MAX_PHOTOS,
     PHOTO_BATCH: PHOTO_BATCH,
     MAX_KP: MAX_KP,
+    MAX_BATCHES: MAX_BATCHES,
+    MAX_KP_TOTAL: MAX_KP_TOTAL,
+    MAX_CARDS_TOTAL: MAX_CARDS_TOTAL,
     planBatches: planBatches,
     mergeAnalyses: mergeAnalyses,
     TOPIC_TITLE_MAX: TOPIC_TITLE_MAX,
