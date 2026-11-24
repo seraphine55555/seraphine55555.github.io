@@ -80,11 +80,11 @@
     'photo.compressed': { yue: '已壓縮 {size} · {w}×{h}', zh: '已壓縮 {size} · {w}×{h}', en: 'Compressed {size} · {w}×{h}' },
     'photo.chooseFirst': { yue: '先揀一張相', zh: '請先選一張相', en: 'Choose a photo first' },
     'photo.cap': { yue: '今日已用 {used}／{cap} 張', zh: '今日已用 {used}／{cap} 張', en: 'Used {used}/{cap} today' },
-    // P2.0：多張相合併成一個卡組（2–4 張）
+    // P2.0／P12：多張相合併成一個卡組（最多 8 張，每 3 張一批分析）
     'photo.multi': {
-      yue: '同一課分開幾頁影？相簿可以一次揀 2–4 張，逐張 OCR 之後合併成一個卡組。',
-      zh: '同一課分開幾頁拍？相冊可以一次選 2–4 張，逐張 OCR 之後合併成一個卡組。',
-      en: 'Several pages of the same lesson? Pick 2–4 photos from the album at once — each is OCRed, then merged into one deck.',
+      yue: '同一課分開幾頁影？相簿可以一次揀最多 8 張，逐張 OCR 之後分批理解、合併成一個卡組。',
+      zh: '同一課分開幾頁拍？相冊可以一次選最多 8 張，逐張 OCR 之後分批理解、合併成一個卡組。',
+      en: 'Several pages of the same lesson? Pick up to 8 photos from the album — each is OCRed, analysed in batches, then merged into one deck.',
     },
     'photo.count': {
       yue: '已揀 {n}／{max} 張相',
@@ -122,6 +122,12 @@
     'analyze.fix': { yue: '補救方法', zh: '補救方法', en: 'What to do' },
     'analyze.retry': { yue: '再試一次', zh: '再試一次', en: 'Try again' },
     'analyze.rephoto': { yue: '重新影相', zh: '重新拍照', en: 'Retake photo' },
+    // P12：多張相分批分析嘅進度
+    'analyze.batch': {
+      yue: '分批分析：第 {i}／{n} 批（第 {from}–{to} 張相）',
+      zh: '分批分析：第 {i}／{n} 批（第 {from}–{to} 張相）',
+      en: 'Analysing in batches: {i}/{n} (photos {from}–{to})',
+    },
     'understand.title': { yue: 'AI 理解 · 自動分類', zh: 'AI 理解 · 自動分類', en: 'AI understanding' },
     'understand.confidence': { yue: 'AI 判斷信心 {p}%', zh: 'AI 判斷信心 {p}%', en: 'AI confidence {p}%' },
     'understand.lowConfidence': { yue: 'AI 唔肯定年級，係咪 {grade}？', zh: 'AI 不確定年級，是不是 {grade}？', en: 'AI is unsure of the grade — is it {grade}?' },
@@ -334,14 +340,14 @@
     lang: 'zh',
     route: { name: 'home', id: null },
     photo: null, // {blob,width,height,bytes,url}：state.photos[0] 嘅鏡像（單張流程向後兼容）
-    photos: [], // P2.0：多張相（1–4 張），每張 {blob,width,height,bytes,url,preflight}
+    photos: [], // P2.0／P12：多張相（1–8 張），每張 {blob,width,height,bytes,url,preflight}
     ocr: null, // {pages,text,gate}
     analysis: null, // validated value
     confirm: {},
     session: null,
     toast: '',
     error: null,
-    analyze: { step: 'idle', steps: { compress: 'idle', ocr: 'idle', understand: 'idle', cards: 'idle' } },
+    analyze: { step: 'idle', steps: { compress: 'idle', ocr: 'idle', understand: 'idle', cards: 'idle' }, batch: null },
     abort: null,
     nowFn: null,
     seed: null,
@@ -466,7 +472,7 @@
     html += '<p class="hint">' + esc(t('photo.tips')) + '</p>';
     html += '<p class="hint hint--soft">' + esc(t('photo.auto')) + '</p>';
     html += '<p class="hint hint--soft" id="photo-multi">' + esc(t('photo.multi')) + '</p>';
-    // 兩個明確入口：影相（capture=environment，單張）／相簿（冇 capture＋multiple，2–4 張）。
+    // 兩個明確入口：影相（capture=environment，單張）／相簿（冇 capture＋multiple，最多 8 張）。
     html += '<div class="picker">';
     html += '<input id="file-input" class="sr-only" type="file" accept="image/*" capture="environment" />';
     html += '<label class="btn btn--pick" for="file-input" id="btn-pick-camera">' + esc(t('photo.camera')) + '</label>';
@@ -549,6 +555,10 @@
     html += stepRow('understand', t('analyze.step.understand'));
     html += stepRow('cards', t('analyze.step.cards'));
     html += '</ol>';
+    // P12：多張相分批分析時，逐批顯示進度（第 i／n 批、第幾至第幾張相）
+    if (state.analyze.batch && Number(state.analyze.batch.n) > 1) {
+      html += '<p class="hint" id="analyze-batch">' + esc(t('analyze.batch', state.analyze.batch)) + '</p>';
+    }
     if (state.error) {
       var code = state.error.code || 'unknown';
       var key = 'err.' + code;
@@ -1664,6 +1674,7 @@
     var token = (state.runToken = (state.runToken || 0) + 1);
     function stale() { return state.runToken !== token || runCtrl.signal.aborted; }
     state.analyze.steps = { compress: 'active', ocr: 'idle', understand: 'idle', cards: 'idle' };
+    state.analyze.batch = null;
     state.route = { name: 'analyze', id: null };
     if (location.hash !== '#/analyze') location.hash = '#/analyze';
     else render();
@@ -1700,124 +1711,173 @@
     // P2.0：每張相扣 1 次配額（2 張 = 2）→ 唔夠就講清要用幾張、剩幾張，一張都唔好扣。
     if (photoN > cap.remaining) { return fail('quota', null, { n: photoN, left: cap.remaining }); }
 
-    // 2) 逐張 OCR（保留頁序），任何一張失敗都指出第幾張、唔入快取
-    setStep('ocr', 'active');
+    // 2) 分批：每 Ai.PHOTO_BATCH 張相一批，逐批 OCR → 理解 → 出卡（P12）
+    //    唔分批嘅話 8 頁原文一次過餵模型會撞聚合上限（尾頁靜靜被剪）同 JSON 截斷（整次失敗）。
+    var plan = Ai.planBatches(photoN, Ai.PHOTO_BATCH);
     var mergedPages = [];
     var perPhoto = [];
     var splitAny = false;
     var charsTotal = 0;
-    for (var pi = 0; pi < photoN; pi++) {
-      var photo = photos[pi];
-      var photoVars = { photo: pi + 1, total: photoN };
-      var one = await ocrOnce(photo.blob, 'page-' + (pi + 1) + '.jpg', runCtrl);
-      if (stale()) return;
-      if (!one.ok) { state.analyze.steps.ocr = 'error'; return fail(one.code, null, photoVars); }
-      var pages = P.cleanPages(P.parseOcrPayload(one.payload));
-      var gate = P.qualityGate(pages);
-      var split = false;
-      if (!gate.ok && gate.code === 'truncated') {
-        // 跨頁大圖：OCR 輸出被截斷 → 自動沿長邊切兩半、逐半再 OCR。
-        // 仍然係同一張相（配額只扣 1、快取 key 不變）。
-        try {
-          var halves = await Ai.splitInHalf(photo.blob);
-          var merged = [];
-          for (var hi = 0; hi < halves.length; hi++) {
-            var halfRes = await ocrOnce(halves[hi].blob, 'page-' + (pi + 1) + '-' + (hi + 1) + '.jpg', runCtrl);
-            if (stale()) return;
-            if (!halfRes.ok) { state.analyze.steps.ocr = 'error'; return fail(halfRes.code, null, photoVars); }
-            var halfPages = P.cleanPages(P.parseOcrPayload(halfRes.payload));
-            var halfGate = P.qualityGate(halfPages);
-            if (!halfGate.ok) {
-              state.analyze.steps.ocr = 'error';
-              return fail('gate.' + halfGate.code, halfGate.code, mergeVars(gateVars(halfGate), photoVars));
+    var batchTexts = [];
+    var runs = [];
+    var budget = Ai.MAX_CARDS;
+    for (var bi = 0; bi < plan.length; bi++) {
+      var seg = plan[bi];
+      var fromNo = seg.from + 1;
+      var toNo = seg.to;
+      state.analyze.batch = { i: bi + 1, n: plan.length, from: fromNo, to: toNo };
+      if (state.route.name === 'analyze') render();
+      setStep('ocr', 'active');
+      var batchPages = [];
+      for (var pi = seg.from; pi < seg.to; pi++) {
+        var photo = photos[pi];
+        var photoVars = { photo: pi + 1, total: photoN };
+        var one = await ocrOnce(photo.blob, 'page-' + (pi + 1) + '.jpg', runCtrl);
+        if (stale()) return;
+        if (!one.ok) { state.analyze.steps.ocr = 'error'; return fail(one.code, null, photoVars); }
+        var pages = P.cleanPages(P.parseOcrPayload(one.payload));
+        var gate = P.qualityGate(pages);
+        var split = false;
+        if (!gate.ok && gate.code === 'truncated') {
+          // 跨頁大圖：OCR 輸出被截斷 → 自動沿長邊切兩半、逐半再 OCR。
+          // 仍然係同一張相（配額只扣 1、快取 key 不變）。
+          try {
+            var halves = await Ai.splitInHalf(photo.blob);
+            var merged = [];
+            for (var hi = 0; hi < halves.length; hi++) {
+              var halfRes = await ocrOnce(halves[hi].blob, 'page-' + (pi + 1) + '-' + (hi + 1) + '.jpg', runCtrl);
+              if (stale()) return;
+              if (!halfRes.ok) { state.analyze.steps.ocr = 'error'; return fail(halfRes.code, null, photoVars); }
+              var halfPages = P.cleanPages(P.parseOcrPayload(halfRes.payload));
+              var halfGate = P.qualityGate(halfPages);
+              if (!halfGate.ok) {
+                state.analyze.steps.ocr = 'error';
+                return fail('gate.' + halfGate.code, halfGate.code, mergeVars(gateVars(halfGate), photoVars));
+              }
+              merged = merged.concat(halfPages);
             }
-            merged = merged.concat(halfPages);
+            pages = P.cleanPages(merged);
+            gate = P.qualityGate(pages);
+            split = true;
+          } catch (e) {
+            // 切圖失敗就照原本嘅截斷提示
           }
-          pages = P.cleanPages(merged);
-          gate = P.qualityGate(pages);
-          split = true;
-        } catch (e) {
-          // 切圖失敗就照原本嘅截斷提示
+        }
+        if (!gate.ok) {
+          state.analyze.steps.ocr = 'error';
+          return fail('gate.' + gate.code, gate.code, mergeVars(gateVars(gate), photoVars));
+        }
+        charsTotal += Number(gate.stats && gate.stats.chars) || 0;
+        if (split) splitAny = true;
+        perPhoto.push({ index: pi + 1, pages: pages.length, chars: gate.stats.chars, quality: gate.code, split: split });
+        batchPages = batchPages.concat(pages);
+        mergedPages = mergedPages.concat(pages);
+      }
+      batchPages = P.cleanPages(batchPages);
+      var batchGate = P.qualityGate(batchPages);
+      // 每批各自過閘（一批文字壞掉唔應該拖到最後才發現，亦唔應該白花之後幾批 call）
+      if (!batchGate.ok) {
+        state.analyze.steps.ocr = 'error';
+        return fail('gate.' + batchGate.code, batchGate.code, mergeVars(gateVars(batchGate), { total: photoN }));
+      }
+      var batchText = P.cleanText(batchPages);
+      batchTexts.push(batchText);
+      setStep('ocr', bi + 1 < plan.length ? 'active' : 'done');
+
+      // 3) 理解（每批一次 call）
+      setStep('understand', 'active');
+      var knownKps = [];
+      runs.forEach(function (r) {
+        r.value.knowledgePoints.forEach(function (kp) { knownKps.push({ id: kp.id, label: kp.label }); });
+      });
+      var chatOpts = {
+        batch: { i: bi + 1, n: plan.length, from: fromNo, to: toNo },
+        maxCards: budget,
+      };
+      if (knownKps.length) chatOpts.knownKps = knownKps;
+      var body = Ai.buildChatBody(batchText, chatOpts);
+      var result = await callChat(body, key, runCtrl);
+      if (stale()) return;
+      if (!result.ok) {
+        state.analyze.steps.understand = 'error';
+        return fail(result.code, null, result.vars, result.diag);
+      }
+      var validated = Ai.validateResult(result.text, { ocrText: batchText });
+      var lastText = result.text;
+      var lastDiag = result.diag;
+      if (!validated.ok && !validated.aiError) {
+        // 格式問題：重試一次（設計 §7.4），今次明確叫佢只回 JSON
+        var retryOpts = {
+          batch: chatOpts.batch,
+          maxCards: budget,
+          retry: true,
+        };
+        if (knownKps.length) retryOpts.knownKps = knownKps;
+        var retry = await callChat(Ai.buildChatBody(batchText, retryOpts), key, runCtrl);
+        if (stale()) return;
+        if (retry.ok) {
+          validated = Ai.validateResult(retry.text, { ocrText: batchText });
+          lastText = retry.text;
+          lastDiag = retry.diag;
+        } else if (retry.diag) {
+          lastDiag = retry.diag;
         }
       }
-      if (!gate.ok) {
-        state.analyze.steps.ocr = 'error';
-        return fail('gate.' + gate.code, gate.code, mergeVars(gateVars(gate), photoVars));
+      if (stale()) return;
+      if (!validated.ok) {
+        state.analyze.steps.understand = 'error';
+        var errKey = validated.aiError ? 'err.ai_' + validated.aiError : 'err.' + (validated.errors[0] || 'unknown');
+        if (!DICT[errKey]) errKey = 'err.not_json';
+        state.error = { code: errKey.replace('err.', ''), vars: { photo: fromNo, total: photoN } };
+        return fail(state.error.code, null, { photo: fromNo, total: photoN }, lastDiag || ('JSON 解析失敗 · 開頭：' + String(lastText || '').slice(0, 100)));
       }
-      charsTotal += Number(gate.stats && gate.stats.chars) || 0;
-      if (split) splitAny = true;
-      perPhoto.push({ index: pi + 1, pages: pages.length, chars: gate.stats.chars, quality: gate.code, split: split });
-      mergedPages = mergedPages.concat(pages);
+      budget = Math.max(4, budget - validated.value.cards.length);
+      runs.push({ value: validated.value, batch: { i: bi + 1, from: fromNo, to: toNo } });
+      setStep('understand', 'done');
     }
     var allPages = P.cleanPages(mergedPages);
     var mergedGate = P.qualityGate(allPages);
-    // 逐張已各自過閘；合併後再過一次（防止單張都合格但合併後文字壞掉）
+    // 逐批已各自過閘；合併後再過一次（防止批次之間接駁壞掉）
     if (!mergedGate.ok) {
       state.analyze.steps.ocr = 'error';
       return fail('gate.' + mergedGate.code, mergedGate.code, mergeVars(gateVars(mergedGate), { total: photoN }));
     }
+    var ocrText = P.cleanText(allPages);
     state.ocr = {
       pages: allPages,
-      text: P.cleanText(allPages),
+      text: ocrText,
       gate: mergedGate,
       raw: null,
       split: splitAny,
       photos: perPhoto,
       count: photoN,
+      batches: batchTexts,
+      batchPlan: plan,
     };
     S.markPhotoUsed(state.db, now(), photoN);
-    setStep('ocr', 'done');
 
-    // 3) 理解
-    setStep('understand', 'active');
-    var body = Ai.buildChatBody(state.ocr.text);
-    var result = await callChat(body, key, runCtrl);
-    if (stale()) return;
-    if (!result.ok) {
-      state.analyze.steps.understand = 'error';
-      return fail(result.code, null, result.vars, result.diag);
-    }
-    var validated = Ai.validateResult(result.text, { ocrText: state.ocr.text });
-    var lastText = result.text;
-    var lastDiag = result.diag;
-    if (!validated.ok && !validated.aiError) {
-      // 格式問題：重試一次（設計 §7.4），今次明確叫佢只回 JSON
-      var retry = await callChat(Ai.buildChatBody(state.ocr.text, { retry: true }), key, runCtrl);
-      if (stale()) return;
-      if (retry.ok) {
-        validated = Ai.validateResult(retry.text, { ocrText: state.ocr.text });
-        lastText = retry.text;
-        lastDiag = retry.diag;
-      } else if (retry.diag) {
-        lastDiag = retry.diag;
-      }
-    }
-    if (stale()) return;
-    if (!validated.ok) {
-      state.analyze.steps.understand = 'error';
-      var errKey = validated.aiError ? 'err.ai_' + validated.aiError : 'err.' + (validated.errors[0] || 'unknown');
-      if (!DICT[errKey]) errKey = 'err.not_json';
-      state.error = { code: errKey.replace('err.', ''), vars: {} };
-      return fail(state.error.code, null, null, lastDiag || ('JSON 解析失敗 · 開頭：' + String(lastText || '').slice(0, 100)));
-    }
-    setStep('understand', 'done');
-
-    // 4) 出卡
+    // 4) 出卡：合併各批（跨批去重、知識點按 label 對齊、card.id 重新由 c1 排）
     setStep('cards', 'active');
-    state.analysis = validated.value;
+    var mergedValue = Ai.mergeAnalyses(runs);
+    if (!mergedValue.ok) {
+      state.analyze.steps.cards = 'error';
+      return fail(mergedValue.errors[0] || 'no_cards');
+    }
+    state.analysis = mergedValue.value;
     state.confirm = {};
     state.analysis.cards.forEach(function (c) { state.confirm[c.id] = true; });
-    state.analysis.ocr = { pages: allPages.length, chars: charsTotal, quality: mergedGate.code, photos: photoN };
+    state.analysis.ocr = { pages: allPages.length, chars: charsTotal, quality: mergedGate.code, photos: photoN, batches: plan.length };
     // P4 A：由合併後 OCR 原文砌卡組 source（純文字；已經過品質閘同本機驗證）
-    state.analysis.source = Ai.sanitizeSource({ text: state.ocr.text, pages: allPages.length, chars: charsTotal, at: now() });
-    // P7：同一個分析 call 已經回咗「整理後原文」→ 存喺 source.clean（原文 source.text 照留，可切換）
-    var cleanSource = validated.value.cleanSource || '';
+    state.analysis.source = Ai.sanitizeSource({ text: ocrText, pages: allPages.length, chars: charsTotal, at: now() });
+    // P7：各批同一 call 已經回咗「整理後原文」→ 串接存喺 source.clean（原文 source.text 照留，可切換）
+    var cleanSource = mergedValue.value.cleanSource || '';
     if (state.analysis.source && cleanSource) state.analysis.source.clean = cleanSource;
     delete state.analysis.cleanSource;
     // 驗證已過、分析已成形 → 先寫快取（任何失敗都行唔到呢一步）
     cacheSave(hash, state.analysis);
     S.clearDraft();
     state.abort = null;
+    state.analyze.batch = null;
     setStep('cards', 'done');
     state.route = { name: 'confirm', id: null };
     go('#/confirm');
@@ -1869,13 +1929,29 @@
     if (!kps.length) { toast(t('toast.noDeck')); return; }
     var keptIds = {};
     kps.forEach(function (kp) { keptIds[kp.id] = 1; });
-    var body = Ai.buildChatBody(state.ocr ? state.ocr.text : '', {
-      regen: true,
-      classification: state.analysis.classification,
-      topic: state.analysis.topic,
-      taxonomy: state.analysis.classification.taxonomy,
-      knowledgePoints: kps,
-    });
+    // P12：分批分析過嘅卡組要逐批重出卡，再合併去重（用全份 text 會被 4000 字 slice 剪走後幾頁）
+    var ocrPlan = (state.ocr && Array.isArray(state.ocr.batchPlan) && state.ocr.batchPlan.length) ? state.ocr.batchPlan : [];
+    var ocrBatches = (state.ocr && Array.isArray(state.ocr.batches) && state.ocr.batches.length) ? state.ocr.batches : [state.ocr ? state.ocr.text : ''];
+    function regenBatch(bi) {
+      var b = null;
+      if (ocrBatches.length > 1) {
+        var seg = ocrPlan[bi] || null;
+        b = { i: bi + 1, n: ocrBatches.length, from: seg ? seg.from + 1 : 0, to: seg ? seg.to : 0 };
+      }
+      return b;
+    }
+    function regenOpts(bi) {
+      var o = {
+        regen: true,
+        classification: state.analysis.classification,
+        topic: state.analysis.topic,
+        taxonomy: state.analysis.classification.taxonomy,
+        knowledgePoints: kps,
+      };
+      var b = regenBatch(bi);
+      if (b) o.batch = b;
+      return o;
+    }
     state.route = { name: 'analyze', id: null };
     state.analyze.steps = { compress: 'done', ocr: 'done', understand: 'done', cards: 'active' };
     state.toast = '';
@@ -1884,31 +1960,52 @@
     var rCtrl = new AbortController();
     state.abort = rCtrl;
     var rToken = (state.runToken = (state.runToken || 0) + 1);
-    var r = await callChat(body, key, rCtrl);
-    if (state.runToken !== rToken || rCtrl.signal.aborted) return;
-    if (!r.ok) { state.analyze.steps.cards = 'error'; state.abort = null; return fail(r.code, null, r.vars); }
-    var v = Ai.validateResult(r.text);
-    // 第二次 call 可能只回 cards：補回 classification / topic / kps
-    var value = v.ok ? v.value : null;
-    if (!value) {
-      var loose = Ai.parseJsonLoose(r.text);
-      var cardsOnly = loose && Array.isArray(loose.cards) ? validateCardsOnly(loose.cards, kps, state.analysis.classification.taxonomy) : null;
-      if (!cardsOnly) {
-        state.analyze.steps.cards = 'error';
-        return fail(v.errors && v.errors[0] ? v.errors[0] : 'not_json');
+    var regenRuns = [];
+    for (var bi = 0; bi < ocrBatches.length; bi++) {
+      state.analyze.batch = regenBatch(bi);
+      if (state.route.name === 'analyze') render();
+      var r = await callChat(Ai.buildChatBody(ocrBatches[bi], regenOpts(bi)), key, rCtrl);
+      if (state.runToken !== rToken || rCtrl.signal.aborted) return;
+      if (!r.ok) { state.analyze.steps.cards = 'error'; state.analyze.batch = null; state.abort = null; return fail(r.code, null, r.vars); }
+      var v = Ai.validateResult(r.text);
+      // 第二次 call 可能只回 cards：用 validateCardsOnly 補回
+      var got = v.ok ? v.value.cards : null;
+      if (!got) {
+        var loose = Ai.parseJsonLoose(r.text);
+        got = loose && Array.isArray(loose.cards) ? validateCardsOnly(loose.cards, kps, state.analysis.classification.taxonomy) : null;
+        if (!got) {
+          state.analyze.steps.cards = 'error';
+          state.analyze.batch = null;
+          return fail(v.errors && v.errors[0] ? v.errors[0] : 'not_json');
+        }
       }
-      value = {
-        classification: state.analysis.classification,
-        topic: state.analysis.topic,
-        taxonomy: state.analysis.classification.taxonomy,
-        knowledgePoints: kps,
-        cards: cardsOnly,
-      };
-    } else {
-      value.knowledgePoints = kps;
-      value.classification = state.analysis.classification;
-      value.topic = state.analysis.topic;
-      value.cards = value.cards.filter(function (c) { return keptIds[c.kpId]; });
+      regenRuns.push({
+        value: {
+          classification: state.analysis.classification,
+          topic: state.analysis.topic,
+          taxonomy: state.analysis.classification.taxonomy,
+          knowledgePoints: kps,
+          cards: got,
+          cleanSource: '',
+        },
+      });
+    }
+    var mergedRegen = Ai.mergeAnalyses(regenRuns, { maxKp: Ai.MAX_KP });
+    if (!mergedRegen.ok) {
+      state.analyze.steps.cards = 'error';
+      state.analyze.batch = null;
+      return fail(mergedRegen.errors[0] || 'no_cards');
+    }
+    var value = mergedRegen.value;
+    value.knowledgePoints = kps;
+    value.classification = state.analysis.classification;
+    value.topic = state.analysis.topic;
+    value.taxonomy = state.analysis.classification.taxonomy;
+    value.cards = value.cards.filter(function (c) { return keptIds[c.kpId]; });
+    if (!value.cards.length) {
+      state.analyze.steps.cards = 'error';
+      state.analyze.batch = null;
+      return fail('no_cards');
     }
     // P4 A：重新出卡只換 cards，卡組原文 source 照舊保留（唔會因為 regen 冇咗原文）
     var keptSource = state.analysis.source || null;
@@ -1920,6 +2017,7 @@
     state.confirm = {};
     value.cards.forEach(function (c) { state.confirm[c.id] = true; });
     state.analyze.steps.cards = 'done';
+    state.analyze.batch = null;
     state.abort = null;
     state.route = { name: 'confirm', id: null };
     go('#/confirm');
@@ -1966,8 +2064,8 @@
 
   // ─────────────────────────── 相片 ───────────────────────────
   /**
-   * P2.0：相簿可以一次揀 2–4 張（append；相機入口維持單張 → replace）。
-   * 逐張壓縮（長邊 2048／JPEG 0.9）＋縮圖；超過 4 張只取頭 4 張並提示。
+   * P2.0／P12：相簿可以一次揀最多 8 張（append；相機入口維持單張 → replace）。
+   * 逐張壓縮（長邊 2048／JPEG 0.9）＋縮圖；超過 8 張只取頭 8 張並提示。
    */
   async function onFiles(files, opts) {
     var o = opts || {};
@@ -1981,7 +2079,7 @@
     if (!room) { toast(t('photo.limit', { max: max })); return; }
     if (picked.length > room) toast(t('photo.limit', { max: max }));
     var take = picked.slice(0, room);
-    // 上限用純函數再守一次（同 node 單元測試同一把尺：1–4 張才放行）
+    // 上限用純函數再守一次（同 node 單元測試同一把尺：1–8 張才放行）
     if (!Ai.photoCountCheck(cur.length + take.length).ok) return;
     if (o.replace) releasePhotoUrls(photoList().slice());
     var added = [];
@@ -2482,7 +2580,7 @@
         var pickedFiles = Array.prototype.slice.call(el.files);
         var fromAlbum = el.id === 'file-input-album';
         el.value = ''; // 清空 value：同一張相再揀都會再觸發 change
-        // P2.0：相機入口維持單張（取代）；相簿入口可以一次揀 2–4 張（累加）。
+        // P2.0／P12：相機入口維持單張（取代）；相簿入口可以一次揀最多 8 張（累加）。
         onFiles(pickedFiles, { replace: !fromAlbum });
         return;
       }

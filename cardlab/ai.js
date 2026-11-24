@@ -12,8 +12,11 @@
   var MAX_BYTES = 4 * 1024 * 1024;
   var JPEG_QUALITY = 0.9;
   var PREVIEW_EDGE = 1300;
-  // P2.0：一次分析最多 4 張相（多頁合併成一個卡組）
-  var MAX_PHOTOS = 4;
+  // P2.0：一次分析最多 8 張相（多頁合併成一個卡組）
+  // P12：4 → 8。8 頁嘅 OCR 原文一次過餵模型會撞聚合上限／JSON 截斷，
+  //      所以唔止改上限：每 PHOTO_BATCH 張相一批，分批理解＋出卡，最後合併去重。
+  var MAX_PHOTOS = 8;
+  var PHOTO_BATCH = 3;
 
   var STAGES = {
     kindergarten: ['K1', 'K2', 'K3'],
@@ -39,7 +42,9 @@
   var CATEGORY_MAX = 10;
   var CATEGORY_MIN = 2;
   // P4：保留原文參考 —— A：卡組 source（純文字、冇相片）；B：每卡 optional context（原文節錄 ≤200 字）
-  var SOURCE_MAX = 8000;
+  // P12：8000 → 16000。分批後每批原文仍然細，但合併後嘅卡組原文（8 頁）會超過 8000，
+  //       截斷會令尾幾頁原文靜靜消失（用戶只覺「AI 漏頁」）。
+  var SOURCE_MAX = 16000;
   var CONTEXT_MAX = 200;
   // 原文顯示層分段：每段大約 110 字或最多 3 句（純顯示，唔改 source.text）
   var SOURCE_PARA_CHARS = 110;
@@ -50,6 +55,9 @@
   // P11：用戶要求「出卡盡量多」。硬上限由 24 放寬到 40（仍然係防爆閘，唔係目標），
   // prompt 目標改 8–20 張，並允許同一知識點由唔同角度出 2–3 張。
   var MAX_CARDS = 40;
+  // P12：知識點上限 10 → 12（多頁分批合併後，每頁各自 4–8 個會撞 10 個上限；
+  //      上限仍然要存在，否則理解頁／快取驗證擋唔住失控輸出）。
+  var MAX_KP = 12;
   var SYNONYMS = {
     '常見錯誤': '易錯',
     '易錯點': '易錯',
@@ -487,7 +495,7 @@
     // ── knowledgePoints ──
     var kpRaw = asArray(obj.knowledgePoints);
     if (kpRaw.length < 1) errors.push('no_kp');
-    if (kpRaw.length > 10) errors.push('too_many_kp');
+    if (kpRaw.length > MAX_KP) errors.push('too_many_kp');
     var kps = [];
     var kpIds = Object.create(null);
     kpRaw.forEach(function (kp, i) {
@@ -688,6 +696,151 @@
     return sha256Hex(joined);
   }
 
+  /**
+   * P12：分批計劃。8 張相、每批 3 張 → [{from:0,to:3},{from:3,to:6},{from:6,to:8}]。
+   * 純函數（唔掂 DOM／storage），node 可以逐個邊界直接測。
+   */
+  function planBatches(count, size) {
+    var n = Math.floor(Number(count));
+    var s = Math.floor(Number(size));
+    if (!isFinite(s) || s <= 0) s = PHOTO_BATCH;
+    if (!isFinite(n) || n <= 0) return [];
+    var out = [];
+    for (var i = 0; i < n; i += s) out.push({ from: i, to: Math.min(n, i + s) });
+    return out;
+  }
+
+  /**
+   * P12：合併各批已驗證分析（跨批去重 + 知識點對齊 + id 全域唯一）。
+   * runs = [{value, batch?}]，value 係 validateResult().value。
+   * 規則：
+   *  - classification／topic 跟第一批（同一份功課，免多頁之間搖擺）；
+   *  - 知識點按 label 對齊（同一 label 重用已有 id），新 id 加批次前綴避撞；
+   *  - 卡以 (kpId, front lowercase) 去重（同 validateResult 同一把尺）；
+   *  - kp 上限 MAX_KP（保留最多卡嘅）、卡上限 maxCards（預設 MAX_CARDS）；
+   *  - card.id 重新由 c1 排到 cN（確認頁 checkbox 嘅 key，唔可以跨批撞）。
+   */
+  function mergeAnalyses(list, opts) {
+    var o = opts || {};
+    var maxCards = isInt(o.maxCards) ? clamp(o.maxCards, 1, MAX_CARDS) : MAX_CARDS;
+    var maxKp = isInt(o.maxKp) ? clamp(o.maxKp, 1, MAX_KP) : MAX_KP;
+    var notes = [];
+    var runs = asArray(list).filter(function (r) { return r && r.value && asArray(r.value.cards).length; });
+    if (!runs.length) return { ok: false, errors: ['no_cards'], notes: notes };
+
+    var first = runs[0].value;
+    var kps = [];
+    var byId = Object.create(null);
+    var byLabel = Object.create(null);
+    var kpCards = Object.create(null);
+    var maps = [];
+    runs.forEach(function (r, ri) {
+      var map = Object.create(null);
+      asArray(r.value.knowledgePoints).forEach(function (kp, ki) {
+        var label = str(kp && kp.label).trim();
+        var labelKey = label.toLowerCase();
+        if (label && byLabel[labelKey]) { map[kp.id] = byLabel[labelKey]; return; }
+        var id = str(kp.id).trim();
+        if (!id || byId[id]) id = 'kp' + (ri + 1) + '-' + (ki + 1);
+        while (byId[id]) id = id + '_';
+        var out = {
+          id: id,
+          label: label,
+          category: kp.category,
+          difficulty: kp.difficulty,
+          detail: str(kp.detail),
+        };
+        byId[id] = out;
+        if (label) byLabel[labelKey] = id;
+        map[kp.id] = id;
+        kps.push(out);
+      });
+      maps.push(map);
+    });
+
+    var cards = [];
+    var seen = Object.create(null);
+    var dup = 0;
+    runs.forEach(function (r, ri) {
+      var map = maps[ri];
+      asArray(r.value.cards).forEach(function (c) {
+        var kpId = map[c.kpId];
+        if (!kpId) { dup += 1; return; } // 知識點對唔上（例如標籤撞咗）就唔要呢張卡
+        var front = stripHtml(c.front || '');
+        if (!front) return;
+        var key = kpId + '\u0000' + front.toLowerCase();
+        if (seen[key]) { dup += 1; return; }
+        seen[key] = 1;
+        kpCards[kpId] = (kpCards[kpId] || 0) + 1;
+        var card = {
+          id: '',
+          kpId: kpId,
+          category: c.category,
+          difficulty: c.difficulty,
+          type: c.type,
+          front: front,
+          back: stripHtml(c.back || ''),
+          mnemonic: c.mnemonic || '',
+          example: c.example || '',
+          uncertain: c.uncertain === true,
+        };
+        if (str(c.context).trim()) card.context = c.context;
+        cards.push(card);
+      });
+    });
+    if (dup) notes.push('drop_duplicate_card:' + dup);
+    if (!cards.length) return { ok: false, errors: ['no_cards'], notes: notes };
+
+    if (kps.length > maxKp) {
+      var keepIds = kps.slice().sort(function (a, b) {
+        return (kpCards[b.id] || 0) - (kpCards[a.id] || 0);
+      }).slice(0, maxKp).map(function (k) { return k.id; });
+      notes.push('trimmed_kp:' + (kps.length - keepIds.length));
+      kps = kps.filter(function (k) { return keepIds.indexOf(k.id) >= 0; });
+      cards = cards.filter(function (c) { return keepIds.indexOf(c.kpId) >= 0; });
+    }
+    if (cards.length > maxCards) {
+      notes.push('trimmed_cards:' + (cards.length - maxCards));
+      cards = cards.slice(0, maxCards);
+    }
+    if (!cards.length) return { ok: false, errors: ['no_cards'], notes: notes };
+
+    var tax = [];
+    runs.forEach(function (r) {
+      asArray(r.value.taxonomy).forEach(function (t) {
+        var v = normLabel(t);
+        if (v && tax.indexOf(v) < 0) tax.push(v);
+      });
+    });
+    var normalized = normalizeTaxonomy(tax, kps, cards);
+    var kpById = Object.create(null);
+    normalized.knowledgePoints.forEach(function (k) { kpById[k.id] = k; });
+    var cleanParts = [];
+    runs.forEach(function (r) {
+      var cs = str(r.value.cleanSource).trim();
+      if (cs) cleanParts.push(cs);
+    });
+    var cleanSource = truncate(cleanParts.join('\n\n'), SOURCE_MAX).text;
+    return {
+      ok: true,
+      errors: [],
+      notes: notes,
+      value: {
+        classification: first.classification,
+        topic: first.topic,
+        cleanSource: cleanSource,
+        taxonomy: normalized.taxonomy,
+        knowledgePoints: normalized.knowledgePoints,
+        cards: normalized.cards.map(function (card, i) {
+          var kp = kpById[card.kpId] || null;
+          card.id = 'c' + (i + 1);
+          card.category = kp ? kp.category : OTHER;
+          return card;
+        }),
+      },
+    };
+  }
+
   function cacheEmpty() { return { schema: 1, entries: [] }; }
 
   /** 快取 value 一定要係「已過本機驗證」嘅 analysis 形狀；壞資料一律拒收。 */
@@ -718,7 +871,7 @@
       if (!sclean || labelLen(sclean) > SOURCE_MAX) return false;
     }
     var kps = asArray(v.knowledgePoints);
-    if (!kps.length || kps.length > 10) return false;
+    if (!kps.length || kps.length > MAX_KP) return false;
     var ids = Object.create(null);
     var i;
     for (i = 0; i < kps.length; i++) {
@@ -955,7 +1108,7 @@
       '',
       '二、理解',
       '8. 一句話講出呢一頁教緊咩（≤40 字）。',
-      '9. 抽 4–8 個知識點：名稱（≤8 字）、分類（必須喺 taxonomy 入面）、難度星、一句解釋（≤40 字）。',
+      '9. 抽 4–8 個知識點（多頁嘅話最多 12 個）：名稱（≤8 字）、分類（必須喺 taxonomy 入面）、難度星、一句解釋（≤40 字）。',
       '10. 一個知識點只講一件事；唔好把成段課文當一個知識點。',
       '',
       '三、出卡（盡量多：一般 8–20 張；內容豐富就出更多，硬上限 40 張）',
@@ -984,15 +1137,30 @@
 
   function userContent(ocrText, opts) {
     var o = opts || {};
-    var parts = ['以下係 OCR 文字：\n\n' + str(ocrText)];
+    // P12：分批提示 —— 只處理呢批嘅文字、重用已有知識點 id、每批有卡數預算。
+    var head = [];
+    var b = o.batch;
+    if (b && Number(b.n) > 1) {
+      head.push('呢份功課分咗 ' + Number(b.n) + ' 批分析，呢一批係第 ' + Number(b.i) + ' 批（第 ' + Number(b.from) + '–' + Number(b.to) + ' 張相）。只根據下面呢批文字出卡，唔好出其他批次嘅內容。');
+    }
+    if (o.knownKps && o.knownKps.length) {
+      head.push('已經有嘅知識點（id／label）：' + JSON.stringify(o.knownKps));
+      head.push('如果本批內容屬於上面任何一個知識點，請直接重用同一個 kpId（唔好另開新 id）；真係新嘅知識點才用新 id。');
+    }
+    if (isInt(o.maxCards) && o.maxCards > 0) {
+      head.push('本批最多出 ' + o.maxCards + ' 張卡。');
+    }
+    var parts;
     if (o.regen) {
-      parts = [
+      parts = head.concat([
         '已確認嘅理解如下，請只回 cards（唔要 classification / topic / knowledgePoints）：',
         JSON.stringify({ classification: o.classification, topic: o.topic, taxonomy: o.taxonomy, knowledgePoints: o.knowledgePoints }),
         '',
         'OCR 文字（只作參考）：',
         str(ocrText).slice(0, 4000),
-      ];
+      ]);
+    } else {
+      parts = head.concat(['以下係 OCR 文字：\n\n' + str(ocrText)]);
     }
     if (o.retry) {
       parts.push('', '重要：上一次回覆唔係有效 JSON。今次只准輸出一個完整 JSON 物件，唔要 markdown、唔要解釋、唔要前後任何文字。');
@@ -1215,6 +1383,10 @@
     CACHE_TTL: CACHE_TTL,
     CACHE_MAX: CACHE_MAX,
     MAX_PHOTOS: MAX_PHOTOS,
+    PHOTO_BATCH: PHOTO_BATCH,
+    MAX_KP: MAX_KP,
+    planBatches: planBatches,
+    mergeAnalyses: mergeAnalyses,
     TOPIC_TITLE_MAX: TOPIC_TITLE_MAX,
     KP_LABEL_MAX: KP_LABEL_MAX,
     CATEGORY_MAX: CATEGORY_MAX,
