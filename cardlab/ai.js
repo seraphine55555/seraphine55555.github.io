@@ -60,9 +60,12 @@
   // P12.1：之前用固定 12 做合并上限，8 張相（3 批）各出 4–8 個就爆，會靜靜砍走知識點
   //        同佢嘅卡 ⇒ 用戶多上傳幾頁反而少咗內容。總上限要隨批數放大：
   //        每批 12 個 × 最多 3 批 = 36；每批 40 張卡 × 3 批 = 120（純防爆閘，正常用唔到）。
-  var MAX_KP = 12;
+  // P12.2：知識點由「整份教材內容」決定，唔再由批次決定。
+  //   做法：先一次過理解整份 OCR 文字（只出 classification／topic／taxonomy／knowledgePoints，
+  //   輸出細、唔會撞 token 上限），再用同一份知識點清單逐批出卡（只回 cards）。
+  //   MAX_KP 只係防爆閘（內容多可以到 24 個），唔係「每批上限」。
+  var MAX_KP = 24;
   var MAX_BATCHES = planBatches(MAX_PHOTOS, PHOTO_BATCH).length; // 8 張 → 3 批
-  var MAX_KP_TOTAL = MAX_BATCHES * MAX_KP;
   var MAX_CARDS_TOTAL = MAX_BATCHES * MAX_CARDS;
   var SYNONYMS = {
     '常見錯誤': '易錯',
@@ -464,6 +467,9 @@
    */
   function validateResult(raw, opts) {
     var o = opts || {};
+    // P12.2：整份教材「理解」call 只回 classification／topic／taxonomy／knowledgePoints（冇卡），
+    // 所以 requireCards:false 時唔將「冇卡」當錯誤；預設仍然要有卡（單批一次過出卡嘅舊路徑）。
+    var requireCards = o.requireCards !== false;
     var errors = [];
     var notes = [];
     var obj = parseJsonLoose(raw);
@@ -519,7 +525,7 @@
 
     // ── cards ──
     var cardRaw = asArray(obj.cards);
-    if (!cardRaw.length) errors.push('no_cards');
+    if (requireCards && !cardRaw.length) errors.push('no_cards');
     if (cardRaw.length > MAX_CARDS) errors.push('too_many_cards');
     var cards = [];
     var seen = Object.create(null);
@@ -570,8 +576,8 @@
       cards.push(outCard);
     });
     if (orphan) notes.push('orphan_cards:' + orphan);
-    if (!cards.length) errors.push('no_cards');
-    kps.forEach(function (kp) { if (emptyKp[kp.id]) notes.push('empty_kp:' + kp.id); });
+    if (requireCards && !cards.length) errors.push('no_cards');
+    if (requireCards) kps.forEach(function (kp) { if (emptyKp[kp.id]) notes.push('empty_kp:' + kp.id); });
 
     if (errors.length) return { ok: false, errors: errors, notes: notes };
 
@@ -717,136 +723,54 @@
   }
 
   /**
-   * P12：合併各批已驗證分析（跨批去重 + 知識點對齊 + id 全域唯一）。
-   * runs = [{value, batch?}]，value 係 validateResult().value。
-   * 規則：
-   *  - classification／topic 跟第一批（同一份功課，免多頁之間搖擺）；
-   *  - 知識點按 label 對齊（同一 label 重用已有 id），新 id 加批次前綴避撞；
-   *  - 卡以 (kpId, front lowercase) 去重（同 validateResult 同一把尺）；
-   *  - 上限隨批數放大（P12.1）：kp = 批數 × MAX_KP（最多 MAX_KP_TOTAL）、
-   *    卡 = 批數 × MAX_CARDS（最多 MAX_CARDS_TOTAL），唔會因為固定 12 砍走多頁內容；
-   *  - card.id 重新由 c1 排到 cN（確認頁 checkbox 嘅 key，唔可以跨批撞）。
+   * P12.2：合併各批「只出卡」結果。
+   * 知識點由**整份教材一次過理解**決定（見 understandPrompt），批次只負責出卡 ⇒ 呢度只做：
+   *  - 丟孤兒卡（kpId 唔喺整份知識點清單）；
+   *  - 跨批去重（kpId + front 小寫，同 validateResult 同一把尺）；
+   *  - card.id 重新由 c1 排到 cN（確認頁 checkbox key，跨批唔可以撞）；
+   *  - 卡總數封頂（MAX_CARDS_TOTAL = 批數 × 每批上限，正常用唔到）。
+   * 冇卡 → ok:false（唔會出一個冇卡嘅卡組）。
    */
-  function mergeAnalyses(list, opts) {
+  function mergeCardSets(lists, opts) {
     var o = opts || {};
+    var maxCards = isInt(o.maxCards) ? clamp(o.maxCards, 1, MAX_CARDS_TOTAL) : MAX_CARDS_TOTAL;
     var notes = [];
-    var runs = asArray(list).filter(function (r) { return r && r.value && asArray(r.value.cards).length; });
-    if (!runs.length) return { ok: false, errors: ['no_cards'], notes: notes };
-    var nBatches = Math.max(1, runs.length);
-    // 預設總上限隨批數放大；呼叫方仍可指定較細嘅上限（測試／特殊情況），但唔可以超過硬上限。
-    var maxCards = isInt(o.maxCards) ? clamp(o.maxCards, 1, MAX_CARDS_TOTAL) : Math.min(MAX_CARDS_TOTAL, nBatches * MAX_CARDS);
-    var maxKp = isInt(o.maxKp) ? clamp(o.maxKp, 1, MAX_KP_TOTAL) : Math.min(MAX_KP_TOTAL, nBatches * MAX_KP);
-    var first = runs[0].value;
-    var kps = [];
-    var byId = Object.create(null);
-    var byLabel = Object.create(null);
-    var kpCards = Object.create(null);
-    var maps = [];
-    runs.forEach(function (r, ri) {
-      var map = Object.create(null);
-      asArray(r.value.knowledgePoints).forEach(function (kp, ki) {
-        var label = str(kp && kp.label).trim();
-        var labelKey = label.toLowerCase();
-        if (label && byLabel[labelKey]) { map[kp.id] = byLabel[labelKey]; return; }
-        var id = str(kp.id).trim();
-        if (!id || byId[id]) id = 'kp' + (ri + 1) + '-' + (ki + 1);
-        while (byId[id]) id = id + '_';
-        var out = {
-          id: id,
-          label: label,
-          category: kp.category,
-          difficulty: kp.difficulty,
-          detail: str(kp.detail),
-        };
-        byId[id] = out;
-        if (label) byLabel[labelKey] = id;
-        map[kp.id] = id;
-        kps.push(out);
-      });
-      maps.push(map);
-    });
-
-    var cards = [];
+    var out = [];
     var seen = Object.create(null);
     var dup = 0;
-    runs.forEach(function (r, ri) {
-      var map = maps[ri];
-      asArray(r.value.cards).forEach(function (c) {
-        var kpId = map[c.kpId];
-        if (!kpId) { dup += 1; return; } // 知識點對唔上（例如標籤撞咗）就唔要呢張卡
+    asArray(lists).forEach(function (list) {
+      asArray(list).forEach(function (c) {
+        if (!c || typeof c !== 'object') return;
+        var kpId = str(c.kpId).trim();
         var front = stripHtml(c.front || '');
-        if (!front) return;
+        var back = stripHtml(c.back || '');
+        if (!kpId || !front || !back) return;
         var key = kpId + '\u0000' + front.toLowerCase();
         if (seen[key]) { dup += 1; return; }
         seen[key] = 1;
-        kpCards[kpId] = (kpCards[kpId] || 0) + 1;
         var card = {
-          id: '',
+          id: 'c' + (out.length + 1),
           kpId: kpId,
           category: c.category,
           difficulty: c.difficulty,
           type: c.type,
           front: front,
-          back: stripHtml(c.back || ''),
-          mnemonic: c.mnemonic || '',
-          example: c.example || '',
+          back: back,
+          mnemonic: str(c.mnemonic),
+          example: str(c.example),
           uncertain: c.uncertain === true,
         };
         if (str(c.context).trim()) card.context = c.context;
-        cards.push(card);
+        out.push(card);
       });
     });
     if (dup) notes.push('drop_duplicate_card:' + dup);
-    if (!cards.length) return { ok: false, errors: ['no_cards'], notes: notes };
-
-    if (kps.length > maxKp) {
-      var keepIds = kps.slice().sort(function (a, b) {
-        return (kpCards[b.id] || 0) - (kpCards[a.id] || 0);
-      }).slice(0, maxKp).map(function (k) { return k.id; });
-      notes.push('trimmed_kp:' + (kps.length - keepIds.length));
-      kps = kps.filter(function (k) { return keepIds.indexOf(k.id) >= 0; });
-      cards = cards.filter(function (c) { return keepIds.indexOf(c.kpId) >= 0; });
+    if (out.length > maxCards) {
+      notes.push('trimmed_cards:' + (out.length - maxCards));
+      out = out.slice(0, maxCards);
     }
-    if (cards.length > maxCards) {
-      notes.push('trimmed_cards:' + (cards.length - maxCards));
-      cards = cards.slice(0, maxCards);
-    }
-    if (!cards.length) return { ok: false, errors: ['no_cards'], notes: notes };
-
-    var tax = [];
-    runs.forEach(function (r) {
-      asArray(r.value.taxonomy).forEach(function (t) {
-        var v = normLabel(t);
-        if (v && tax.indexOf(v) < 0) tax.push(v);
-      });
-    });
-    var normalized = normalizeTaxonomy(tax, kps, cards);
-    var kpById = Object.create(null);
-    normalized.knowledgePoints.forEach(function (k) { kpById[k.id] = k; });
-    var cleanParts = [];
-    runs.forEach(function (r) {
-      var cs = str(r.value.cleanSource).trim();
-      if (cs) cleanParts.push(cs);
-    });
-    var cleanSource = truncate(cleanParts.join('\n\n'), SOURCE_MAX).text;
-    return {
-      ok: true,
-      errors: [],
-      notes: notes,
-      value: {
-        classification: first.classification,
-        topic: first.topic,
-        cleanSource: cleanSource,
-        taxonomy: normalized.taxonomy,
-        knowledgePoints: normalized.knowledgePoints,
-        cards: normalized.cards.map(function (card, i) {
-          var kp = kpById[card.kpId] || null;
-          card.id = 'c' + (i + 1);
-          card.category = kp ? kp.category : OTHER;
-          return card;
-        }),
-      },
-    };
+    if (!out.length) return { ok: false, cards: [], notes: notes, errors: ['no_cards'] };
+    return { ok: true, cards: out, notes: notes, errors: [] };
   }
 
   function cacheEmpty() { return { schema: 1, entries: [] }; }
@@ -879,7 +803,7 @@
       if (!sclean || labelLen(sclean) > SOURCE_MAX) return false;
     }
     var kps = asArray(v.knowledgePoints);
-    if (!kps.length || kps.length > MAX_KP_TOTAL) return false;
+    if (!kps.length || kps.length > MAX_KP) return false;
     var ids = Object.create(null);
     var i;
     for (i = 0; i < kps.length; i++) {
@@ -1143,6 +1067,48 @@
     ].join('\n');
   }
 
+  /**
+   * P12.2：整份教材「理解」用 prompt —— 只定分類、主題、分類法同**完整知識點清單**，
+   * 唔出卡（出卡交返逐批 card pass）。知識點數量由內容決定，唔關頁數／批次事。
+   */
+  function understandPrompt() {
+    return [
+      '你係香港教材助理。下面係**一整份**功課／課本嘅 OCR 文字（幾頁，按頁序排列，每頁開頭有「第 N 頁」）。',
+      '你要由整份內容判斷「教緊咩、咩程度」，並整理出一份**完整**嘅知識點清單；唔使出卡。',
+      '',
+      '一、分類（全部由你判斷）',
+      '1. stage：kindergarten / primary / secondary / university。',
+      '2. grade：K1–K3、P1–P6、S1–S6、U1–U4；用香港學制。內容跨級就揀最接近嘅一級。',
+      '3. subject：chinese / english / maths / science / general / humanities / other，同時俾中文 subjectLabel。',
+      '4. category（topic.category）：2–10 字嘅「科目＋範疇」，例如 中文閱讀理解、英文文法、數學乘法。同一類內容要用同一個名，唔好自創同義詞；寧願粗都唔好長過 10 字。',
+      '5. difficulty（1–5 星）：1=課本直接寫出、認得就答到；2=要記一個定義；3=要理解因果／過程；4=要比較／應用；5=跨概念綜合／易錯陷阱。',
+      '6. confidence：你對 stage/grade 嘅把握（0–1）。唔肯定就低分，唔好扮肯定。',
+      '7. taxonomy：自己設計 3–6 個知識分類（每類 2–6 字），要覆蓋所有知識點；唔好用「其他」除非真係無辦法分類。',
+      '',
+      '二、理解（整份教材一次過）',
+      '8. 一句話講出整份教材教緊咩（≤40 字）。',
+      '9. 知識點：由**內容本身**決定數量——每頁有幾個重點就抽幾個，跨頁同一個概念只計一個；一般 4–12 個，內容多可以 16–24 個，最多 24 個。',
+      '10. 唔可以因為「分咗幾多張相、幾多批」而增減知識點；亦唔好漏咗任何一頁嘅重點。',
+      '11. 每個知識點：名稱（≤8 字）、分類（必須喺 taxonomy 入面）、難度星、一句解釋（≤40 字）。',
+      '12. 一個知識點只講一件事；唔好把成段課文當一個知識點。',
+      '',
+      '三、原文（source）',
+      '13. 同時回一個 source：由 OCR 原文整理出同上述知識點相關嘅課文——刪走工作紙標題／指示（例如「日期 成績」「學習重點」「思維策略」「閱讀下面的文字，然後回答問題」）、頁碼／分數／姓名欄、重複頁眉頁腳；保留故事／文章正文、詞語解釋、課後問題同選項，**所有頁都要保留**。照原文抄，唔好改寫、唔好簡化、唔好加內容；用空行分段；冇嘢好刪就原樣回傳。',
+      '',
+      '只輸出 JSON（物件），唔要 markdown、唔要解釋。',
+      'JSON 形狀：{"source":"整理後原文","classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}]}',
+    ].join('\n');
+  }
+
+  function understandContent(ocrText, opts) {
+    var o = opts || {};
+    var parts = ['以下係整份教材嘅 OCR 文字（按頁序）：\n\n' + str(ocrText)];
+    if (o.retry) {
+      parts.push('', '重要：上一次回覆唔係有效 JSON。今次只准輸出一個完整 JSON 物件，唔要 markdown、唔要解釋、唔要前後任何文字。');
+    }
+    return parts.join('\n');
+  }
+
   function userContent(ocrText, opts) {
     var o = opts || {};
     // P12：分批提示 —— 只處理呢批嘅文字、重用已有知識點 id、每批有卡數預算。
@@ -1165,7 +1131,7 @@
         JSON.stringify({ classification: o.classification, topic: o.topic, taxonomy: o.taxonomy, knowledgePoints: o.knowledgePoints }),
         '',
         'OCR 文字（只作參考）：',
-        str(ocrText).slice(0, 4000),
+        str(ocrText).slice(0, isInt(o.textMax) ? o.textMax : 4000),
       ]);
     } else {
       parts = head.concat(['以下係 OCR 文字：\n\n' + str(ocrText)]);
@@ -1182,6 +1148,8 @@
    * 真機 2026-11-17 診斷：finish=length、reasoning=7747 字、content 0 字。
    */
   function buildChatBody(ocrText, opts) {
+    var o = opts || {};
+    // P12.2：understand:true = 整份教材「只定理解／知識點」；其餘（含 regen）= 只出卡。
     return {
       model: MODEL,
       temperature: 0.2,
@@ -1189,8 +1157,8 @@
       thinking: { type: 'disabled' },
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: systemPrompt() },
-        { role: 'user', content: userContent(ocrText, opts) },
+        { role: 'system', content: o.understand ? understandPrompt() : systemPrompt() },
+        { role: 'user', content: o.understand ? understandContent(ocrText, o) : userContent(ocrText, o) },
       ],
     };
   }
@@ -1394,10 +1362,9 @@
     PHOTO_BATCH: PHOTO_BATCH,
     MAX_KP: MAX_KP,
     MAX_BATCHES: MAX_BATCHES,
-    MAX_KP_TOTAL: MAX_KP_TOTAL,
     MAX_CARDS_TOTAL: MAX_CARDS_TOTAL,
     planBatches: planBatches,
-    mergeAnalyses: mergeAnalyses,
+    mergeCardSets: mergeCardSets,
     TOPIC_TITLE_MAX: TOPIC_TITLE_MAX,
     KP_LABEL_MAX: KP_LABEL_MAX,
     CATEGORY_MAX: CATEGORY_MAX,

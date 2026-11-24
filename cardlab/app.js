@@ -124,9 +124,14 @@
     'analyze.rephoto': { yue: '重新影相', zh: '重新拍照', en: 'Retake photo' },
     // P12：多張相分批分析嘅進度
     'analyze.batch': {
-      yue: '分批分析：第 {i}／{n} 批（第 {from}–{to} 張相）',
-      zh: '分批分析：第 {i}／{n} 批（第 {from}–{to} 張相）',
-      en: 'Analysing in batches: {i}/{n} (photos {from}–{to})',
+      yue: '分批出卡：第 {i}／{n} 批（第 {from}–{to} 張相）',
+      zh: '分批出卡：第 {i}／{n} 批（第 {from}–{to} 張相）',
+      en: 'Building cards in batches: {i}/{n} (photos {from}–{to})',
+    },
+    'analyze.ocrAt': {
+      yue: 'OCR：第 {i}／{n} 張相',
+      zh: 'OCR：第 {i}／{n} 張相',
+      en: 'OCR: photo {i}/{n}',
     },
     'understand.title': { yue: 'AI 理解 · 自動分類', zh: 'AI 理解 · 自動分類', en: 'AI understanding' },
     'understand.confidence': { yue: 'AI 判斷信心 {p}%', zh: 'AI 判斷信心 {p}%', en: 'AI confidence {p}%' },
@@ -352,7 +357,7 @@
     session: null,
     toast: '',
     error: null,
-    analyze: { step: 'idle', steps: { compress: 'idle', ocr: 'idle', understand: 'idle', cards: 'idle' }, batch: null },
+    analyze: { step: 'idle', steps: { compress: 'idle', ocr: 'idle', understand: 'idle', cards: 'idle' }, batch: null, photoAt: null },
     abort: null,
     nowFn: null,
     seed: null,
@@ -560,7 +565,10 @@
     html += stepRow('understand', t('analyze.step.understand'));
     html += stepRow('cards', t('analyze.step.cards'));
     html += '</ol>';
-    // P12：多張相分批分析時，逐批顯示進度（第 i／n 批、第幾至第幾張相）
+    // P12.2：OCR 逐張進度；之後逐批「只出卡」嘅進度分開顯示
+    if (state.analyze.photoAt) {
+      html += '<p class="hint" id="analyze-photo-at">' + esc(t('analyze.ocrAt', state.analyze.photoAt)) + '</p>';
+    }
     if (state.analyze.batch && Number(state.analyze.batch.n) > 1) {
       html += '<p class="hint" id="analyze-batch">' + esc(t('analyze.batch', state.analyze.batch)) + '</p>';
     }
@@ -679,7 +687,7 @@
 
     if (a.knowledgePoints.length < 4) html += '<p class="hint hint--warn">' + esc(t('understand.tooFew')) + '</p>';
     // P12.1：多頁分批之後知識點自然多過 8；門檻按批數放大，唔好把正常結果當錯誤
-    var kpHintMax = Math.max(Ai.MAX_KP, (Number(a.ocr && a.ocr.batches) || 1) * Ai.MAX_KP);
+    var kpHintMax = Ai.MAX_KP;
     if (a.knowledgePoints.length > kpHintMax) html += '<p class="hint hint--warn">' + esc(t('understand.tooMany')) + '</p>';
 
     html += '<h3 class="sub">' + esc(t('understand.kps', { n: a.knowledgePoints.length })) + '</h3>';
@@ -1697,6 +1705,7 @@
     function stale() { return state.runToken !== token || runCtrl.signal.aborted; }
     state.analyze.steps = { compress: 'active', ocr: 'idle', understand: 'idle', cards: 'idle' };
     state.analyze.batch = null;
+    state.analyze.photoAt = null;
     state.route = { name: 'analyze', id: null };
     if (location.hash !== '#/analyze') location.hash = '#/analyze';
     else render();
@@ -1733,137 +1742,82 @@
     // P2.0：每張相扣 1 次配額（2 張 = 2）→ 唔夠就講清要用幾張、剩幾張，一張都唔好扣。
     if (photoN > cap.remaining) { return fail('quota', null, { n: photoN, left: cap.remaining }); }
 
-    // 2) 分批：每 Ai.PHOTO_BATCH 張相一批，逐批 OCR → 理解 → 出卡（P12）
-    //    唔分批嘅話 8 頁原文一次過餵模型會撞聚合上限（尾頁靜靜被剪）同 JSON 截斷（整次失敗）。
+    // 2) 逐張 OCR（保留頁序；任何一張失敗都指出第幾張、唔入快取）
     var plan = Ai.planBatches(photoN, Ai.PHOTO_BATCH);
     var mergedPages = [];
+    var photoPages = [];
     var perPhoto = [];
     var splitAny = false;
     var charsTotal = 0;
-    var batchTexts = [];
-    var runs = [];
-    var budget = Ai.MAX_CARDS;
-    for (var bi = 0; bi < plan.length; bi++) {
-      var seg = plan[bi];
-      var fromNo = seg.from + 1;
-      var toNo = seg.to;
-      state.analyze.batch = { i: bi + 1, n: plan.length, from: fromNo, to: toNo };
+    setStep('ocr', 'active');
+    for (var pi = 0; pi < photoN; pi++) {
+      state.analyze.photoAt = { i: pi + 1, n: photoN };
       if (state.route.name === 'analyze') render();
-      setStep('ocr', 'active');
-      var batchPages = [];
-      for (var pi = seg.from; pi < seg.to; pi++) {
-        var photo = photos[pi];
-        var photoVars = { photo: pi + 1, total: photoN };
-        var one = await ocrOnce(photo.blob, 'page-' + (pi + 1) + '.jpg', runCtrl);
-        if (stale()) return;
-        if (!one.ok) { state.analyze.steps.ocr = 'error'; return fail(one.code, null, photoVars); }
-        var pages = P.cleanPages(P.parseOcrPayload(one.payload));
-        var gate = P.qualityGate(pages);
-        var split = false;
-        if (!gate.ok && gate.code === 'truncated') {
-          // 跨頁大圖：OCR 輸出被截斷 → 自動沿長邊切兩半、逐半再 OCR。
-          // 仍然係同一張相（配額只扣 1、快取 key 不變）。
-          try {
-            var halves = await Ai.splitInHalf(photo.blob);
-            var merged = [];
-            for (var hi = 0; hi < halves.length; hi++) {
-              var halfRes = await ocrOnce(halves[hi].blob, 'page-' + (pi + 1) + '-' + (hi + 1) + '.jpg', runCtrl);
-              if (stale()) return;
-              if (!halfRes.ok) { state.analyze.steps.ocr = 'error'; return fail(halfRes.code, null, photoVars); }
-              var halfPages = P.cleanPages(P.parseOcrPayload(halfRes.payload));
-              var halfGate = P.qualityGate(halfPages);
-              if (!halfGate.ok) {
-                state.analyze.steps.ocr = 'error';
-                return fail('gate.' + halfGate.code, halfGate.code, mergeVars(gateVars(halfGate), photoVars));
-              }
-              merged = merged.concat(halfPages);
+      var photo = photos[pi];
+      var photoVars = { photo: pi + 1, total: photoN };
+      var one = await ocrOnce(photo.blob, 'page-' + (pi + 1) + '.jpg', runCtrl);
+      if (stale()) return;
+      if (!one.ok) { state.analyze.steps.ocr = 'error'; return fail(one.code, null, photoVars); }
+      var pages = P.cleanPages(P.parseOcrPayload(one.payload));
+      var gate = P.qualityGate(pages);
+      var split = false;
+      if (!gate.ok && gate.code === 'truncated') {
+        // 跨頁大圖：OCR 輸出被截斷 → 自動沿長邊切兩半、逐半再 OCR。
+        // 仍然係同一張相（配額只扣 1、快取 key 不變）。
+        try {
+          var halves = await Ai.splitInHalf(photo.blob);
+          var merged = [];
+          for (var hi = 0; hi < halves.length; hi++) {
+            var halfRes = await ocrOnce(halves[hi].blob, 'page-' + (pi + 1) + '-' + (hi + 1) + '.jpg', runCtrl);
+            if (stale()) return;
+            if (!halfRes.ok) { state.analyze.steps.ocr = 'error'; return fail(halfRes.code, null, photoVars); }
+            var halfPages = P.cleanPages(P.parseOcrPayload(halfRes.payload));
+            var halfGate = P.qualityGate(halfPages);
+            if (!halfGate.ok) {
+              state.analyze.steps.ocr = 'error';
+              return fail('gate.' + halfGate.code, halfGate.code, mergeVars(gateVars(halfGate), photoVars));
             }
-            pages = P.cleanPages(merged);
-            gate = P.qualityGate(pages);
-            split = true;
-          } catch (e) {
-            // 切圖失敗就照原本嘅截斷提示
+            merged = merged.concat(halfPages);
           }
+          pages = P.cleanPages(merged);
+          gate = P.qualityGate(pages);
+          split = true;
+        } catch (e) {
+          // 切圖失敗就照原本嘅截斷提示
         }
-        if (!gate.ok) {
-          state.analyze.steps.ocr = 'error';
-          return fail('gate.' + gate.code, gate.code, mergeVars(gateVars(gate), photoVars));
-        }
-        charsTotal += Number(gate.stats && gate.stats.chars) || 0;
-        if (split) splitAny = true;
-        perPhoto.push({ index: pi + 1, pages: pages.length, chars: gate.stats.chars, quality: gate.code, split: split });
-        batchPages = batchPages.concat(pages);
-        mergedPages = mergedPages.concat(pages);
       }
-      batchPages = P.cleanPages(batchPages);
-      var batchGate = P.qualityGate(batchPages);
-      // 每批各自過閘（一批文字壞掉唔應該拖到最後才發現，亦唔應該白花之後幾批 call）
-      if (!batchGate.ok) {
+      if (!gate.ok) {
         state.analyze.steps.ocr = 'error';
-        return fail('gate.' + batchGate.code, batchGate.code, mergeVars(gateVars(batchGate), { total: photoN }));
+        return fail('gate.' + gate.code, gate.code, mergeVars(gateVars(gate), photoVars));
       }
-      var batchText = P.cleanText(batchPages);
-      batchTexts.push(batchText);
-      setStep('ocr', bi + 1 < plan.length ? 'active' : 'done');
-
-      // 3) 理解（每批一次 call）
-      setStep('understand', 'active');
-      var knownKps = [];
-      runs.forEach(function (r) {
-        r.value.knowledgePoints.forEach(function (kp) { knownKps.push({ id: kp.id, label: kp.label }); });
-      });
-      var chatOpts = {
-        batch: { i: bi + 1, n: plan.length, from: fromNo, to: toNo },
-        maxCards: budget,
-      };
-      if (knownKps.length) chatOpts.knownKps = knownKps;
-      var body = Ai.buildChatBody(batchText, chatOpts);
-      var result = await callChat(body, key, runCtrl);
-      if (stale()) return;
-      if (!result.ok) {
-        state.analyze.steps.understand = 'error';
-        return fail(result.code, null, result.vars, result.diag);
-      }
-      var validated = Ai.validateResult(result.text, { ocrText: batchText });
-      var lastText = result.text;
-      var lastDiag = result.diag;
-      if (!validated.ok && !validated.aiError) {
-        // 格式問題：重試一次（設計 §7.4），今次明確叫佢只回 JSON
-        var retryOpts = {
-          batch: chatOpts.batch,
-          maxCards: budget,
-          retry: true,
-        };
-        if (knownKps.length) retryOpts.knownKps = knownKps;
-        var retry = await callChat(Ai.buildChatBody(batchText, retryOpts), key, runCtrl);
-        if (stale()) return;
-        if (retry.ok) {
-          validated = Ai.validateResult(retry.text, { ocrText: batchText });
-          lastText = retry.text;
-          lastDiag = retry.diag;
-        } else if (retry.diag) {
-          lastDiag = retry.diag;
-        }
-      }
-      if (stale()) return;
-      if (!validated.ok) {
-        state.analyze.steps.understand = 'error';
-        var errKey = validated.aiError ? 'err.ai_' + validated.aiError : 'err.' + (validated.errors[0] || 'unknown');
-        if (!DICT[errKey]) errKey = 'err.not_json';
-        state.error = { code: errKey.replace('err.', ''), vars: { photo: fromNo, total: photoN } };
-        return fail(state.error.code, null, { photo: fromNo, total: photoN }, lastDiag || ('JSON 解析失敗 · 開頭：' + String(lastText || '').slice(0, 100)));
-      }
-      budget = Math.max(4, budget - validated.value.cards.length);
-      runs.push({ value: validated.value, batch: { i: bi + 1, from: fromNo, to: toNo } });
-      setStep('understand', 'done');
+      charsTotal += Number(gate.stats && gate.stats.chars) || 0;
+      if (split) splitAny = true;
+      perPhoto.push({ index: pi + 1, pages: pages.length, chars: gate.stats.chars, quality: gate.code, split: split });
+      photoPages.push(pages);
+      mergedPages = mergedPages.concat(pages);
     }
+    state.analyze.photoAt = null;
+
     var allPages = P.cleanPages(mergedPages);
     var mergedGate = P.qualityGate(allPages);
-    // 逐批已各自過閘；合併後再過一次（防止批次之間接駁壞掉）
     if (!mergedGate.ok) {
       state.analyze.steps.ocr = 'error';
       return fail('gate.' + mergedGate.code, mergedGate.code, mergeVars(gateVars(mergedGate), { total: photoN }));
     }
+    // 批次文字只係「切開原文」，用嚟分批出卡；知識點由整份理解決定（P12.2）
+    var batchPagesList = plan.map(function (seg) {
+      var arr = [];
+      for (var k = seg.from; k < seg.to; k++) arr = arr.concat(photoPages[k] || []);
+      return P.cleanPages(arr);
+    });
+    for (var bgi = 0; bgi < batchPagesList.length; bgi++) {
+      var bGate = P.qualityGate(batchPagesList[bgi]);
+      if (!bGate.ok) {
+        state.analyze.steps.ocr = 'error';
+        return fail('gate.' + bGate.code, bGate.code, mergeVars(gateVars(bGate), { total: photoN }));
+      }
+    }
+    var batchTexts = batchPagesList.map(function (list) { return P.cleanText(list); });
     var ocrText = P.cleanText(allPages);
     state.ocr = {
       pages: allPages,
@@ -1877,25 +1831,151 @@
       batchPlan: plan,
     };
     S.markPhotoUsed(state.db, now(), photoN);
+    setStep('ocr', 'done');
 
-    // 4) 出卡：合併各批（跨批去重、知識點按 label 對齊、card.id 重新由 c1 排）
-    setStep('cards', 'active');
-    var mergedValue = Ai.mergeAnalyses(runs);
-    if (!mergedValue.ok) {
-      state.analyze.steps.cards = 'error';
-      return fail(mergedValue.errors[0] || 'no_cards');
+    var failValidate = function (validated, text, diag, vars) {
+      state.analyze.steps.understand = 'error';
+      var errKey = validated.aiError ? 'err.ai_' + validated.aiError : 'err.' + ((validated.errors && validated.errors[0]) || 'unknown');
+      if (!DICT[errKey]) errKey = 'err.not_json';
+      state.error = { code: errKey.replace('err.', ''), vars: vars || {} };
+      return fail(state.error.code, null, vars || {}, diag || ('JSON 解析失敗 · 開頭：' + String(text || '').slice(0, 100)));
+    };
+
+    // 單批（≤ Ai.PHOTO_BATCH 張）：維持一次過理解＋出卡（同舊行為／舊成本一樣）
+    if (plan.length === 1) {
+      setStep('understand', 'active');
+      var result = await callChat(Ai.buildChatBody(ocrText), key, runCtrl);
+      if (stale()) return;
+      if (!result.ok) {
+        state.analyze.steps.understand = 'error';
+        return fail(result.code, null, result.vars, result.diag);
+      }
+      var validated = Ai.validateResult(result.text, { ocrText: ocrText });
+      var lastText = result.text;
+      var lastDiag = result.diag;
+      if (!validated.ok && !validated.aiError) {
+        var retry = await callChat(Ai.buildChatBody(ocrText, { retry: true }), key, runCtrl);
+        if (stale()) return;
+        if (retry.ok) {
+          validated = Ai.validateResult(retry.text, { ocrText: ocrText });
+          lastText = retry.text;
+          lastDiag = retry.diag;
+        } else if (retry.diag) {
+          lastDiag = retry.diag;
+        }
+      }
+      if (stale()) return;
+      if (!validated.ok) return failValidate(validated, lastText, lastDiag, null);
+      setStep('understand', 'done');
+      setStep('cards', 'active');
+      var singleValue = validated.value;
+      state.analysis = {
+        classification: singleValue.classification,
+        topic: singleValue.topic,
+        taxonomy: singleValue.taxonomy,
+        knowledgePoints: singleValue.knowledgePoints,
+        cards: singleValue.cards,
+        cleanSource: singleValue.cleanSource,
+      };
+    } else {
+      // 多批（4–8 張）：① 一次過理解整份教材（知識點數量由內容決定，唔關批次事）
+      setStep('understand', 'active');
+      var undBody = Ai.buildChatBody(ocrText, { understand: true });
+      var und = await callChat(undBody, key, runCtrl);
+      if (stale()) return;
+      if (!und.ok) {
+        state.analyze.steps.understand = 'error';
+        return fail(und.code, null, und.vars, und.diag);
+      }
+      var uv = Ai.validateResult(und.text, { ocrText: ocrText, requireCards: false });
+      var undText = und.text;
+      var undDiag = und.diag;
+      if (!uv.ok && !uv.aiError) {
+        var undRetry = await callChat(Ai.buildChatBody(ocrText, { understand: true, retry: true }), key, runCtrl);
+        if (stale()) return;
+        if (undRetry.ok) {
+          uv = Ai.validateResult(undRetry.text, { ocrText: ocrText, requireCards: false });
+          undText = undRetry.text;
+          undDiag = undRetry.diag;
+        } else if (undRetry.diag) {
+          undDiag = undRetry.diag;
+        }
+      }
+      if (stale()) return;
+      if (!uv.ok) return failValidate(uv, undText, undDiag, { total: photoN });
+      var kps = uv.value.knowledgePoints;
+      setStep('understand', 'done');
+
+      // ② 逐批只出卡（用同一份知識點清單；卡數預算逐批遞減）
+      setStep('cards', 'active');
+      var cardLists = [];
+      var budget = Ai.MAX_CARDS;
+      var cardFail = null;
+      for (var bi = 0; bi < plan.length; bi++) {
+        var seg = plan[bi];
+        state.analyze.batch = { i: bi + 1, n: plan.length, from: seg.from + 1, to: seg.to };
+        if (state.route.name === 'analyze') render();
+        var opts = {
+          regen: true,
+          classification: uv.value.classification,
+          topic: uv.value.topic,
+          taxonomy: uv.value.taxonomy,
+          knowledgePoints: kps,
+          batch: { i: bi + 1, n: plan.length, from: seg.from + 1, to: seg.to },
+          maxCards: budget,
+          textMax: 12000,
+        };
+        var cr = await callChat(Ai.buildChatBody(batchTexts[bi], opts), key, runCtrl);
+        if (stale()) return;
+        if (!cr.ok) { cardFail = { code: cr.code, vars: cr.vars, diag: cr.diag }; break; }
+        var cv = Ai.validateResult(cr.text, { ocrText: batchTexts[bi] });
+        var got = cv.ok ? cv.value.cards : null;
+        if (!got) {
+          // 只回 cards 嘅回覆用寬鬆驗證（同 P1.1 重出卡一樣）
+          var loose = Ai.parseJsonLoose(cr.text);
+          got = loose && Array.isArray(loose.cards) ? validateCardsOnly(loose.cards, kps, uv.value.taxonomy) : null;
+        }
+        if (!got || !got.length) {
+          cardFail = { code: 'no_cards', diag: cv.diag || '' };
+          break;
+        }
+        cardLists.push(got);
+        budget = Math.max(4, budget - got.length);
+      }
+      state.analyze.batch = null;
+      if (cardFail) {
+        state.analyze.steps.cards = 'error';
+        return fail(cardFail.code || 'no_cards', null, null, cardFail.diag);
+      }
+      var mergedCards = Ai.mergeCardSets(cardLists);
+      if (!mergedCards.ok) {
+        state.analyze.steps.cards = 'error';
+        return fail('no_cards');
+      }
+      var kpById = Object.create(null);
+      kps.forEach(function (kp) { kpById[kp.id] = kp; });
+      state.analysis = {
+        classification: uv.value.classification,
+        topic: uv.value.topic,
+        taxonomy: uv.value.taxonomy,
+        knowledgePoints: kps,
+        cards: mergedCards.cards.map(function (c) {
+          var kp = kpById[c.kpId];
+          if (kp) c.category = kp.category;
+          return c;
+        }),
+        cleanSource: uv.value.cleanSource,
+      };
+      var trimmed = trimNotes(mergedCards.notes);
+      if (trimmed.cards) state.analysis.trimmed = trimmed;
     }
-    state.analysis = mergedValue.value;
-    // P12.1：合併上限係「每批 12 kp／40 卡 × 批數」，正常唔會撞；萬一撞到要喺確認頁講清楚
-    var trimmed = trimNotes(mergedValue.notes);
-    if (trimmed.kp || trimmed.cards) state.analysis.trimmed = trimmed;
     state.confirm = {};
     state.analysis.cards.forEach(function (c) { state.confirm[c.id] = true; });
     state.analysis.ocr = { pages: allPages.length, chars: charsTotal, quality: mergedGate.code, photos: photoN, batches: plan.length };
-    // P4 A：由合併後 OCR 原文砌卡組 source（純文字；已經過品質閘同本機驗證）
+    // P4 A：由整份 OCR 原文砌卡組 source（純文字；已經過品質閘同本機驗證）
     state.analysis.source = Ai.sanitizeSource({ text: ocrText, pages: allPages.length, chars: charsTotal, at: now() });
-    // P7：各批同一 call 已經回咗「整理後原文」→ 串接存喺 source.clean（原文 source.text 照留，可切換）
-    var cleanSource = mergedValue.value.cleanSource || '';
+    // P7：理解 call 已回咗「整理後原文」→ 存喺 source.clean（原文 source.text 照留，可切換）
+    var cleanSource = state.analysis.cleanSource || '';
     if (state.analysis.source && cleanSource) state.analysis.source.clean = cleanSource;
     delete state.analysis.cleanSource;
     // 驗證已過、分析已成形 → 先寫快取（任何失敗都行唔到呢一步）
@@ -1975,6 +2055,7 @@
       };
       var b = regenBatch(bi);
       if (b) o.batch = b;
+      o.textMax = 12000;
       return o;
     }
     state.route = { name: 'analyze', id: null };
@@ -1985,7 +2066,8 @@
     var rCtrl = new AbortController();
     state.abort = rCtrl;
     var rToken = (state.runToken = (state.runToken || 0) + 1);
-    var regenRuns = [];
+    // P12.2：重出卡都係「知識點固定、逐批只出卡」，最後用 mergeCardSets 合併去重
+    var cardLists = [];
     for (var bi = 0; bi < ocrBatches.length; bi++) {
       state.analyze.batch = regenBatch(bi);
       if (state.route.name === 'analyze') render();
@@ -2004,34 +2086,21 @@
           return fail(v.errors && v.errors[0] ? v.errors[0] : 'not_json');
         }
       }
-      regenRuns.push({
-        value: {
-          classification: state.analysis.classification,
-          topic: state.analysis.topic,
-          taxonomy: state.analysis.classification.taxonomy,
-          knowledgePoints: kps,
-          cards: got,
-          cleanSource: '',
-        },
-      });
+      cardLists.push(got.filter(function (c) { return keptIds[c.kpId]; }));
     }
-    var mergedRegen = Ai.mergeAnalyses(regenRuns);
-    if (!mergedRegen.ok) {
+    var mergedCards = Ai.mergeCardSets(cardLists);
+    if (!mergedCards.ok) {
       state.analyze.steps.cards = 'error';
       state.analyze.batch = null;
-      return fail(mergedRegen.errors[0] || 'no_cards');
+      return fail(mergedCards.errors[0] || 'no_cards');
     }
-    var value = mergedRegen.value;
-    value.knowledgePoints = kps;
-    value.classification = state.analysis.classification;
-    value.topic = state.analysis.topic;
-    value.taxonomy = state.analysis.classification.taxonomy;
-    value.cards = value.cards.filter(function (c) { return keptIds[c.kpId]; });
-    if (!value.cards.length) {
-      state.analyze.steps.cards = 'error';
-      state.analyze.batch = null;
-      return fail('no_cards');
-    }
+    var value = {
+      classification: state.analysis.classification,
+      topic: state.analysis.topic,
+      taxonomy: state.analysis.classification.taxonomy,
+      knowledgePoints: kps,
+      cards: mergedCards.cards,
+    };
     // P4 A：重新出卡只換 cards，卡組原文 source 照舊保留（唔會因為 regen 冇咗原文）
     var keptSource = state.analysis.source || null;
     state.analysis = value;
