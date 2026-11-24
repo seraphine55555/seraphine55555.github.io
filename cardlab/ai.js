@@ -56,6 +56,11 @@
   // prompt 目標改 8–20 張，並允許同一知識點由唔同角度出 2–3 張。
   // P12.1：40 係「每批」上限；合併總上限另計（見 MAX_CARDS_TOTAL）。
   var MAX_CARDS = 40;
+  // P13：詞語生字（由整份教材抽，同知識點一樣係「內容決定」）——純文字，唔存相片。
+  var VOCAB_MAX = 30;
+  var VOCAB_WORD_MAX = 30;
+  var VOCAB_MEANING_MAX = 100;
+  var VOCAB_EXAMPLE_MAX = 120;
   // P12：知識點上限 10 → 12，但 12 只係**每批**上限。
   // P12.1：之前用固定 12 做合并上限，8 張相（3 批）各出 4–8 個就爆，會靜靜砍走知識點
   //        同佢嘅卡 ⇒ 用戶多上傳幾頁反而少咗內容。總上限要隨批數放大：
@@ -83,6 +88,7 @@
   var OTHER = '其他';
 
   function str(v) { return typeof v === 'string' ? v : ''; }
+  function isCJKText(text) { return /[\u3400-\u9fff]/.test(String(text || '')); }
   function asArray(v) { return Array.isArray(v) ? v : []; }
   function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
   function isInt(n) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n; }
@@ -171,6 +177,36 @@
    * 英文（冇 CJK 句號）維持現有換行，唔會逐字亂切。
    * 回傳只係文字（呼叫者負責 esc），除標記外內容同原文一致。
    */
+  /**
+   * P13：正規化「詞語生字」清單（optional，永唔會令整份分析失敗）。
+   * 每項：{id, word, lang, meaning, example}
+   *  - word 必填（≤30 字，去 HTML／markdown）；meaning（中文書面解釋）必填（≤100）；
+   *  - example（應用範例）optional（≤120）；
+   *  - lang 由字面判斷：有 CJK → zh，否則 en（AI 回嘅值只作參考，唔信）；
+   *  - 同一個 word（細楷、去空白）只留第一次；最多 VOCAB_MAX 個。
+   */
+  function sanitizeVocabulary(raw) {
+    var out = [];
+    var seen = Object.create(null);
+    asArray(raw).forEach(function (item, i) {
+      if (out.length >= VOCAB_MAX) return;
+      if (!item || typeof item !== 'object') return;
+      var word = truncate(stripHtml(item.word || '').replace(/[*_#`]/g, '').trim(), VOCAB_WORD_MAX).text;
+      if (!word) return;
+      var meaning = truncate(stripHtml(item.meaning || '').replace(/\r\n?/g, '\n').trim(), VOCAB_MEANING_MAX).text;
+      if (!meaning) return;
+      var example = truncate(stripHtml(item.example || '').replace(/\r\n?/g, '\n').trim(), VOCAB_EXAMPLE_MAX).text;
+      var key = word.toLowerCase().replace(/\s+/g, ' ');
+      if (seen[key]) return;
+      seen[key] = 1;
+      var lang = isCJKText(word) ? 'zh' : 'en';
+      var v = { id: 'v' + (out.length + 1), word: word, lang: lang, meaning: meaning };
+      if (example) v.example = example;
+      out.push(v);
+    });
+    return out;
+  }
+
   function formatSourceText(raw) {
     var s = str(raw).replace(/\r\n?/g, '\n').trim();
     if (!s) return '';
@@ -604,6 +640,9 @@
     var category = categoryOf(topicRaw, classification);
     // P7：AI 同一 call 回「同卡片相關嘅原文」整理版（optional）。
     // 去 HTML／markdown 殘骸、trim、封頂；整理後少過 OCR 原文 30%（原文 ≥100 字）→ 當刪走課文，唔採用（保留 OCR 原文）。
+    // P13：詞語生字（optional）——壞項逐個丟，唔會拒絕整份分析
+    var vocabulary = sanitizeVocabulary(obj.vocabulary);
+    if (asArray(obj.vocabulary).length && !vocabulary.length) notes.push('drop_vocab_all');
     var cleanSource = '';
     var ocrRaw = str(o.ocrText).replace(/\r\n?/g, '\n').trim();
     if (typeof obj.source === 'string') {
@@ -623,6 +662,7 @@
         classification: classification,
         topic: { title: title, summary: summary, category: category },
         cleanSource: cleanSource,
+        vocabulary: vocabulary,
         taxonomy: normalized.taxonomy,
         knowledgePoints: normalized.knowledgePoints,
         cards: normalized.cards.map(function (card) {
@@ -801,6 +841,12 @@
       if (typeof v.source.clean !== 'string') return false;
       var sclean = stripHtml(v.source.clean);
       if (!sclean || labelLen(sclean) > SOURCE_MAX) return false;
+    }
+    // P13：vocabulary optional —— 冇＝舊 entry 照命中；有就要每一項都過 sanitize（形狀一致）
+    if (v.vocabulary !== undefined && v.vocabulary !== null) {
+      if (!Array.isArray(v.vocabulary)) return false;
+      var vlist = sanitizeVocabulary(v.vocabulary);
+      if (vlist.length !== v.vocabulary.length) return false;
     }
     var kps = asArray(v.knowledgePoints);
     if (!kps.length || kps.length > MAX_KP) return false;
@@ -1062,8 +1108,11 @@
       '五、原文（source）',
       '23. 同時回一個 source：由 OCR 原文整理出「同呢批卡片相關」嘅課文——刪走工作紙標題／指示（例如「日期 成績」「學習重點」「思維策略」「閱讀下面的文字，然後回答問題」）、頁碼／分數／姓名欄、重複頁眉頁腳；保留故事／文章正文、詞語解釋、課後問題同選項。照原文抄，唔好改寫、唔好簡化、唔好加內容；用空行分段；冇嘢好刪就原樣回傳。',
       '',
+      '六、詞語生字（vocabulary）',
+      '24. 課文有值得學嘅中文詞語或英文生字就抽 0–20 個：word（原字，≤30 字）；meaning（**中文書面解釋**，≤100 字，唔好寫英文）；example（**應用範例**：課文原句或自己寫嘅例句，≤120 字；英文生字用英文例句，可以之後補中文對照）。冇值得學嘅就回 []。唔好抽人名、地名或者太淺嘅字。',
+      '',
       '只輸出 JSON（物件），唔要 markdown、唔要解釋。',
-      'JSON 形狀：{"source":"整理後原文","classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"cards":[{"type","kpId","category","difficulty","front","back","mnemonic","example","context","uncertain"}]}',
+      'JSON 形狀：{"source":"整理後原文","classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"cards":[{"type","kpId","category","difficulty","front","back","mnemonic","example","context","uncertain"}],"vocabulary":[{"word","meaning","example"}]}',
     ].join('\n');
   }
 
@@ -1095,8 +1144,11 @@
       '三、原文（source）',
       '13. 同時回一個 source：由 OCR 原文整理出同上述知識點相關嘅課文——刪走工作紙標題／指示（例如「日期 成績」「學習重點」「思維策略」「閱讀下面的文字，然後回答問題」）、頁碼／分數／姓名欄、重複頁眉頁腳；保留故事／文章正文、詞語解釋、課後問題同選項，**所有頁都要保留**。照原文抄，唔好改寫、唔好簡化、唔好加內容；用空行分段；冇嘢好刪就原樣回傳。',
       '',
+      '四、詞語生字（vocabulary）',
+      '14. 由**整份教材**抽值得學嘅中文詞語或英文生字 0–20 個：word（原字，≤30 字）；meaning（**中文書面解釋**，≤100 字，唔好寫英文）；example（**應用範例**：課文原句或自己寫嘅例句，≤120 字；英文生字用英文例句）。跨頁重複只計一次；冇值得學嘅就回 []。唔好抽人名、地名或者太淺嘅字。',
+      '',
       '只輸出 JSON（物件），唔要 markdown、唔要解釋。',
-      'JSON 形狀：{"source":"整理後原文","classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}]}',
+      'JSON 形狀：{"source":"整理後原文","classification":{"stage","grade","gradeLabel","subject","subjectLabel","difficulty","confidence"},"topic":{"title","summary","category"},"taxonomy":["…"],"knowledgePoints":[{"id","label","category","difficulty","detail"}],"vocabulary":[{"word","meaning","example"}]}',
     ].join('\n');
   }
 
@@ -1404,6 +1456,11 @@
     stripHtml: stripHtml,
     isPlaceholderAnswer: isPlaceholderAnswer,
     MAX_CARDS: MAX_CARDS,
+    VOCAB_MAX: VOCAB_MAX,
+    VOCAB_WORD_MAX: VOCAB_WORD_MAX,
+    VOCAB_MEANING_MAX: VOCAB_MEANING_MAX,
+    VOCAB_EXAMPLE_MAX: VOCAB_EXAMPLE_MAX,
+    sanitizeVocabulary: sanitizeVocabulary,
     truncate: truncate,
     toHalfWidth: toHalfWidth,
     normLabel: normLabel,

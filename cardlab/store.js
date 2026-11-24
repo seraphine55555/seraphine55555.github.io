@@ -128,6 +128,12 @@
     return Ai && typeof Ai.sanitizeSource === 'function' ? Ai.sanitizeSource(raw) : null;
   }
 
+  /** P13：詞語生字正規化同樣交 ai.js（同一把尺：畫面／儲存／快取都一致）。 */
+  function sanitizeVocabulary(raw) {
+    var Ai = global.CardLabAi;
+    return Ai && typeof Ai.sanitizeVocabulary === 'function' ? Ai.sanitizeVocabulary(raw) : [];
+  }
+
   /** 由 AI 驗證結果砌卡組（只喺用戶確認之後叫）。 */
   function createDeck(db, analysis, opts) {
     var o = opts || {};
@@ -166,6 +172,9 @@
         ocr: analysis.ocr || { pages: 1, chars: 0, quality: 'ok' },
       },
     };
+    // P13：詞語生字（純文字；同卡組一齊存、清卡組一齊清）。冇就唔加 key（舊卡組照用）。
+    var vocab = sanitizeVocabulary(analysis && analysis.vocabulary);
+    if (vocab.length) deck.vocabulary = vocab;
     // P4 A：卡組保留 OCR 原文（純文字、冇相片）。舊 analysis 冇 source → 唔加 key，UI 自己隱藏原文掣。
     var src = sanitizeSource(analysis && analysis.source);
     if (src) deck.source = src;

@@ -290,6 +290,13 @@
     'common.close': { yue: '關閉', zh: '關閉', en: 'Close' },
     'common.card': { yue: '卡', zh: '卡', en: 'cards' },
     'common.more': { yue: '更多', zh: '更多', en: 'More' },
+    // P13：詞語生字卡（中文書面解釋＋應用範例＋朗讀）
+    'vocab.title': { yue: '🔤 詞語生字（{n}）', zh: '🔤 词语生字（{n}）', en: '🔤 Vocabulary ({n})' },
+    'vocab.read': { yue: '讀', zh: '读', en: 'Read' },
+    'vocab.readEx': { yue: '讀範例', zh: '读范例', en: 'Read example' },
+    'vocab.example': { yue: '範例：', zh: '范例：', en: 'Example: ' },
+    'vocab.lang.zh': { yue: '中文', zh: '中文', en: 'Chinese' },
+    'vocab.lang.en': { yue: '英文', zh: '英文', en: 'English' },
     'toast.noDeck': { yue: '先加入卡組。', zh: '請先加入卡組。', en: 'Add a deck first.' },
     'toast.notEnabled': { yue: 'AI 未啟用。', zh: 'AI 未啟用。', en: 'AI is not enabled.' },
     'toast.imageDecode': { yue: '讀唔到呢張相，試下另一張。', zh: '讀不到這張相，試另一張。', en: 'Could not read that photo — try another.' },
@@ -816,6 +823,7 @@
       html += '</section>';
     });
     html += '</div>';
+    html += vocabHtml(a.vocabulary);
     html += '<p class="hint hint--soft">' + esc(t('confirm.savedOnce')) + '</p>';
     html += '<div class="stickybar"><button type="button" class="btn btn--primary btn--wide" id="btn-add"' + (n === 0 ? ' disabled' : '') + ' data-act="save-confirm">' + esc(t('confirm.add', { n: n })) + '</button></div>';
     html += '</section>';
@@ -859,6 +867,8 @@
     html += '</div>';
     // P4 A：卡組頁「📄 原文」（有 source 才顯示；舊卡組冇就唔會有掣）
     html += sourcePanelHtml(deck);
+    // P13：卡組頁「🔤 詞語生字」（有 vocabulary 才顯示）
+    html += vocabHtml(deck.vocabulary);
     html += '<div class="toolbar"><button type="button" class="btn btn--danger btn--tiny" data-act="delete-deck" data-id="' + esc(deck.id) + '">' + esc(t('deck.delete')) + '</button></div>';
     html += '</section>';
     return html;
@@ -1477,6 +1487,34 @@
     location.hash = hash;
   }
 
+  // ── P13：詞語生字卡（純文字，跟卡組一齊存；中文書面解釋＋應用範例＋朗讀）──
+  function vocabHtml(list) {
+    var items = Ai.sanitizeVocabulary(list);
+    if (!items.length) return '';
+    var html = '';
+    html += '<section class="vocab" id="vocab">';
+    html += '<h3 class="sub">' + esc(t('vocab.title', { n: items.length })) + '</h3>';
+    html += '<ul class="vocab__list">';
+    items.forEach(function (v) {
+      html += '<li class="vocab__item" data-vocab="' + esc(v.id) + '" data-lang="' + esc(v.lang) + '">';
+      html += '<div class="vocab__head">';
+      html += '<strong class="vocab__word" lang="' + (v.lang === 'en' ? 'en' : 'zh-HK') + '">' + esc(v.word) + '</strong>';
+      html += '<span class="vocab__lang">' + esc(t('vocab.lang.' + v.lang)) + '</span>';
+      html += '<button type="button" class="btn btn--tiny" data-act="say" data-say="' + esc(v.word) + '" aria-label="' + esc(t('vocab.read') + ' ' + v.word) + '">🔊 ' + esc(t('vocab.read')) + '</button>';
+      html += '</div>';
+      html += '<p class="vocab__meaning">' + esc(v.meaning) + '</p>';
+      if (v.example) {
+        html += '<p class="vocab__ex">' + esc(t('vocab.example')) + '<span lang="' + (v.lang === 'en' ? 'en' : 'zh-HK') + '">' + esc(v.example) + '</span>';
+        html += ' <button type="button" class="btn btn--tiny" data-act="say" data-say="' + esc(v.example) + '" aria-label="' + esc(t('vocab.readEx')) + '">🔊</button>';
+        html += '</p>';
+      }
+      html += '</li>';
+    });
+    html += '</ul>';
+    html += '</section>';
+    return html;
+  }
+
   // ─────────────────────────── P4：原文面板 ───────────────────────────
   /** 由 deck.source 取顯示用原文（sanitize 之後補返 AI 整理版 clean）。 */
   function sourceOf(deck) {
@@ -1875,6 +1913,7 @@
         taxonomy: singleValue.taxonomy,
         knowledgePoints: singleValue.knowledgePoints,
         cards: singleValue.cards,
+        vocabulary: singleValue.vocabulary || [],
         cleanSource: singleValue.cleanSource,
       };
     } else {
@@ -1959,6 +1998,7 @@
         topic: uv.value.topic,
         taxonomy: uv.value.taxonomy,
         knowledgePoints: kps,
+        vocabulary: uv.value.vocabulary || [],
         cards: mergedCards.cards.map(function (c) {
           var kp = kpById[c.kpId];
           if (kp) c.category = kp.category;
@@ -2100,6 +2140,8 @@
       taxonomy: state.analysis.classification.taxonomy,
       knowledgePoints: kps,
       cards: mergedCards.cards,
+      // P13：重出卡只換卡，詞語生字照舊保留
+      vocabulary: state.analysis.vocabulary || [],
     };
     // P4 A：重新出卡只換 cards，卡組原文 source 照舊保留（唔會因為 regen 冇咗原文）
     var keptSource = state.analysis.source || null;
@@ -2517,6 +2559,11 @@
       case 'speak-back': {
         var sb = entryCard(currentEntry());
         if (sb) speakText(sb.back);
+        break;
+      }
+      case 'say': {
+        // P13：詞語生字朗讀（文字喺 data-say；唔經 state，避免重畫後對唔上）
+        speakText(el.getAttribute('data-say') || '');
         break;
       }
       case 'reveal':
