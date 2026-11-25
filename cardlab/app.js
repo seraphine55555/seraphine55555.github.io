@@ -105,6 +105,11 @@
       en: 'You can add {n} more (max {max})',
     },
     'photo.split': { yue: '第 {n} 張太大，已自動分半 OCR。', zh: '第 {n} 張太大，已自動分半 OCR。', en: 'Photo {n} was too long — split in half and OCRed.' },
+    'err.ocr_empty': {
+      yue: 'OCR 冇讀到任何字（已自動重試一次）。試下影近啲、光線好啲，或者分半拍。',
+      zh: 'OCR 没有读到任何字（已自动重试一次）。请靠近一点、光线好一点，或分半拍。',
+      en: 'OCR returned no text (one automatic retry already ran). Move closer, improve lighting, or split the page.',
+    },
     'err.quota': { yue: '今日相片配額唔夠：今次要用 {n} 張，只剩 {left} 張。', zh: '今日相片配額不足：這次要用 {n} 張，只剩 {left} 張。', en: 'Not enough daily photos: this needs {n}, only {left} left.' },
     'preflight.title': { yue: '相片可能唔夠清楚（仍然可以試）：', zh: '相片可能不夠清楚（仍然可以試）：', en: 'The photo may be unclear (you can still try):' },
     'preflight.too_small': { yue: '解像度太低，影近啲或者用原相。', zh: '解像度太低，拍近一點或用原相。', en: 'Resolution is low — move closer or use the original photo.' },
@@ -1875,6 +1880,13 @@
     try { return { ok: true, payload: await resp.json() }; } catch (e) { return { ok: false, code: 'not_json' }; }
   }
 
+  /** P15：OCR 回空內容（0 字）——唔係圖冇字，通常係一次失手；呢種情況先自動重試，仍然空才報錯。 */
+  function isOcrEmpty(gate) {
+    if (!gate || gate.ok) return false;
+    if (gate.code !== 'too_few_chars' && gate.code !== 'no_text') return false;
+    return (Number(gate.stats && gate.stats.chars) || 0) === 0;
+  }
+
   function gateVars(gate) {
     var vars = {};
     if (gate && gate.stats && typeof gate.stats.chars === 'number') vars.n = gate.stats.chars;
@@ -1961,6 +1973,20 @@
       if (!one.ok) { state.analyze.steps.ocr = 'error'; return fail(one.code, null, photoVars); }
       var pages = P.cleanPages(P.parseOcrPayload(one.payload));
       var gate = P.qualityGate(pages);
+      // P15：空內容先自動重試一次（同一張相、同一份 bytes；每日配額唔會再扣）
+      if (isOcrEmpty(gate)) {
+        var retryOne = await ocrOnce(photo.blob, 'page-' + (pi + 1) + '-retry.jpg', runCtrl);
+        if (stale()) return;
+        if (retryOne.ok) {
+          var retryPages = P.cleanPages(P.parseOcrPayload(retryOne.payload));
+          var retryGate = P.qualityGate(retryPages);
+          if (!isOcrEmpty(retryGate)) { pages = retryPages; gate = retryGate; }
+        }
+        if (isOcrEmpty(gate)) {
+          state.analyze.steps.ocr = 'error';
+          return fail('ocr_empty', 'ocr_empty', photoVars);
+        }
+      }
       var split = false;
       if (!gate.ok && gate.code === 'truncated') {
         // 跨頁大圖：OCR 輸出被截斷 → 自動沿長邊切兩半、逐半再 OCR。
