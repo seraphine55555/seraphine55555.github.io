@@ -365,6 +365,76 @@
    *  5. KP category 唔喺 taxonomy → 其他
    * 唔改輸入，回新物件。
    */
+  /** P17：問題／標籤去重 key（細楷、去空白、去常見標點；唔做同義詞映射，避免誤併）。 */
+  function frontKey(text) {
+    return stripHtml(text || '').toLowerCase().replace(/\s+/g, '').replace(/[·、，,。.！!？?：:；;「」『』（）()\[\]【】"'\-_/\\|~`]/g, '');
+  }
+
+  /**
+   * P17：合併重複知識點（AI 好易把同一概念拆成幾個，例如「反射」「反射現象」「反射的定義」）。
+   * 規則（全部確定性、唔靠再 call AI）：
+   *  1. 標籤正規化後完全相同 → 合併（保留第一個 id，其餘卡搬過去）；
+   *  2. 卡按「問題」全deck去重（同一個問題只留一張）；
+   *  3. **預設保留冇卡嘅知識點**（重出卡只回部分卡時，唔可以靜靜刪走其餘知識點）；
+   *     要丟就明示 `{dropEmpty:true}`（prompt 本身已經要求「冇卡嘅知識點要刪」）。
+   * 回 {knowledgePoints, cards, mergedKp, droppedCards}。
+   */
+  function mergeDuplicateKps(value, opts) {
+    var o = opts || {};
+    var kps = asArray(value && value.knowledgePoints).slice();
+    var cards = asArray(value && value.cards).slice();
+    var byLabel = Object.create(null);
+    var remap = Object.create(null);
+    var merged = [];
+    kps.forEach(function (kp) {
+      var key = frontKey(kp && kp.label);
+      var keep = key ? byLabel[key] : null;
+      if (keep) { remap[kp.id] = keep; return; }
+      if (key) byLabel[key] = kp.id;
+      remap[kp.id] = kp.id;
+      merged.push(kp);
+    });
+    var byId = Object.create(null);
+    merged.forEach(function (k) { byId[k.id] = k; });
+    var seen = Object.create(null);
+    var outCards = [];
+    cards.forEach(function (c) {
+      if (!c || typeof c !== 'object') return;
+      var kpId = remap[c.kpId] || c.kpId;
+      var kp = byId[kpId];
+      if (!kp) return; // 知識點已經被合併／丟走嘅孤兒卡
+      var front = stripHtml(c.front || '');
+      if (!front) return;
+      var key = frontKey(front);
+      if (key && seen[key]) return; // 同一個問題只留一張
+      if (key) seen[key] = 1;
+      var card = {
+        id: c.id,
+        kpId: kpId,
+        category: kp.category,
+        difficulty: c.difficulty,
+        type: c.type,
+        front: c.front,
+        back: c.back,
+        mnemonic: c.mnemonic || '',
+        example: c.example || '',
+        uncertain: c.uncertain === true,
+      };
+      if (str(c.context).trim()) card.context = c.context;
+      outCards.push(card);
+    });
+    var used = Object.create(null);
+    outCards.forEach(function (c) { used[c.kpId] = 1; });
+    if (o.dropEmpty) merged = merged.filter(function (k) { return used[k.id]; });
+    outCards.forEach(function (c, i) { c.id = 'c' + (i + 1); });
+    return {
+      knowledgePoints: merged,
+      cards: outCards,
+      mergedKp: kps.length - merged.length,
+      droppedCards: cards.length - outCards.length,
+    };
+  }
+
   function normalizeTaxonomy(taxonomy, knowledgePoints, cards) {
     var kps = asArray(knowledgePoints).map(function (kp) {
       var copy = {};
@@ -815,7 +885,8 @@
         var front = stripHtml(c.front || '');
         var back = stripHtml(c.back || '');
         if (!kpId || !front || !back) return;
-        var key = kpId + '\u0000' + front.toLowerCase();
+        // P17：同一個問題（front）只留一張卡，即使用唔同知識點分類——重複問題＝零學習效率
+        var key = frontKey(front);
         if (seen[key]) { dup += 1; return; }
         seen[key] = 1;
         var card = {
@@ -1117,7 +1188,7 @@
       '二、理解',
       '8. 一句話講出呢一頁教緊咩（≤40 字）。',
       '9. 抽 4–8 個知識點（多頁嘅話最多 12 個）：名稱（≤8 字）、分類（必須喺 taxonomy 入面）、難度星、一句解釋（≤40 字）。',
-      '10. 一個知識點只講一件事；唔好把成段課文當一個知識點。',
+      '10. 一個知識點只講一件事；唔好把成段課文當一個知識點。知識點之間**唔可以重疊**：同一個概念只計一個，唔好把同一件事拆成幾個名（例如「反射」「反射現象」「反射的定義」並列）；兩個知識點如果會出同一條問題，就要合併做一個；有包含關係時只保留較上位嗰個。',
       '',
       '三、出卡（盡量多：一般 8–20 張；內容豐富就出更多，硬上限 40 張）',
       '11. 一張卡只考一個概念；正面係問題（≤25 字），背面係答案（≤40 字）。',
@@ -1169,7 +1240,7 @@
       '9. 知識點：由**內容本身**決定數量——每頁有幾個重點就抽幾個，跨頁同一個概念只計一個；一般 4–12 個，內容多可以 16–24 個，最多 24 個。',
       '10. 唔可以因為「分咗幾多張相、幾多批」而增減知識點；亦唔好漏咗任何一頁嘅重點。',
       '11. 每個知識點：名稱（≤8 字）、分類（必須喺 taxonomy 入面）、難度星、一句解釋（≤40 字）。',
-      '12. 一個知識點只講一件事；唔好把成段課文當一個知識點。',
+      '12. 一個知識點只講一件事；唔好把成段課文當一個知識點。知識點之間**唔可以重疊**：同一個概念只計一個，唔好把同一件事拆成幾個名（例如「反射」「反射現象」「反射的定義」並列）；兩個知識點如果會出同一條問題，就要合併做一個；有包含關係時只保留較上位嗰個。',
       '',
       '三、原文（source）',
       '13. 同時回一個 source：由 OCR 原文整理出同上述知識點相關嘅課文——刪走工作紙標題／指示（例如「日期 成績」「學習重點」「思維策略」「閱讀下面的文字，然後回答問題」）、頁碼／分數／姓名欄、重複頁眉頁腳；保留故事／文章正文、詞語解釋、課後問題同選項，**所有頁都要保留**。照原文抄，唔好改寫、唔好簡化、唔好加內容；用空行分段；冇嘢好刪就原樣回傳。',
@@ -1447,6 +1518,8 @@
     MAX_CARDS_TOTAL: MAX_CARDS_TOTAL,
     planBatches: planBatches,
     mergeCardSets: mergeCardSets,
+    mergeDuplicateKps: mergeDuplicateKps,
+    frontKey: frontKey,
     TOPIC_TITLE_MAX: TOPIC_TITLE_MAX,
     KP_LABEL_MAX: KP_LABEL_MAX,
     CATEGORY_MAX: CATEGORY_MAX,

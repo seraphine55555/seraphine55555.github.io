@@ -2105,15 +2105,16 @@
       if (!validated.ok) return failValidate(validated, lastText, lastDiag, null);
       setStep('understand', 'done');
       setStep('cards', 'active');
-      var singleValue = validated.value;
+      // P17：本地合併重複知識點／重複問題（AI 會把同一概念拆成幾個）
+      var singleValue = Ai.mergeDuplicateKps(validated.value);
       state.analysis = {
-        classification: singleValue.classification,
-        topic: singleValue.topic,
-        taxonomy: singleValue.taxonomy,
+        classification: validated.value.classification,
+        topic: validated.value.topic,
+        taxonomy: validated.value.taxonomy,
         knowledgePoints: singleValue.knowledgePoints,
         cards: singleValue.cards,
-        vocabulary: singleValue.vocabulary || [],
-        cleanSource: singleValue.cleanSource,
+        vocabulary: validated.value.vocabulary || [],
+        cleanSource: validated.value.cleanSource,
       };
     } else {
       // 多批（4–8 張）：① 一次過理解整份教材（知識點數量由內容決定，唔關批次事）
@@ -2200,6 +2201,10 @@
         state.analyze.steps.cards = 'error';
         return fail('no_cards');
       }
+      // P17：合併重複知識點（同標籤）＋同一問題只留一張卡＋冇卡知識點丟走
+      var packed = Ai.mergeDuplicateKps({ knowledgePoints: kps, cards: mergedCards.cards });
+      kps = packed.knowledgePoints;
+      mergedCards = { cards: packed.cards };
       var kpById = Object.create(null);
       kps.forEach(function (kp) { kpById[kp.id] = kp; });
       state.analysis = {
@@ -2353,12 +2358,13 @@
       state.analyze.batch = null;
       return fail(mergedCards.errors[0] || 'no_cards');
     }
+    var packedRegen = Ai.mergeDuplicateKps({ knowledgePoints: kps, cards: mergedCards.cards });
     var value = {
       classification: state.analysis.classification,
       topic: state.analysis.topic,
       taxonomy: state.analysis.classification.taxonomy,
-      knowledgePoints: kps,
-      cards: mergedCards.cards,
+      knowledgePoints: packedRegen.knowledgePoints,
+      cards: packedRegen.cards,
       // P13：重出卡只換卡，詞語生字照舊保留
       vocabulary: state.analysis.vocabulary || [],
     };
