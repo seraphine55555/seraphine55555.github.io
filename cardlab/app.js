@@ -979,15 +979,15 @@
   }
 
   function printCardCell(card, n, kind, size) {
-    var html = '<li class="pcard" data-n="' + n + '">';
-    html += '<span class="pcard__no">' + n + '</span>';
+    var html = '<li class="printcard" data-n="' + n + '">';
+    html += '<span class="printcard__no">' + n + '</span>';
     if (kind === 'back') {
       var bt = P.displayFront(card.back);
-      html += '<div class="pcard__t pcard__t--back ' + Pr.fitClass(bt, 'back') + '">' + esc(bt) + '</div>';
+      html += '<div class="printcard__t printcard__t--back ' + Pr.fitClass(bt, 'back') + '">' + esc(bt) + '</div>';
     } else {
       var ft = P.displayFront(card.front);
-      html += '<div class="pcard__t ' + Pr.fitClass(ft, 'front') + '">' + esc(ft) + '</div>';
-      if (kind === 'single') html += '<div class="pcard__a">' + esc(P.displayFront(card.back)) + '</div>';
+      html += '<div class="printcard__t ' + Pr.fitClass(ft, 'front') + '">' + esc(ft) + '</div>';
+      if (kind === 'single') html += '<div class="printcard__a">' + esc(P.displayFront(card.back)) + '</div>';
     }
     html += '</li>';
     return html;
@@ -1005,7 +1005,7 @@
     html += '<ol class="sheet__grid">';
     for (var i = 0; i < list.length; i++) {
       var card = list[i];
-      if (!card) { html += '<li class="pcard pcard--blank" aria-hidden="true"></li>'; continue; }
+      if (!card) { html += '<li class="printcard printcard--blank" aria-hidden="true"></li>'; continue; }
       var idx = cards.indexOf(card);
       html += printCardCell(card, base + (idx < 0 ? 0 : idx) + 1, cellKind, state.print.size);
     }

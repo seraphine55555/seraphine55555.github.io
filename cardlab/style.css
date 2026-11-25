@@ -702,7 +702,7 @@ img { max-width: 100%; height: auto; display: block; }
   grid-template-columns: repeat(var(--cols), var(--cw));
   grid-auto-rows: var(--ch);
 }
-.pcard {
+.printcard {
   position: relative;
   box-sizing: border-box;
   border: 0.4pt dashed #9aa3b2;
@@ -713,32 +713,32 @@ img { max-width: 100%; height: auto; display: block; }
   justify-content: center;
   gap: 0.8mm;
 }
-.pcard--blank {
+.printcard--blank {
   visibility: hidden;
 }
-.pcard__no {
+.printcard__no {
   position: absolute;
   top: 0.5mm;
   left: 1mm;
   font-size: 5.5pt;
   color: #8b93a1;
 }
-.pcard__t {
+.printcard__t {
   font-size: var(--fs);
   line-height: 1.28;
   word-break: break-word;
   overflow-wrap: anywhere;
 }
-.pcard__t.is-long {
+.printcard__t.is-long {
   font-size: calc(var(--fs) * 0.85);
 }
-.pcard__t.is-xlong {
+.printcard__t.is-xlong {
   font-size: calc(var(--fs) * 0.68);
 }
-.pcard__t--back {
+.printcard__t--back {
   font-size: var(--fsb);
 }
-.pcard__a {
+.printcard__a {
   font-size: var(--fsa);
   color: #333333;
   border-top: 0.4pt dashed #b8bfc9;
@@ -786,7 +786,7 @@ img { max-width: 100%; height: auto; display: block; }
     page-break-after: auto;
     break-after: auto;
   }
-  .pcard {
+  .printcard {
     break-inside: avoid;
   }
 }
