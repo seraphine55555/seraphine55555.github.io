@@ -111,6 +111,11 @@
       en: 'OCR returned no text (one automatic retry already ran). Move closer, improve lighting, or split the page.',
     },
     'err.quota': { yue: '今日相片配額唔夠：今次要用 {n} 張，只剩 {left} 張。', zh: '今日相片配額不足：這次要用 {n} 張，只剩 {left} 張。', en: 'Not enough daily photos: this needs {n}, only {left} left.' },
+  'analyze.fitQuota': { yue: '只分析頭 {left} 張', zh: '只分析前 {left} 张', en: 'Analyse first {left}' },
+  'photo.quotaWarn': { yue: '今日只剩 {left} 張相配額，而家揀咗 {n} 張。', zh: '今日只剩 {left} 张照片配额，现在选了 {n} 张。', en: 'Only {left} photos left today, but {n} selected.' },
+  'photo.quotaNone': { yue: '今日 {cap} 張配額已用完（已用 {used} 張）。聽日再試，或喺設定調高每日上限。', zh: '今日 {cap} 张配额已用完（已用 {used} 张）。明天再试，或在设置调高每日上限。', en: 'Daily cap of {cap} photos used up ({used} used). Try tomorrow or raise the cap in settings.' },
+  'toast.quotaNone': { yue: '今日配額已用完', zh: '今日配额已用完', en: 'Daily photo quota used up' },
+  'toast.capSaved': { yue: '每日上限已改為 {cap} 張', zh: '每日上限已改为 {cap} 张', en: 'Daily cap set to {cap}' },
     'preflight.title': { yue: '相片可能唔夠清楚（仍然可以試）：', zh: '相片可能不夠清楚（仍然可以試）：', en: 'The photo may be unclear (you can still try):' },
     'preflight.too_small': { yue: '解像度太低，影近啲或者用原相。', zh: '解像度太低，拍近一點或用原相。', en: 'Resolution is low — move closer or use the original photo.' },
     'preflight.blurry': { yue: '有啲矇，影多次。', zh: '有點模糊，再拍一次。', en: 'A bit blurry — take another shot.' },
@@ -243,6 +248,9 @@
     'settings.save': { yue: '儲存', zh: '儲存', en: 'Save' },
     'settings.saved': { yue: '已儲存', zh: '已儲存', en: 'Saved' },
     'settings.ai': { yue: 'AI 供應商：DeepSeek · 模型 {m} · 每日上限 {cap} 張', zh: 'AI 供應商：DeepSeek · 模型 {m} · 每日上限 {cap} 張', en: 'Provider: DeepSeek · model {m} · daily cap {cap}' },
+  'settings.capLabel': { yue: '每日相片上限（1–500 張）', zh: '每日照片上限（1–500 张）', en: 'Daily photo cap (1–500)' },
+  'settings.capHint': { yue: '每張相每次分析扣 1 張；快取命中唔扣。預設 20。', zh: '每张照片每次分析扣 1 张；缓存命中不扣。默认 20。', en: 'Each photo costs 1 per analysis; cache hits are free. Default 20.' },
+  'settings.capSave': { yue: '更新每日上限', zh: '更新每日上限', en: 'Save cap' },
     'settings.privacy': { yue: '相片只用一次：分析完即棄，唔入 localStorage／IndexedDB。卡組原文只有文字（冇相片），同卡組一齊存喺呢部機。練習頁完全離線。', zh: '相片只用一次：分析完即棄，不進 localStorage／IndexedDB。卡組原文只有文字（沒有相片），與卡組一起存在這部機。練習頁完全離線。', en: 'Photos are used once and discarded — never stored in localStorage/IndexedDB. Deck source text (text only, no photos) is kept on this device with the deck. Practice is fully offline.' },
     'settings.data': { yue: '資料', zh: '資料', en: 'Data' },
     'settings.clear': { yue: '清除全部資料', zh: '清除全部資料', en: 'Clear all data' },
@@ -568,6 +576,15 @@
       html += '<div class="notice notice--warn" id="ai-disabled">' + esc(t('photo.noKey')) + ' ';
       html += '<button type="button" class="linkbtn" data-act="settings">' + esc(t('photo.toSettings')) + '</button></div>';
     }
+    // P18：揀多過今日剩餘配額 → 事前講清楚，並提供「只分析頭 N 張」（唔好等到撳完先報錯）
+    if (photos.length > cap.remaining) {
+      if (cap.remaining > 0) {
+        html += '<div class="notice notice--warn" id="quota-warn">' + esc(t('photo.quotaWarn', { left: cap.remaining, n: photos.length })) + ' ';
+        html += '<button type="button" class="linkbtn" data-act="analyze-first">' + esc(t('analyze.fitQuota', { left: cap.remaining })) + '</button></div>';
+      } else {
+        html += '<div class="notice notice--warn" id="quota-warn">' + esc(t('photo.quotaNone', { used: cap.used, cap: cap.cap })) + '</div>';
+      }
+    }
     html += '<button type="button" class="btn btn--primary btn--wide" id="btn-analyze" data-act="analyze"';
     if (!photos.length || !hasKey) html += ' disabled';
     html += '>' + esc(hasKey ? t('photo.analyze') : 'AI 未啟用') + '</button>';
@@ -617,6 +634,11 @@
         errMsg = t('photo.nthErr', { n: state.error.vars.photo }) + errMsg;
       }
       html += '<div class="notice notice--error" id="analyze-error">' + esc(errMsg) + '</div>';
+      // P18：配額不足唔止報錯——直接提供「只分析頭 N 張」，唔使叫用戶自己逐張刪。
+      if (code === 'quota' && Number(state.error.vars.left) > 0) {
+        html += '<div class="toolbar"><button type="button" class="btn btn--primary" id="btn-analyze-first" data-act="analyze-first">';
+        html += esc(t('analyze.fitQuota', { left: state.error.vars.left })) + '</button></div>';
+      }
       if (state.error.diag) {
         // 真機診斷：finish_reason／字數／reasoning 長度／回覆開頭，幫手判斷係截斷定格式錯。
         html += '<p class="hint hint--soft" id="ai-diag">' + esc(t('err.diag')) + ' ' + esc(state.error.diag) + '</p>';
@@ -1511,6 +1533,10 @@
     html += '<small class="hint hint--soft">' + esc(t('settings.keyHint')) + '</small></label>';
     html += '<button type="button" class="btn btn--primary" data-act="save-key" id="btn-save-key">' + esc(t('settings.save')) + '</button>';
     html += '<p class="meta">' + esc(t('settings.ai', { m: ai.model, cap: ai.dailyPhotoCap })) + '</p>';
+    html += '<label class="field"><span>' + esc(t('settings.capLabel')) + '</span>';
+    html += '<input id="cap-input" class="input" type="number" min="1" max="500" inputmode="numeric" value="' + esc(String(ai.dailyPhotoCap)) + '" />';
+    html += '<small class="hint hint--soft">' + esc(t('settings.capHint')) + '</small></label>';
+    html += '<button type="button" class="btn btn--ghost" data-act="save-cap" id="btn-save-cap">' + esc(t('settings.capSave')) + '</button>';
     html += '<p class="privacy">' + esc(t('settings.privacy')) + '</p>';
     html += '<h3 class="sub">' + esc(t('settings.voice')) + '</h3>';
     html += '<label class="check"><input id="autoread-input" type="checkbox" data-act="toggle-autoread"' + (state.db.settings.autoRead ? ' checked' : '') + ' /> <span>' + esc(t('settings.autoRead')) + '</span></label>';
@@ -1814,7 +1840,12 @@
 
   function fail(code, gateCode, vars, diag) {
     state.error = { code: code, gate: gateCode || null, vars: vars || {}, diag: diag || '' };
-    setStep(state.analyze.step, 'error');
+    // P18：只把「進行中」嗰步標紅。配額／key 呢類前置失敗發生喺 OCR 之前，
+    //      舊寫法用 state.analyze.step（可能仍係上一次嘅 compress）→ 明明壓縮成功都顯示 ✗ 失敗。
+    var steps = state.analyze.steps || {};
+    Object.keys(steps).forEach(function (k) {
+      if (steps[k] === 'active') steps[k] = 'error';
+    });
     render();
   }
 
@@ -2482,6 +2513,16 @@
   }
 
   /** 逐張移除（P2.0）。移除最後一張 → 影相頁回到未揀相。 */
+  /** P18：只保留頭 n 張（配額不足時一鍵縮到剩餘配額），其餘釋放 objectURL。 */
+  function trimPhotosTo(n) {
+    var list = photoList().slice();
+    var keep = Math.max(0, Math.min(list.length, Math.floor(Number(n)) || 0));
+    releasePhotoUrls(list.slice(keep));
+    state.photos = list.slice(0, keep);
+    state.photo = state.photos.length ? state.photos[0] : null;
+    state.preflight = state.photo ? state.photo.preflight : null;
+  }
+
   function removePhoto(index) {
     var list = photoList().slice();
     var i = Math.floor(Number(index));
@@ -2537,6 +2578,23 @@
         if (!photoList().length) { go('#/photo'); return; }
         runAnalysis();
         break;
+      case 'analyze-first': {
+        // P18：用盡今日剩餘配額分析頭 N 張（其餘相唔會扣配額）
+        var left = S.photoCap(state.db, now()).remaining;
+        if (left <= 0) { toast(t('toast.quotaNone')); return; }
+        trimPhotosTo(left);
+        if (!photoList().length) { go('#/photo'); return; }
+        state.error = null;
+        runAnalysis();
+        break;
+      }
+      case 'save-cap': {
+        var capEl = document.getElementById('cap-input');
+        var saved = S.setDailyPhotoCap(state.db, capEl ? capEl.value : '');
+        toast(t('toast.capSaved', { cap: saved }));
+        render();
+        break;
+      }
       case 'remove-photo':
         removePhoto(el.getAttribute('data-index'));
         break;

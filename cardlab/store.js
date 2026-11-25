@@ -293,6 +293,16 @@
     return { used: ai.usedCount, cap: ai.dailyPhotoCap, remaining: Math.max(0, ai.dailyPhotoCap - ai.usedCount) };
   }
 
+  /** P18：每日相片上限可以由用戶調（1–500）；無效值落返 20。 */
+  function setDailyPhotoCap(db, n) {
+    // 空／非數字 → 落返預設 20；數字就 clamp 1–500（打 0 或 -3 變 1，唔會靜靜變返 20）
+    var raw = Number(n);
+    var v = String(n).trim() !== '' && isFinite(raw) ? Math.max(1, Math.min(500, Math.round(raw))) : 20;
+    db.settings.ai.dailyPhotoCap = v;
+    save(db);
+    return v;
+  }
+
   function markPhotoUsed(db, now, count) {
     photoCap(db, now);
     // P2.0：多張相合併一次分析時，每張相各扣 1 次（2 張 = 2）。
@@ -367,6 +377,7 @@
     writeAiCache: writeAiCache,
     clearAiCache: clearAiCache,
     photoCap: photoCap,
+    setDailyPhotoCap: setDailyPhotoCap,
     markPhotoUsed: markPhotoUsed,
     exportJson: exportJson,
     importJson: importJson,
