@@ -57,7 +57,7 @@
           endpoint: 'https://api.deepseek.com',
           model: 'deepseek-flash',
           key: '',
-          dailyPhotoCap: 20,
+          dailyPhotoCap: 60,
           usedDate: '',
           usedCount: 0,
         },
@@ -80,7 +80,7 @@
       endpoint: String(ai.endpoint || 'https://api.deepseek.com'),
       model: String(ai.model || 'deepseek-flash'),
       key: String(ai.key || ''),
-      dailyPhotoCap: Math.max(1, Math.min(500, Number(ai.dailyPhotoCap) || 20)),
+      dailyPhotoCap: Math.max(1, Math.min(500, Number(ai.dailyPhotoCap) || 60)),
       usedDate: String(ai.usedDate || ''),
       usedCount: Math.max(0, Number(ai.usedCount) || 0),
     };
@@ -295,9 +295,9 @@
 
   /** P18：每日相片上限可以由用戶調（1–500）；無效值落返 20。 */
   function setDailyPhotoCap(db, n) {
-    // 空／非數字 → 落返預設 20；數字就 clamp 1–500（打 0 或 -3 變 1，唔會靜靜變返 20）
+    // P19：軟上限（預設 60）。空／非數字 → 落返預設 60；數字就 clamp 1–500（打 0 或 -3 變 1）
     var raw = Number(n);
-    var v = String(n).trim() !== '' && isFinite(raw) ? Math.max(1, Math.min(500, Math.round(raw))) : 20;
+    var v = String(n).trim() !== '' && isFinite(raw) ? Math.max(1, Math.min(500, Math.round(raw))) : 60;
     db.settings.ai.dailyPhotoCap = v;
     save(db);
     return v;

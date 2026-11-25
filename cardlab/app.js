@@ -113,6 +113,8 @@
     'err.quota': { yue: '今日相片配額唔夠：今次要用 {n} 張，只剩 {left} 張。', zh: '今日相片配額不足：這次要用 {n} 張，只剩 {left} 張。', en: 'Not enough daily photos: this needs {n}, only {left} left.' },
   'analyze.fitQuota': { yue: '只分析頭 {left} 張', zh: '只分析前 {left} 张', en: 'Analyse first {left}' },
   'photo.quotaWarn': { yue: '今日只剩 {left} 張相配額，而家揀咗 {n} 張。', zh: '今日只剩 {left} 张照片配额，现在选了 {n} 张。', en: 'Only {left} photos left today, but {n} selected.' },
+  'quota.gate': { yue: '今日已用 {used}／{cap} 張，今次 {n} 張會超出軟上限 {over} 張。照樣分析？', zh: '今日已用 {used}／{cap} 张，这次 {n} 张会超出软上限 {over} 张。照常分析？', en: 'Used {used}/{cap} today; {n} photos would exceed the soft cap by {over}. Analyse anyway?' },
+  'quota.force': { yue: '照樣分析', zh: '照常分析', en: 'Analyse anyway' },
   'photo.quotaNone': { yue: '今日 {cap} 張配額已用完（已用 {used} 張）。聽日再試，或喺設定調高每日上限。', zh: '今日 {cap} 张配额已用完（已用 {used} 张）。明天再试，或在设置调高每日上限。', en: 'Daily cap of {cap} photos used up ({used} used). Try tomorrow or raise the cap in settings.' },
   'toast.quotaNone': { yue: '今日配額已用完', zh: '今日配额已用完', en: 'Daily photo quota used up' },
   'toast.capSaved': { yue: '每日上限已改為 {cap} 張', zh: '每日上限已改为 {cap} 张', en: 'Daily cap set to {cap}' },
@@ -248,8 +250,8 @@
     'settings.save': { yue: '儲存', zh: '儲存', en: 'Save' },
     'settings.saved': { yue: '已儲存', zh: '已儲存', en: 'Saved' },
     'settings.ai': { yue: 'AI 供應商：DeepSeek · 模型 {m} · 每日上限 {cap} 張', zh: 'AI 供應商：DeepSeek · 模型 {m} · 每日上限 {cap} 張', en: 'Provider: DeepSeek · model {m} · daily cap {cap}' },
-  'settings.capLabel': { yue: '每日相片上限（1–500 張）', zh: '每日照片上限（1–500 张）', en: 'Daily photo cap (1–500)' },
-  'settings.capHint': { yue: '每張相每次分析扣 1 張；快取命中唔扣。預設 20。', zh: '每张照片每次分析扣 1 张；缓存命中不扣。默认 20。', en: 'Each photo costs 1 per analysis; cache hits are free. Default 20.' },
+  'settings.capLabel': { yue: '每日相片軟上限（1–500 張）', zh: '每日照片软上限（1–500 张）', en: 'Daily photo soft cap (1–500)' },
+  'settings.capHint': { yue: '軟上限：超出只會要你確認一次，唔會硬攔。每張相每次分析扣 1 張；快取命中唔扣。預設 60。', zh: '软上限：超出只会要你确认一次，不会硬拦。每张照片每次分析扣 1 张；缓存命中不扣。默认 60。', en: 'Soft cap: exceeding it just asks once, never blocks. Each photo costs 1 per analysis; cache hits are free. Default 60.' },
   'settings.capSave': { yue: '更新每日上限', zh: '更新每日上限', en: 'Save cap' },
     'settings.privacy': { yue: '相片只用一次：分析完即棄，唔入 localStorage／IndexedDB。卡組原文只有文字（冇相片），同卡組一齊存喺呢部機。練習頁完全離線。', zh: '相片只用一次：分析完即棄，不進 localStorage／IndexedDB。卡組原文只有文字（沒有相片），與卡組一起存在這部機。練習頁完全離線。', en: 'Photos are used once and discarded — never stored in localStorage/IndexedDB. Deck source text (text only, no photos) is kept on this device with the deck. Practice is fully offline.' },
     'settings.data': { yue: '資料', zh: '資料', en: 'Data' },
@@ -412,6 +414,8 @@
     editKpId: null,
     newKp: false,
     preflight: null,
+    // P19：超出每日軟上限時嘅一次性確認狀態 {n, used, cap, over}
+    quotaGate: null,
     // P2.0：理解頁知識點勾選狀態（唔好再靠 DOM checked attribute，遲到嘅重畫會冪走家長嘅勾選）
     kpPick: {},
     // P3：卡冊分類篩選（'' = 全部）
@@ -578,12 +582,13 @@
     }
     // P18：揀多過今日剩餘配額 → 事前講清楚，並提供「只分析頭 N 張」（唔好等到撳完先報錯）
     if (photos.length > cap.remaining) {
+      html += '<div class="notice notice--warn" id="quota-warn">';
+      html += esc(t(cap.remaining > 0 ? 'photo.quotaWarn' : 'photo.quotaNone', { left: cap.remaining, n: photos.length, used: cap.used, cap: cap.cap })) + ' ';
       if (cap.remaining > 0) {
-        html += '<div class="notice notice--warn" id="quota-warn">' + esc(t('photo.quotaWarn', { left: cap.remaining, n: photos.length })) + ' ';
-        html += '<button type="button" class="linkbtn" data-act="analyze-first">' + esc(t('analyze.fitQuota', { left: cap.remaining })) + '</button></div>';
-      } else {
-        html += '<div class="notice notice--warn" id="quota-warn">' + esc(t('photo.quotaNone', { used: cap.used, cap: cap.cap })) + '</div>';
+        html += '<button type="button" class="linkbtn" data-act="analyze-first">' + esc(t('analyze.fitQuota', { left: cap.remaining })) + '</button> ';
       }
+      html += '<button type="button" class="linkbtn" data-act="analyze-force">' + esc(t('quota.force')) + '</button>';
+      html += '</div>';
     }
     html += '<button type="button" class="btn btn--primary btn--wide" id="btn-analyze" data-act="analyze"';
     if (!photos.length || !hasKey) html += ' disabled';
@@ -617,6 +622,19 @@
     html += stepRow('understand', t('analyze.step.understand'));
     html += stepRow('cards', t('analyze.step.cards'));
     html += '</ol>';
+    // P19：超出軟上限 → 一次確認（照樣分析／只分析頭 N 張／返回）
+    if (state.quotaGate) {
+      var qg = state.quotaGate;
+      html += '<div class="notice notice--warn" id="quota-gate">' + esc(t('quota.gate', { n: qg.n, used: qg.used, cap: qg.cap, over: qg.over })) + '</div>';
+      html += '<div class="toolbar">';
+      html += '<button type="button" class="btn btn--primary" id="btn-analyze-force" data-act="analyze-force">' + esc(t('quota.force')) + '</button>';
+      if (qg.cap - qg.used > 0) {
+        html += '<button type="button" class="btn btn--ghost" id="btn-analyze-first" data-act="analyze-first">';
+        html += esc(t('analyze.fitQuota', { left: qg.cap - qg.used })) + '</button>';
+      }
+      html += '<button type="button" class="btn btn--ghost" data-act="photo">' + esc(t('nav.back')) + '</button>';
+      html += '</div>';
+    }
     // P12.2：OCR 逐張進度；之後逐批「只出卡」嘅進度分開顯示
     if (state.analyze.photoAt) {
       html += '<p class="hint" id="analyze-photo-at">' + esc(t('analyze.ocrAt', state.analyze.photoAt)) + '</p>';
@@ -634,11 +652,6 @@
         errMsg = t('photo.nthErr', { n: state.error.vars.photo }) + errMsg;
       }
       html += '<div class="notice notice--error" id="analyze-error">' + esc(errMsg) + '</div>';
-      // P18：配額不足唔止報錯——直接提供「只分析頭 N 張」，唔使叫用戶自己逐張刪。
-      if (code === 'quota' && Number(state.error.vars.left) > 0) {
-        html += '<div class="toolbar"><button type="button" class="btn btn--primary" id="btn-analyze-first" data-act="analyze-first">';
-        html += esc(t('analyze.fitQuota', { left: state.error.vars.left })) + '</button></div>';
-      }
       if (state.error.diag) {
         // 真機診斷：finish_reason／字數／reasoning 長度／回覆開頭，幫手判斷係截斷定格式錯。
         html += '<p class="hint hint--soft" id="ai-diag">' + esc(t('err.diag')) + ' ' + esc(state.error.diag) + '</p>';
@@ -1937,8 +1950,9 @@
     return out;
   }
 
-  async function runAnalysis() {
+  async function runAnalysis(opts) {
     state.error = null;
+    if (!(opts && opts.force)) state.quotaGate = null;
     state.ocr = null;
     state.analysis = null;
     state.confirm = {};
@@ -1986,9 +2000,15 @@
       return;
     }
     var cap = S.photoCap(state.db, now());
-    if (cap.remaining <= 0) { fail('rate'); return; }
-    // P2.0：每張相扣 1 次配額（2 張 = 2）→ 唔夠就講清要用幾張、剩幾張，一張都唔好扣。
-    if (photoN > cap.remaining) { return fail('quota', null, { n: photoN, left: cap.remaining }); }
+    // P19：每日上限改成「軟上限」——超出唔再硬攔，改為喺分析頁要一次明確確認（防呆但唔阻你做正事）。
+    if (photoN > cap.remaining && !(opts && opts.force)) {
+      state.quotaGate = { n: photoN, used: cap.used, cap: cap.cap, over: photoN - cap.remaining };
+      state.analyze.steps = { compress: 'done', ocr: 'idle', understand: 'idle', cards: 'idle' };
+      state.analyze.step = 'compress';
+      render();
+      return;
+    }
+    state.quotaGate = null;
 
     // 2) 逐張 OCR（保留頁序；任何一張失敗都指出第幾張、唔入快取）
     var plan = Ai.planBatches(photoN, Ai.PHOTO_BATCH);
@@ -2562,26 +2582,33 @@
   function doAction(act, el) {
     switch (act) {
       case 'photo':
-        state.error = null;
-        go('#/photo');
-        break;
       case 'go-photo':
         state.error = null;
+        state.quotaGate = null;
         go('#/photo');
         break;
       case 'analyze':
         if (!photoList().length) { toast(t('photo.chooseFirst')); return; }
         if (!String(state.db.settings.ai.key || '').trim()) { toast(t('toast.notEnabled')); return; }
+        state.quotaGate = null;
         runAnalysis();
+        break;
+      case 'analyze-force':
+        // P19：用戶明確確認超出軟上限 → 照做
+        if (!photoList().length) { toast(t('photo.chooseFirst')); return; }
+        state.quotaGate = null;
+        runAnalysis({ force: true });
         break;
       case 'retry':
         if (!photoList().length) { go('#/photo'); return; }
+        state.quotaGate = null;
         runAnalysis();
         break;
       case 'analyze-first': {
-        // P18：用盡今日剩餘配額分析頭 N 張（其餘相唔會扣配額）
+        // P18／P19：用今日剩餘配額分析頭 N 張（其餘相唔會扣配額）
         var left = S.photoCap(state.db, now()).remaining;
         if (left <= 0) { toast(t('toast.quotaNone')); return; }
+        state.quotaGate = null;
         trimPhotosTo(left);
         if (!photoList().length) { go('#/photo'); return; }
         state.error = null;
