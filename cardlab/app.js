@@ -14,6 +14,7 @@
   var P = global.CardLabParse;
   var Ai = global.CardLabAi;
   var M = global.CardLabMap;
+  var Pr = global.CardLabPrint;
 
   var OCR_TIMEOUT = 120000;
   var CHAT_TIMEOUT = 60000;
@@ -214,7 +215,25 @@
     'deck.mastered': { yue: '熟練', zh: '熟練', en: 'Mastered' },
     'deck.due': { yue: '今日到期 {n}', zh: '今日到期 {n}', en: '{n} due today' },
     'deck.practice': { yue: '開始練習', zh: '開始練習', en: 'Start practice' },
-    'deck.map': { yue: '掌握地圖', zh: '掌握地圖', en: 'Mastery map' },
+    'deck.print': { yue: '🖨 列印字卡', zh: '🖨 打印字卡', en: '🖨 Print cards' },
+  'print.title': { yue: '列印字卡', zh: '打印字卡', en: 'Print cards' },
+  'print.hint': { yue: '雙面（長邊翻）：正面問題、背面答案，最省紙；單面：答案印喺同一格右下，用手遮住就係自測。', zh: '双面（长边翻）：正面问题、背面答案，最省纸；单面：答案印在同一格右下，用手遮住就是自测。', en: 'Duplex: question front, answer back (most paper-efficient). Single: answer in the same cell, cover it with your hand.' },
+  'print.size': { yue: '版面', zh: '版面', en: 'Layout' },
+  'print.size.big': { yue: '大 85×55mm · 每頁 10', zh: '大 85×55mm · 每页 10', en: 'Large 85×55mm · 10/page' },
+  'print.size.mid': { yue: '中 64×44mm · 每頁 18', zh: '中 64×44mm · 每页 18', en: 'Medium 64×44mm · 18/page' },
+  'print.size.small': { yue: '小 48×40mm · 每頁 28', zh: '小 48×40mm · 每页 28', en: 'Small 48×40mm · 28/page' },
+  'print.mode': { yue: '列印方式', zh: '打印方式', en: 'Sides' },
+  'print.mode.duplex': { yue: '雙面（長邊翻）', zh: '双面（长边翻）', en: 'Duplex (long edge)' },
+  'print.mode.single': { yue: '單面（答案同格）', zh: '单面（答案同格）', en: 'Single (answer inline)' },
+  'print.scope': { yue: '範圍', zh: '范围', en: 'Range' },
+  'print.scope.all': { yue: '全部 {n} 張', zh: '全部 {n} 张', en: 'All {n}' },
+  'print.scope.unmastered': { yue: '只印未掌握', zh: '只打印未掌握', en: 'Unmastered only' },
+  'print.est': { yue: '{n} 張卡 → {sheets} 張 A4（{mode}，共 {pages} 頁、每頁 {per} 張）', zh: '{n} 张卡 → {sheets} 张 A4（{mode}，共 {pages} 页、每页 {per} 张）', en: '{n} cards → {sheets} A4 sheet(s), {mode}, {pages} page(s), {per}/page' },
+  'print.do': { yue: '🖨 列印', zh: '🖨 打印', en: '🖨 Print' },
+  'print.back': { yue: '返回卡組', zh: '返回卡组', en: 'Back to deck' },
+  'print.foot': { yue: '第 {i}／{n} 張紙', zh: '第 {i}／{n} 张纸', en: 'Sheet {i}/{n}' },
+  'print.noDeck': { yue: '搵唔到卡組。', zh: '找不到卡组。', en: 'Deck not found.' },
+  'deck.map': { yue: '掌握地圖', zh: '掌握地圖', en: 'Mastery map' },
     'deck.week': { yue: '最近 7 日', zh: '最近 7 日', en: 'Last 7 days' },
     'deck.hardest': { yue: '最難 5 張', zh: '最難 5 張', en: 'Hardest 5' },
     'deck.delete': { yue: '刪除卡組', zh: '刪除卡組', en: 'Delete deck' },
@@ -416,6 +435,8 @@
     preflight: null,
     // P19：超出每日軟上限時嘅一次性確認狀態 {n, used, cap, over}
     quotaGate: null,
+    // P20：列印字卡設定（版面／雙面或單面／範圍）
+    print: { size: 'mid', mode: 'duplex', scope: 'all' },
     // P2.0：理解頁知識點勾選狀態（唔好再靠 DOM checked attribute，遲到嘅重畫會冪走家長嘅勾選）
     kpPick: {},
     // P3：卡冊分類篩選（'' = 全部）
@@ -931,6 +952,7 @@
       html += '<button type="button" class="btn btn--ghost" id="btn-vocab-practice" data-act="start-vocab" data-id="' + esc(deck.id) + '">' + esc(t('vocab.practice', { n: deck.vocabulary.length })) + '</button>';
     }
     html += '<button type="button" class="btn btn--ghost" data-act="deck-map" data-id="' + esc(deck.id) + '">' + esc(t('deck.map')) + '</button>';
+    html += '<button type="button" class="btn btn--ghost" id="btn-print" data-act="print" data-id="' + esc(deck.id) + '">' + esc(t('deck.print')) + '</button>';
     html += '</div>';
     // P4 A：卡組頁「📄 原文」（有 source 才顯示；舊卡組冇就唔會有掣）
     html += sourcePanelHtml(deck);
@@ -938,6 +960,115 @@
     html += vocabHtml(deck.vocabulary);
     html += '<div class="toolbar"><button type="button" class="btn btn--danger btn--tiny" data-act="delete-deck" data-id="' + esc(deck.id) + '">' + esc(t('deck.delete')) + '</button></div>';
     html += '</section>';
+    return html;
+  }
+
+  // ─────────────────────────── 列印字卡（P20） ───────────────────────────
+  function printSelection(deck) {
+    var cards = (deck.cards || []).slice();
+    if (state.print.scope === 'unmastered') {
+      cards = cards.filter(function (c) { return !Srs.isMastered(state.db.srs[c.id]); });
+    }
+    return cards;
+  }
+
+  function printFontVars(size) {
+    if (size === 'big') return '--fs:12.5pt;--fsb:11pt;--fsa:8pt;';
+    if (size === 'small') return '--fs:8.5pt;--fsb:8pt;--fsa:6pt;';
+    return '--fs:10pt;--fsb:9pt;--fsa:7pt;';
+  }
+
+  function printCardCell(card, n, kind, size) {
+    var html = '<li class="pcard" data-n="' + n + '">';
+    html += '<span class="pcard__no">' + n + '</span>';
+    if (kind === 'back') {
+      var bt = P.displayFront(card.back);
+      html += '<div class="pcard__t pcard__t--back ' + Pr.fitClass(bt, 'back') + '">' + esc(bt) + '</div>';
+    } else {
+      var ft = P.displayFront(card.front);
+      html += '<div class="pcard__t ' + Pr.fitClass(ft, 'front') + '">' + esc(ft) + '</div>';
+      if (kind === 'single') html += '<div class="pcard__a">' + esc(P.displayFront(card.back)) + '</div>';
+    }
+    html += '</li>';
+    return html;
+  }
+
+  /** 一頁（正面／背面各一頁）：雙面背面會左右鏡像，答案先會印喺同一張卡後面。 */
+  function printSheetHtml(deck, cards, kind, pageNo, pageTotal) {
+    var p = Pr.preset(state.print.size);
+    var list = kind === 'back' ? Pr.mirrorRow(cards, state.print.size) : cards;
+    var cellKind = kind === 'back' ? 'back' : (state.print.mode === 'duplex' ? 'front' : 'single');
+    var base = (pageNo - 1) * Pr.perSheet(state.print.size);
+    var html = '';
+    html += '<section class="sheet' + (kind === 'back' ? ' sheet--back' : '') + '" data-kind="' + kind + '" data-page="' + pageNo + '"';
+    html += ' style="--cols:' + p.cols + ';--cw:' + p.w + 'mm;--ch:' + p.h + 'mm;' + printFontVars(state.print.size) + '">';
+    html += '<ol class="sheet__grid">';
+    for (var i = 0; i < list.length; i++) {
+      var card = list[i];
+      if (!card) { html += '<li class="pcard pcard--blank" aria-hidden="true"></li>'; continue; }
+      var idx = cards.indexOf(card);
+      html += printCardCell(card, base + (idx < 0 ? 0 : idx) + 1, cellKind, state.print.size);
+    }
+    html += '</ol>';
+    html += '<footer class="sheet__foot"><span>' + esc(deck.title || '') + '</span><span>' + esc(t('print.foot', { i: pageNo, n: pageTotal })) + '</span></footer>';
+    html += '</section>';
+    return html;
+  }
+
+  function viewPrint(deckId) {
+    var deck = S.getDeck(state.db, deckId);
+    var html = '';
+    if (!deck) {
+      html += '<section class="section print-controls"><p class="empty">' + esc(t('print.noDeck')) + '</p>';
+      html += '<button type="button" class="btn btn--ghost" data-act="home">' + esc(t('nav.back')) + '</button></section>';
+      return html;
+    }
+    var cards = printSelection(deck);
+    var est = Pr.estimate(cards.length, state.print.size, state.print.mode);
+    var modeLabel = state.print.mode === 'duplex' ? t('print.mode.duplex') : t('print.mode.single');
+    html += '<section class="section print-controls">';
+    html += '<h1 class="page-title">' + esc(t('print.title')) + '</h1>';
+    html += '<p class="hint">' + esc(t('print.hint')) + '</p>';
+
+    html += '<h3 class="sub">' + esc(t('print.size')) + '</h3>';
+    html += '<div class="seg" role="group" id="print-size" aria-label="' + esc(t('print.size')) + '">';
+    Pr.SIZES.forEach(function (id) {
+      var on = state.print.size === id;
+      html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-size" data-size="' + id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t('print.size.' + id)) + '</button>';
+    });
+    html += '</div>';
+
+    html += '<h3 class="sub">' + esc(t('print.mode')) + '</h3>';
+    html += '<div class="seg" role="group" id="print-mode" aria-label="' + esc(t('print.mode')) + '">';
+    [['duplex', 'print.mode.duplex'], ['single', 'print.mode.single']].forEach(function (m) {
+      var on = state.print.mode === m[0];
+      html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-mode" data-mode="' + m[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t(m[1])) + '</button>';
+    });
+    html += '</div>';
+
+    html += '<h3 class="sub">' + esc(t('print.scope')) + '</h3>';
+    html += '<div class="seg" role="group" id="print-scope" aria-label="' + esc(t('print.scope')) + '">';
+    [['all', t('print.scope.all', { n: (deck.cards || []).length })], ['unmastered', t('print.scope.unmastered')]].forEach(function (sc) {
+      var on = state.print.scope === sc[0];
+      html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-scope" data-scope="' + sc[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(sc[1]) + '</button>';
+    });
+    html += '</div>';
+
+    html += '<p class="print-est" id="print-est">' + esc(t('print.est', { n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel })) + '</p>';
+    html += '<div class="toolbar">';
+    html += '<button type="button" class="btn btn--primary" data-act="do-print" id="btn-do-print"' + (cards.length ? '' : ' disabled') + '>' + esc(t('print.do')) + '</button>';
+    html += '<button type="button" class="btn btn--ghost" data-act="deck-back" data-id="' + esc(deck.id) + '">' + esc(t('print.back')) + '</button>';
+    html += '</div>';
+    html += '</section>';
+    if (!cards.length) return html;
+
+    var chunks = Pr.chunk(cards, state.print.size);
+    html += '<div id="print-sheets" class="print-sheets">';
+    chunks.forEach(function (chunk, i) {
+      html += printSheetHtml(deck, chunk, 'front', i + 1, chunks.length);
+      if (state.print.mode === 'duplex') html += printSheetHtml(deck, chunk, 'back', i + 1, chunks.length);
+    });
+    html += '</div>';
     return html;
   }
 
@@ -1593,6 +1724,7 @@
       case 'understand': return viewUnderstand();
       case 'confirm': return viewConfirm();
       case 'deck': return viewDeck(r.id);
+      case 'print': return viewPrint(r.id);
       case 'map': return viewMap();
       case 'map-preview': return viewMap();
       case 'practice': return viewPractice();
@@ -1814,7 +1946,7 @@
     var parts = raw.split('/');
     var name = parts[0] || 'home';
     var id = parts[1] || null;
-    var known = ['home', 'photo', 'analyze', 'understand', 'confirm', 'deck', 'map', 'map-preview', 'practice', 'done', 'settings', 'paste', 'import', 'vocab-practice'];
+    var known = ['home', 'photo', 'analyze', 'understand', 'confirm', 'deck', 'map', 'map-preview', 'practice', 'done', 'settings', 'paste', 'import', 'vocab-practice', 'print'];
     if (known.indexOf(name) < 0) name = 'home';
     state.route = { name: name, id: id ? decodeURIComponent(id) : null };
     if (name === 'home' || name === 'photo') {
@@ -2705,6 +2837,27 @@
       }
       case 'practice':
         startPractice(el.getAttribute('data-id'), 'all');
+        break;
+      case 'print':
+        go('#/print/' + (el.getAttribute('data-id') || ''));
+        break;
+      case 'print-size':
+        state.print.size = el.getAttribute('data-size') || 'mid';
+        render();
+        break;
+      case 'print-mode':
+        state.print.mode = el.getAttribute('data-mode') === 'single' ? 'single' : 'duplex';
+        render();
+        break;
+      case 'print-scope':
+        state.print.scope = el.getAttribute('data-scope') === 'unmastered' ? 'unmastered' : 'all';
+        render();
+        break;
+      case 'do-print':
+        try { window.print(); } catch (e) {}
+        break;
+      case 'deck-back':
+        go('#/deck/' + (el.getAttribute('data-id') || ''));
         break;
       case 'deck-map':
         state.mapPreviewDeckId = null;

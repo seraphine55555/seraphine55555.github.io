@@ -650,3 +650,143 @@ img { max-width: 100%; height: auto; display: block; }
 .vcard .vocab__word { font-size: 26px; margin: 4px 0 8px; }
 .vcard .vocab__meaning { font-size: 16px; }
 #vocab-progress { margin-bottom: 4px; }
+
+/* ─────────────────────────── P20：列印字卡 ───────────────────────────
+ * A4 210×297mm、安全邊 8mm（可用 194×281mm）。三個版面：
+ *   大 85×55（2×5=10）／中 64×44（3×6=18，預設）／小 48×40（4×7=28）
+ * 每格 0.4pt 虛線 = 切線；格內左上角係卡號；頁腳有卡組名同「第 i／n 張紙」。
+ */
+.print-controls .seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 12px;
+}
+.print-controls .seg__btn {
+  min-height: var(--tap);
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card2);
+  color: var(--ink);
+  font-size: 14px;
+}
+.print-controls .seg__btn.is-on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  color: var(--accent);
+}
+.print-est {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 12px 0;
+}
+/* 螢幕預覽：整頁縮細（zoom 係 Chromium／Safari 支援，列印時會還原 1:1） */
+.print-sheets {
+  zoom: 0.46;
+  margin: 18px 0;
+}
+.sheet {
+  width: 194mm;
+  min-height: 281mm;
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  margin: 0 auto 18px;
+}
+.sheet__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cw));
+  grid-auto-rows: var(--ch);
+}
+.pcard {
+  position: relative;
+  box-sizing: border-box;
+  border: 0.4pt dashed #9aa3b2;
+  overflow: hidden;
+  padding: 1.4mm 1.6mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.8mm;
+}
+.pcard--blank {
+  visibility: hidden;
+}
+.pcard__no {
+  position: absolute;
+  top: 0.5mm;
+  left: 1mm;
+  font-size: 5.5pt;
+  color: #8b93a1;
+}
+.pcard__t {
+  font-size: var(--fs);
+  line-height: 1.28;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.pcard__t.is-long {
+  font-size: calc(var(--fs) * 0.85);
+}
+.pcard__t.is-xlong {
+  font-size: calc(var(--fs) * 0.68);
+}
+.pcard__t--back {
+  font-size: var(--fsb);
+}
+.pcard__a {
+  font-size: var(--fsa);
+  color: #333333;
+  border-top: 0.4pt dashed #b8bfc9;
+  padding-top: 0.6mm;
+  overflow-wrap: anywhere;
+}
+.sheet__foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 6.5pt;
+  color: #777777;
+  padding: 1.2mm 1mm 0;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 8mm;
+  }
+  body {
+    background: #ffffff !important;
+  }
+  header.topbar,
+  #toast,
+  noscript {
+    display: none !important;
+  }
+  /* 只印字卡：控制列／按鈕一律唔出紙 */
+  #view > *:not(#print-sheets) {
+    display: none !important;
+  }
+  .print-sheets {
+    zoom: 1 !important;
+    margin: 0 !important;
+  }
+  .sheet {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: auto;
+    min-height: 0;
+    page-break-after: always;
+    break-after: page;
+  }
+  .sheet:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  .pcard {
+    break-inside: avoid;
+  }
+}
