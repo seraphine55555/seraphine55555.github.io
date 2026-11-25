@@ -5,11 +5,12 @@
 (function (global) {
   'use strict';
 
-  // A4 210×297mm、安全邊 8mm → 可用 194×281mm。以下三個版面都喺安全邊內。
+  // A4 210×297mm、安全邊 **10mm**（唔少打印機 8mm 都會食邊）→ 可用 190×277mm。
+  // 每個版面預留 header／footer 高度後仍然喺安全邊內，印唔晒嘅機會最低。
   var PRESETS = {
-    big: { id: 'big', w: 85, h: 55, cols: 2, rows: 5 },   // 每頁 10
-    mid: { id: 'mid', w: 64, h: 44, cols: 3, rows: 6 },   // 每頁 18（預設）
-    small: { id: 'small', w: 48, h: 40, cols: 4, rows: 7 }, // 每頁 28
+    big: { id: 'big', w: 85, h: 52, cols: 2, rows: 5 },   // 170×260mm，每頁 10
+    mid: { id: 'mid', w: 63, h: 43, cols: 3, rows: 6 },   // 189×258mm，每頁 18（預設）
+    small: { id: 'small', w: 47, h: 38, cols: 4, rows: 7 }, // 188×266mm，每頁 28
   };
   var SIZES = ['big', 'mid', 'small'];
 

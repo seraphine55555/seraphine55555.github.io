@@ -232,6 +232,7 @@
   'print.do': { yue: '🖨 列印', zh: '🖨 打印', en: '🖨 Print' },
   'print.back': { yue: '返回卡組', zh: '返回卡组', en: 'Back to deck' },
   'print.foot': { yue: '第 {i}／{n} 張紙', zh: '第 {i}／{n} 张纸', en: 'Sheet {i}/{n}' },
+  'print.cutTip': { yue: '沿實線剪開；四邊留 10mm 白邊', zh: '沿实线剪开；四边留 10mm 白边', en: 'Cut along the lines; 10mm margin kept' },
   'print.noDeck': { yue: '搵唔到卡組。', zh: '找不到卡组。', en: 'Deck not found.' },
   'deck.map': { yue: '掌握地圖', zh: '掌握地圖', en: 'Mastery map' },
     'deck.week': { yue: '最近 7 日', zh: '最近 7 日', en: 'Last 7 days' },
@@ -978,9 +979,16 @@
     return '--fs:10pt;--fsb:9pt;--fsa:7pt;';
   }
 
+  function printDateLabel() {
+    var d = new Date(now());
+    function p2(v) { return v < 10 ? '0' + v : String(v); }
+    return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+  }
+
   function printCardCell(card, n, kind, size) {
     var html = '<li class="printcard" data-n="' + n + '">';
     html += '<span class="printcard__no">' + n + '</span>';
+    if (String(card.category || '').trim()) html += '<span class="printcard__cat">' + esc(card.category) + '</span>';
     if (kind === 'back') {
       var bt = P.displayFront(card.back);
       html += '<div class="printcard__t printcard__t--back ' + Pr.fitClass(bt, 'back') + '">' + esc(bt) + '</div>';
@@ -1002,6 +1010,7 @@
     var html = '';
     html += '<section class="sheet' + (kind === 'back' ? ' sheet--back' : '') + '" data-kind="' + kind + '" data-page="' + pageNo + '"';
     html += ' style="--cols:' + p.cols + ';--cw:' + p.w + 'mm;--ch:' + p.h + 'mm;' + printFontVars(state.print.size) + '">';
+    html += '<header class="sheet__head"><span class="sheet__title">' + esc(deck.title || '') + '</span><span class="sheet__date">' + esc(printDateLabel()) + '</span></header>';
     html += '<ol class="sheet__grid">';
     for (var i = 0; i < list.length; i++) {
       var card = list[i];
@@ -1010,7 +1019,7 @@
       html += printCardCell(card, base + (idx < 0 ? 0 : idx) + 1, cellKind, state.print.size);
     }
     html += '</ol>';
-    html += '<footer class="sheet__foot"><span>' + esc(deck.title || '') + '</span><span>' + esc(t('print.foot', { i: pageNo, n: pageTotal })) + '</span></footer>';
+    html += '<footer class="sheet__foot"><span>' + esc(t('print.cutTip')) + '</span><span>' + esc(t('print.foot', { i: pageNo, n: pageTotal })) + '</span></footer>';
     html += '</section>';
     return html;
   }
