@@ -1877,7 +1877,11 @@
       return { ok: false, code: e && e.name === 'AbortError' ? 'timeout' : 'network' };
     }
     if (!resp.ok) return { ok: false, code: apiError(resp.status).code };
-    try { return { ok: true, payload: await resp.json() }; } catch (e) { return { ok: false, code: 'not_json' }; }
+    var bodyText = '';
+    try { bodyText = await resp.text(); } catch (e) { return { ok: false, code: 'network' }; }
+    var payload = Ai.parseEnvelope(bodyText);
+    if (!payload) return { ok: false, code: 'not_json' };
+    return { ok: true, payload: payload };
   }
 
   /** P15：OCR 回空內容（0 字）——唔係圖冇字，通常係一次失手；呢種情況先自動重試，仍然空才報錯。 */
@@ -2073,6 +2077,12 @@
       setStep('understand', 'active');
       var result = await callChat(Ai.buildChatBody(ocrText), key, runCtrl);
       if (stale()) return;
+      // P16：envelope 唔係 JSON（HTTP 200 但 body 壞）→ 自動重試一次（同一個 body）
+      if (!result.ok && result.code === 'not_json') {
+        var envRetry = await callChat(Ai.buildChatBody(ocrText), key, runCtrl);
+        if (stale()) return;
+        result = envRetry;
+      }
       if (!result.ok) {
         state.analyze.steps.understand = 'error';
         return fail(result.code, null, result.vars, result.diag);
@@ -2111,6 +2121,11 @@
       var undBody = Ai.buildChatBody(ocrText, { understand: true });
       var und = await callChat(undBody, key, runCtrl);
       if (stale()) return;
+      if (!und.ok && und.code === 'not_json') {
+        var undEnvRetry = await callChat(undBody, key, runCtrl);
+        if (stale()) return;
+        und = undEnvRetry;
+      }
       if (!und.ok) {
         state.analyze.steps.understand = 'error';
         return fail(und.code, null, und.vars, und.diag);
@@ -2155,6 +2170,11 @@
         };
         var cr = await callChat(Ai.buildChatBody(batchTexts[bi], opts), key, runCtrl);
         if (stale()) return;
+        if (!cr.ok && cr.code === 'not_json') {
+          var crRetry = await callChat(Ai.buildChatBody(batchTexts[bi], opts), key, runCtrl);
+          if (stale()) return;
+          cr = crRetry;
+        }
         if (!cr.ok) { cardFail = { code: cr.code, vars: cr.vars, diag: cr.diag }; break; }
         var cv = Ai.validateResult(cr.text, { ocrText: batchTexts[bi] });
         var got = cv.ok ? cv.value.cards : null;
@@ -2229,8 +2249,18 @@
       return { ok: false, code: e && e.name === 'AbortError' ? 'timeout' : 'network' };
     }
     if (!resp.ok) return { ok: false, code: apiError(resp.status).code, diag: 'HTTP ' + resp.status };
-    var data;
-    try { data = await resp.json(); } catch (e) { return { ok: false, code: 'not_json', diag: 'HTTP ' + resp.status + ' envelope 唔係 JSON' }; }
+    // P16：HTTP 200 都可能唔係 JSON（代理 HTML／空 body／SSE）——先讀 text，再容錯解析；
+    //      失敗時把「收到幾長、開頭係咩」寫入技術詳情，唔再只講一句「唔係 JSON」。
+    var bodyText = '';
+    try { bodyText = await resp.text(); } catch (e) { return { ok: false, code: 'network' }; }
+    var data = Ai.parseEnvelope(bodyText);
+    if (!data) {
+      return {
+        ok: false,
+        code: 'not_json',
+        diag: 'HTTP ' + resp.status + ' · body 長度=' + bodyText.length + ' · 開頭=' + String(bodyText).slice(0, 80).replace(/\s+/g, ' '),
+      };
+    }
     var choice = data && data.choices && data.choices[0];
     var msg = choice && choice.message;
     // content 可能係字串、多段陣列，或者 thinking model 只填 reasoning_content

@@ -477,6 +477,36 @@
    * 由 chat completion 嘅 message 抽文字：正常係 content 字串；
    * 有啲 endpoint 會回多段陣列，thinking model 亦可能只填 reasoning_content。
    */
+  /**
+   * P16：解析 API envelope 文字。HTTP 200 但 body 唔係 JSON 時（代理 HTML、空 body、SSE），
+   * 舊寫法 `resp.json()` 直接失敗、連「收到咩」都無人知。呢度先讀 text 再逐種試：
+   *  1) 正常 JSON 物件；
+   *  2) SSE（`data: {...}` 逐行，取最後一個可解析嘅）；
+   *  3) 其他 → null（呼叫方負責重試／報錯，並附長度＋開頭）。
+   */
+  function parseEnvelope(text) {
+    var raw = str(text).trim();
+    if (!raw) return null;
+    try {
+      var obj = JSON.parse(raw);
+      if (obj && typeof obj === 'object') return obj;
+    } catch (e) { /* 落去試 SSE */ }
+    if (raw.indexOf('data:') >= 0) {
+      var lines = raw.split(/\r?\n/);
+      for (var i = lines.length - 1; i >= 0; i--) {
+        var line = lines[i].trim();
+        if (line.indexOf('data:') !== 0) continue;
+        var payload = line.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
+        try {
+          var one = JSON.parse(payload);
+          if (one && typeof one === 'object') return one;
+        } catch (e2) { /* 再試上一行 */ }
+      }
+    }
+    return null;
+  }
+
   function messageText(msg) {
     if (!msg || typeof msg !== 'object') return '';
     var c = msg.content;
@@ -1468,6 +1498,7 @@
     parseJsonLoose: parseJsonLoose,
     balancedJson: balancedJson,
     messageText: messageText,
+    parseEnvelope: parseEnvelope,
     validateResult: validateResult,
     systemPrompt: systemPrompt,
     buildChatBody: buildChatBody,
