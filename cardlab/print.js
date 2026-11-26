@@ -71,6 +71,24 @@
     return '';
   }
 
+  /** P22：詞語生字 → 列印項目（word 做正面，meaning／example 做背面）。 */
+  function vocabItems(list) {
+    var out = [];
+    (Array.isArray(list) ? list : []).forEach(function (v, i) {
+      if (!v || typeof v !== 'object') return;
+      var word = String(v.word || '').trim();
+      if (!word) return;
+      out.push({
+        id: String(v.id || 'v' + (i + 1)),
+        word: word,
+        meaning: String(v.meaning || '').trim(),
+        example: String(v.example || '').trim(),
+        lang: v.lang === 'en' ? 'en' : 'zh',
+      });
+    });
+    return out;
+  }
+
   function estimate(n, id, mode) {
     var p = preset(id);
     return {
@@ -94,6 +112,7 @@
     mirrorRow: mirrorRow,
     pageCount: pageCount,
     fitClass: fitClass,
+    vocabItems: vocabItems,
     estimate: estimate,
   };
   global.CardLabPrint = api;

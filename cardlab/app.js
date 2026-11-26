@@ -218,6 +218,13 @@
     'deck.print': { yue: '🖨 列印字卡', zh: '🖨 打印字卡', en: '🖨 Print cards' },
   'print.title': { yue: '列印字卡', zh: '打印字卡', en: 'Print cards' },
   'print.hint': { yue: '雙面（長邊翻）：正面問題、背面答案，最省紙；單面：答案印喺同一格右下，用手遮住就係自測。', zh: '双面（长边翻）：正面问题、背面答案，最省纸；单面：答案印在同一格右下，用手遮住就是自测。', en: 'Duplex: question front, answer back (most paper-efficient). Single: answer in the same cell, cover it with your hand.' },
+  'print.what': { yue: '列印內容', zh: '打印内容', en: 'Content' },
+  'print.what.cards': { yue: '字卡 {n}', zh: '卡片 {n}', en: 'Cards {n}' },
+  'print.what.vocab': { yue: '詞語生字 {n}', zh: '词语生字 {n}', en: 'Vocabulary {n}' },
+  'print.what.both': { yue: '兩樣都要', zh: '两样都要', en: 'Both' },
+  'print.vocabTag': { yue: '詞語', zh: '词语', en: 'Vocab' },
+  'print.exampleTag': { yue: '例：', zh: '例：', en: 'e.g. ' },
+  'print.estBoth': { yue: '字卡 {cards} 張＋詞語 {vocab} 個 → {sheets} 張 A4（{mode}，共 {pages} 頁、每頁 {per} 格）', zh: '卡片 {cards} 张＋词语 {vocab} 个 → {sheets} 张 A4（{mode}，共 {pages} 页、每页 {per} 格）', en: '{cards} cards + {vocab} vocab → {sheets} A4 sheet(s), {mode}, {pages} page(s), {per}/page' },
   'print.size': { yue: '版面', zh: '版面', en: 'Layout' },
   'print.size.big': { yue: '大 85×55mm · 每頁 10', zh: '大 85×55mm · 每页 10', en: 'Large 85×55mm · 10/page' },
   'print.size.mid': { yue: '中 64×44mm · 每頁 18', zh: '中 64×44mm · 每页 18', en: 'Medium 64×44mm · 18/page' },
@@ -437,7 +444,7 @@
     // P19：超出每日軟上限時嘅一次性確認狀態 {n, used, cap, over}
     quotaGate: null,
     // P20：列印字卡設定（版面／雙面或單面／範圍）
-    print: { size: 'mid', mode: 'duplex', scope: 'all' },
+    print: { size: 'mid', mode: 'duplex', scope: 'all', set: 'cards' },
     // P2.0：理解頁知識點勾選狀態（唔好再靠 DOM checked attribute，遲到嘅重畫會冪走家長嘅勾選）
     kpPick: {},
     // P3：卡冊分類篩選（'' = 全部）
@@ -965,12 +972,25 @@
   }
 
   // ─────────────────────────── 列印字卡（P20） ───────────────────────────
-  function printSelection(deck) {
-    var cards = (deck.cards || []).slice();
-    if (state.print.scope === 'unmastered') {
-      cards = cards.filter(function (c) { return !Srs.isMastered(state.db.srs[c.id]); });
+  /** P22：列印內容 = 字卡／詞語生字／兩樣；回傳 [{kind:'card', card}] 或 [{kind:'vocab', vocab}]。 */
+  function printItems(deck) {
+    var set = state.print.set || 'cards';
+    var out = [];
+    if (set !== 'vocab') {
+      var cards = (deck.cards || []).slice();
+      if (state.print.scope === 'unmastered') {
+        cards = cards.filter(function (c) { return !Srs.isMastered(state.db.srs[c.id]); });
+      }
+      cards.forEach(function (c) { out.push({ kind: 'card', card: c }); });
     }
-    return cards;
+    if (set !== 'cards') {
+      Pr.vocabItems(deck.vocabulary).forEach(function (v) { out.push({ kind: 'vocab', vocab: v }); });
+    }
+    return out;
+  }
+
+  function printVocabCount(deck) {
+    return Pr.vocabItems(deck.vocabulary).length;
   }
 
   function printFontVars(size) {
@@ -985,9 +1005,28 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  function printCardCell(card, n, kind, size) {
+  function printCardCell(item, n, kind, size) {
     var html = '<li class="printcard" data-n="' + n + '">';
     html += '<span class="printcard__no">' + n + '</span>';
+    if (item.kind === 'vocab') {
+      var v = item.vocab;
+      html += '<span class="printcard__cat">' + esc(t('print.vocabTag')) + '</span>';
+      if (kind === 'back') {
+        html += '<div class="printcard__t printcard__t--back ' + Pr.fitClass(v.meaning, 'back') + '">' + esc(v.meaning) + '</div>';
+        if (v.example) {
+          html += '<div class="printcard__eg ' + Pr.fitClass(v.example, 'back') + '">' + esc(t('print.exampleTag')) + esc(v.example) + '</div>';
+        }
+      } else {
+        html += '<div class="printcard__t printcard__word ' + Pr.fitClass(v.word, 'front') + '" lang="' + (v.lang === 'en' ? 'en' : 'zh-HK') + '">' + esc(v.word) + '</div>';
+        if (kind === 'single') {
+          html += '<div class="printcard__a">' + esc(v.meaning) + '</div>';
+          if (v.example) html += '<div class="printcard__eg">' + esc(t('print.exampleTag')) + esc(v.example) + '</div>';
+        }
+      }
+      html += '</li>';
+      return html;
+    }
+    var card = item.card;
     if (String(card.category || '').trim()) html += '<span class="printcard__cat">' + esc(card.category) + '</span>';
     if (kind === 'back') {
       var bt = P.displayFront(card.back);
@@ -1013,10 +1052,10 @@
     html += '<header class="sheet__head"><span class="sheet__title">' + esc(deck.title || '') + '</span><span class="sheet__date">' + esc(printDateLabel()) + '</span></header>';
     html += '<ol class="sheet__grid">';
     for (var i = 0; i < list.length; i++) {
-      var card = list[i];
-      if (!card) { html += '<li class="printcard printcard--blank" aria-hidden="true"></li>'; continue; }
-      var idx = cards.indexOf(card);
-      html += printCardCell(card, base + (idx < 0 ? 0 : idx) + 1, cellKind, state.print.size);
+      var item = list[i];
+      if (!item) { html += '<li class="printcard printcard--blank" aria-hidden="true"></li>'; continue; }
+      var idx = cards.indexOf(item);
+      html += printCardCell(item, base + (idx < 0 ? 0 : idx) + 1, cellKind, state.print.size);
     }
     html += '</ol>';
     html += '<footer class="sheet__foot"><span>' + esc(t('print.cutTip')) + '</span><span>' + esc(t('print.foot', { i: pageNo, n: pageTotal })) + '</span></footer>';
@@ -1032,12 +1071,22 @@
       html += '<button type="button" class="btn btn--ghost" data-act="home">' + esc(t('nav.back')) + '</button></section>';
       return html;
     }
-    var cards = printSelection(deck);
+    var cards = printItems(deck);
+    var vocabN = printVocabCount(deck);
     var est = Pr.estimate(cards.length, state.print.size, state.print.mode);
     var modeLabel = state.print.mode === 'duplex' ? t('print.mode.duplex') : t('print.mode.single');
     html += '<section class="section print-controls">';
     html += '<h1 class="page-title">' + esc(t('print.title')) + '</h1>';
     html += '<p class="hint">' + esc(t('print.hint')) + '</p>';
+
+    html += '<h3 class="sub">' + esc(t('print.what')) + '</h3>';
+    html += '<div class="seg" role="group" id="print-set" aria-label="' + esc(t('print.what')) + '">';
+    [['cards', t('print.what.cards', { n: (deck.cards || []).length })], ['vocab', t('print.what.vocab', { n: vocabN })], ['both', t('print.what.both')]].forEach(function (st) {
+      var on = (state.print.set || 'cards') === st[0];
+      var dis = st[0] !== 'cards' && !vocabN;
+      html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-set" data-set="' + st[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '"' + (dis ? ' disabled' : '') + '>' + esc(st[1]) + '</button>';
+    });
+    html += '</div>';
 
     html += '<h3 class="sub">' + esc(t('print.size')) + '</h3>';
     html += '<div class="seg" role="group" id="print-size" aria-label="' + esc(t('print.size')) + '">';
@@ -1056,14 +1105,16 @@
     html += '</div>';
 
     html += '<h3 class="sub">' + esc(t('print.scope')) + '</h3>';
-    html += '<div class="seg" role="group" id="print-scope" aria-label="' + esc(t('print.scope')) + '">';
+    html += '<div class="seg" role="group" id="print-scope" aria-label="' + esc(t('print.scope')) + '"' + ((state.print.set || 'cards') === 'vocab' ? ' hidden' : '') + '>';
     [['all', t('print.scope.all', { n: (deck.cards || []).length })], ['unmastered', t('print.scope.unmastered')]].forEach(function (sc) {
       var on = state.print.scope === sc[0];
       html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-scope" data-scope="' + sc[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(sc[1]) + '</button>';
     });
     html += '</div>';
 
-    html += '<p class="print-est" id="print-est">' + esc(t('print.est', { n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel })) + '</p>';
+    var estTxt = t('print.est', { n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel });
+    if ((state.print.set || 'cards') === 'both') estTxt = t('print.estBoth', { cards: (deck.cards || []).length, vocab: vocabN, n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel });
+    html += '<p class="print-est" id="print-est">' + esc(estTxt) + '</p>';
     html += '<div class="toolbar">';
     html += '<button type="button" class="btn btn--primary" data-act="do-print" id="btn-do-print"' + (cards.length ? '' : ' disabled') + '>' + esc(t('print.do')) + '</button>';
     html += '<button type="button" class="btn btn--ghost" data-act="deck-back" data-id="' + esc(deck.id) + '">' + esc(t('print.back')) + '</button>';
@@ -2849,6 +2900,10 @@
         break;
       case 'print':
         go('#/print/' + (el.getAttribute('data-id') || ''));
+        break;
+      case 'print-set':
+        state.print.set = el.getAttribute('data-set') === 'vocab' ? 'vocab' : el.getAttribute('data-set') === 'both' ? 'both' : 'cards';
+        render();
         break;
       case 'print-size':
         state.print.size = el.getAttribute('data-size') || 'mid';
