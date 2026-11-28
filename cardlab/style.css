@@ -686,6 +686,12 @@ img { max-width: 100%; height: auto; display: block; }
   zoom: 0.46;
   margin: 18px 0;
 }
+/* 手機預覽：190mm 紙 × 0.46 ≈ 330px，320px 機會橫向溢出、右邊被切 */
+@media screen and (max-width: 380px) {
+  .print-sheets {
+    zoom: 0.38;
+  }
+}
 .sheet {
   width: 190mm;
   min-height: 277mm;
@@ -804,6 +810,89 @@ img { max-width: 100%; height: auto; display: block; }
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+/* P23：卡角三格（每次練完剔一格）；單面模式要留位，答案唔好疊住格 */
+.printcard--ticks {
+  padding-bottom: 4.2mm;
+}
+.printcard--single .printcard__a {
+  padding-right: 11mm;
+}
+.printcard__ticks {
+  position: absolute;
+  right: 1.1mm;
+  bottom: 0.8mm;
+  display: flex;
+  gap: 0.7mm;
+}
+.printcard__ticks i {
+  width: 2.9mm;
+  height: 2.9mm;
+  border: 0.4pt solid #b3bac6;
+  border-radius: 0.3mm;
+}
+/* P23：組名圖例（頁首） */
+.sheet__legend {
+  margin: -0.6mm 0 1.6mm;
+  font-size: 5.6pt;
+  color: #6b7383;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* P23：對照表（免剪）——號碼／題目／答案三欄，答案欄左邊係摺線 */
+.sheet--list {
+  position: relative;
+}
+.sheet--list .sheet__head {
+  margin-bottom: 2.4mm;
+}
+.list {
+  position: relative;
+  flex: 1;
+}
+.list__fold {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--fold);
+  border-left: 0.5pt dashed #b9c0cc;
+}
+.list__sub {
+  font-size: 7.4pt;
+  font-weight: 700;
+  margin: 2.2mm 0 1mm;
+  padding-bottom: 0.6mm;
+  border-bottom: 0.5pt solid #c9ced9;
+}
+.list__row {
+  display: grid;
+  grid-template-columns: var(--no-w) var(--q-w) var(--a-w);
+  border-bottom: 0.3pt solid #e2e6ee;
+  padding: 1.3mm 0;
+  break-inside: avoid;
+}
+.list__no {
+  font-size: 5.6pt;
+  color: #9aa3b2;
+  padding-left: 1mm;
+  font-variant-numeric: tabular-nums;
+}
+.list__q {
+  font-size: 9.5pt;
+  font-weight: 600;
+  line-height: 1.35;
+  padding: 0 3mm 0 1mm;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+.list__a {
+  font-size: 9.5pt;
+  line-height: 1.35;
+  color: #3a4250;
+  padding: 0 1mm 0 3mm;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 .sheet__foot {
   margin-top: auto;

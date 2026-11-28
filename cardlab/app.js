@@ -217,7 +217,7 @@
     'deck.practice': { yue: '開始練習', zh: '開始練習', en: 'Start practice' },
     'deck.print': { yue: '🖨 列印字卡', zh: '🖨 打印字卡', en: '🖨 Print cards' },
   'print.title': { yue: '列印字卡', zh: '打印字卡', en: 'Print cards' },
-  'print.hint': { yue: '雙面（長邊翻）：正面問題、背面答案，最省紙；單面：答案印喺同一格右下，用手遮住就係自測。', zh: '双面（长边翻）：正面问题、背面答案，最省纸；单面：答案印在同一格右下，用手遮住就是自测。', en: 'Duplex: question front, answer back (most paper-efficient). Single: answer in the same cell, cover it with your hand.' },
+  'print.hint': { yue: '雙面（長邊翻）：正面問題、背面答案，最省紙；單面：答案印喺同一格右下，用手遮住就係自測；對照表：免剪，左右兩欄，沿虛線摺埋答案。', zh: '双面（长边翻）：正面问题、背面答案，最省纸；单面：答案印在同一格右下，用手遮住就是自测；对照表：免剪，左右两栏，沿虚线折起答案。', en: 'Duplex: question front, answer back (most paper-efficient). Single: answer inline, cover with your hand. List: no cutting, two columns, fold the answer side back.' },
   'print.what': { yue: '列印內容', zh: '打印内容', en: 'Content' },
   'print.what.cards': { yue: '字卡 {n}', zh: '卡片 {n}', en: 'Cards {n}' },
   'print.what.vocab': { yue: '詞語生字 {n}', zh: '词语生字 {n}', en: 'Vocabulary {n}' },
@@ -226,12 +226,36 @@
   'print.exampleTag': { yue: '例：', zh: '例：', en: 'e.g. ' },
   'print.estBoth': { yue: '字卡 {cards} 張＋詞語 {vocab} 個 → {sheets} 張 A4（{mode}，共 {pages} 頁、每頁 {per} 格）', zh: '卡片 {cards} 张＋词语 {vocab} 个 → {sheets} 张 A4（{mode}，共 {pages} 页、每页 {per} 格）', en: '{cards} cards + {vocab} vocab → {sheets} A4 sheet(s), {mode}, {pages} page(s), {per}/page' },
   'print.size': { yue: '版面', zh: '版面', en: 'Layout' },
-  'print.size.big': { yue: '大 85×55mm · 每頁 10', zh: '大 85×55mm · 每页 10', en: 'Large 85×55mm · 10/page' },
-  'print.size.mid': { yue: '中 64×44mm · 每頁 18', zh: '中 64×44mm · 每页 18', en: 'Medium 64×44mm · 18/page' },
-  'print.size.small': { yue: '小 48×40mm · 每頁 28', zh: '小 48×40mm · 每页 28', en: 'Small 48×40mm · 28/page' },
-  'print.mode': { yue: '列印方式', zh: '打印方式', en: 'Sides' },
+  'print.size.big': { yue: '大 85×52mm · 每頁 10', zh: '大 85×52mm · 每页 10', en: 'Large 85×52mm · 10/page' },
+  'print.size.mid': { yue: '中 63×43mm · 每頁 18', zh: '中 63×43mm · 每页 18', en: 'Medium 63×43mm · 18/page' },
+  'print.size.small': { yue: '小 47×38mm · 每頁 28', zh: '小 47×38mm · 每页 28', en: 'Small 47×38mm · 28/page' },
+  'print.mode': { yue: '列印方式', zh: '打印方式', en: 'Mode' },
   'print.mode.duplex': { yue: '雙面（長邊翻）', zh: '双面（长边翻）', en: 'Duplex (long edge)' },
   'print.mode.single': { yue: '單面（答案同格）', zh: '单面（答案同格）', en: 'Single (answer inline)' },
+  'print.mode.list': { yue: '對照表（免剪）', zh: '对照表（免剪）', en: 'List (no cutting)' },
+  'print.listTag': { yue: '對照表', zh: '对照表', en: 'List' },
+  'print.listHint': { yue: '印完沿虛線向後摺：左邊題目、右邊答案，零剪裁；翻開就核對。', zh: '印完沿虚线向后折：左边题目、右边答案，零剪裁；翻开就核对。', en: 'Fold back along the dashed line: questions left, answers right, no cutting. Unfold to check.' },
+  'print.estList': { yue: '{n} 項 → 約 {pages} 頁 A4（對照表，免剪；頁數隨字數浮動）', zh: '{n} 项 → 约 {pages} 页 A4（对照表，免剪；页数随字数浮动）', en: '{n} rows → about {pages} A4 page(s), list, no cutting (pages vary with text length)' },
+  'print.footList': { yue: '第 {i}／{n} 頁', zh: '第 {i}／{n} 页', en: 'Page {i}/{n}' },
+  'print.tickTip': { yue: '卡角三格：每次練完剔一格（1／3／7 日）', zh: '卡角三格：每次练完剔一格（1／3／7 日）', en: 'Three corner boxes: tick one per practice (day 1/3/7)' },
+  'print.mode.worksheet': { yue: '練習紙（工作紙）', zh: '练习纸（工作纸）', en: 'Worksheet' },
+  'print.wsTag': { yue: '練習紙', zh: '练习纸', en: 'Worksheet' },
+  'print.wsSize': { yue: '字級', zh: '字级', en: 'Text size' },
+  'print.wsSize.std': { yue: '標準（P4+）', zh: '标准（P4+）', en: 'Standard (P4+)' },
+  'print.wsSize.big': { yue: '大（K–P3）', zh: '大（K–P3）', en: 'Large (K–P3)' },
+  'print.wsAnswers': { yue: '答案頁', zh: '答案页', en: 'Answer page' },
+  'print.wsAnswers.on': { yue: '連答案', zh: '连答案', en: 'With answers' },
+  'print.wsAnswers.off': { yue: '唔印答案', zh: '不印答案', en: 'No answers' },
+  'print.wsHeadFill': { yue: 'A 部 · 填空（{n} 題）', zh: 'A 部 · 填空（{n} 题）', en: 'Part A · Fill in the blanks ({n})' },
+  'print.wsHeadShort': { yue: 'B 部 · 簡答（{n} 題）', zh: 'B 部 · 简答（{n} 题）', en: 'Part B · Short answers ({n})' },
+  'print.wsName': { yue: '姓名：', zh: '姓名：', en: 'Name: ' },
+  'print.wsDate': { yue: '日期：', zh: '日期：', en: 'Date: ' },
+  'print.wsHint': { yue: '填空嘅空格就係答案位；簡答每題留 2–4 行。答案頁預設唔印。', zh: '填空的空格就是答案位；简答每题留 2–4 行。答案页默认不印。', en: 'The blank is where the answer goes; short answers get 2–4 lines. The answer page is off by default.' },
+  'print.wsNoItems': { yue: '呢個卡組未有可出練習紙嘅卡（填空要 cloze 卡或詞語例句）。', zh: '这个卡组没有可出练习纸的卡（填空要 cloze 卡或词语例句）。', en: 'No worksheet items in this deck (fill-ins need cloze cards or vocab examples).' },
+  'print.wsFoot': { yue: '用鉛筆作答，錯咗可以擦', zh: '用铅笔作答，错了可以擦', en: 'Use a pencil so mistakes can be erased' },
+  'print.estWs': { yue: '{n} 題 → 約 {pages} 頁 A4', zh: '{n} 题 → 约 {pages} 页 A4', en: '{n} items → about {pages} A4 page(s)' },
+  'print.estWsAns': { yue: '＋答案頁 {ap} 頁', zh: '＋答案页 {ap} 页', en: ' + {ap} answer page(s)' },
+  'print.ansTitle': { yue: '答案', zh: '答案', en: 'Answers' },
   'print.scope': { yue: '範圍', zh: '范围', en: 'Range' },
   'print.scope.all': { yue: '全部 {n} 張', zh: '全部 {n} 张', en: 'All {n}' },
   'print.scope.unmastered': { yue: '只印未掌握', zh: '只打印未掌握', en: 'Unmastered only' },
@@ -443,8 +467,8 @@
     preflight: null,
     // P19：超出每日軟上限時嘅一次性確認狀態 {n, used, cap, over}
     quotaGate: null,
-    // P20：列印字卡設定（版面／雙面或單面／範圍）
-    print: { size: 'mid', mode: 'duplex', scope: 'all', set: 'cards' },
+    // P20：列印字卡設定（版面／雙面或單面／範圍）；P24：練習紙字級同答案頁
+    print: { size: 'mid', mode: 'duplex', scope: 'all', set: 'cards', wsSize: 'std', wsAnswers: false },
     // P2.0：理解頁知識點勾選狀態（唔好再靠 DOM checked attribute，遲到嘅重畫會冪走家長嘅勾選）
     kpPick: {},
     // P3：卡冊分類篩選（'' = 全部）
@@ -1005,9 +1029,11 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  function printCardCell(item, n, kind, size) {
-    var html = '<li class="printcard" data-n="' + n + '">';
-    html += '<span class="printcard__no">' + n + '</span>';
+  function printCardCell(item, n, kind, size, label) {
+    var ticks = size !== 'small' && kind !== 'back';
+    var cls = 'printcard' + (kind === 'single' ? ' printcard--single' : '') + (ticks ? ' printcard--ticks' : '');
+    var html = '<li class="' + cls + '" data-n="' + n + '">';
+    html += '<span class="printcard__no">' + esc(label == null || label === '' ? n : label) + '</span>';
     if (item.kind === 'vocab') {
       var v = item.vocab;
       html += '<span class="printcard__cat">' + esc(t('print.vocabTag')) + '</span>';
@@ -1023,6 +1049,7 @@
           if (v.example) html += '<div class="printcard__eg">' + esc(t('print.exampleTag')) + esc(v.example) + '</div>';
         }
       }
+      if (ticks) html += '<span class="printcard__ticks" aria-hidden="true"><i></i><i></i><i></i></span>';
       html += '</li>';
       return html;
     }
@@ -1036,12 +1063,13 @@
       html += '<div class="printcard__t ' + Pr.fitClass(ft, 'front') + '">' + esc(ft) + '</div>';
       if (kind === 'single') html += '<div class="printcard__a">' + esc(P.displayFront(card.back)) + '</div>';
     }
+    if (ticks) html += '<span class="printcard__ticks" aria-hidden="true"><i></i><i></i><i></i></span>';
     html += '</li>';
     return html;
   }
 
   /** 一頁（正面／背面各一頁）：雙面背面會左右鏡像，答案先會印喺同一張卡後面。 */
-  function printSheetHtml(deck, cards, kind, pageNo, pageTotal) {
+  function printSheetHtml(deck, cards, kind, pageNo, pageTotal, labels, legend) {
     var p = Pr.preset(state.print.size);
     var list = kind === 'back' ? Pr.mirrorRow(cards, state.print.size) : cards;
     var cellKind = kind === 'back' ? 'back' : (state.print.mode === 'duplex' ? 'front' : 'single');
@@ -1050,16 +1078,174 @@
     html += '<section class="sheet' + (kind === 'back' ? ' sheet--back' : '') + '" data-kind="' + kind + '" data-page="' + pageNo + '"';
     html += ' style="--cols:' + p.cols + ';--cw:' + p.w + 'mm;--ch:' + p.h + 'mm;' + printFontVars(state.print.size) + '">';
     html += '<header class="sheet__head"><span class="sheet__title">' + esc(deck.title || '') + '</span><span class="sheet__date">' + esc(printDateLabel()) + '</span></header>';
+    // P23：組名圖例（只喺正面；細版高度唔夠，唔印）
+    if (kind !== 'back' && state.print.size !== 'small' && legend && legend.length) {
+      var bits = legend.slice(0, 6).map(function (g) { return g.no + ' ' + (g.label || '') + '（' + g.count + '）'; });
+      if (legend.length > 6) bits.push('＋' + (legend.length - 6));
+      html += '<p class="sheet__legend">' + esc(bits.join(' · ')) + '</p>';
+    }
     html += '<ol class="sheet__grid">';
     for (var i = 0; i < list.length; i++) {
       var item = list[i];
       if (!item) { html += '<li class="printcard printcard--blank" aria-hidden="true"></li>'; continue; }
       var idx = cards.indexOf(item);
-      html += printCardCell(item, base + (idx < 0 ? 0 : idx) + 1, cellKind, state.print.size);
+      var lbl = labels && item.kind === 'card' && item.card ? labels[item.card.id] : null;
+      html += printCardCell(item, base + (idx < 0 ? 0 : idx) + 1, cellKind, state.print.size, lbl);
     }
     html += '</ol>';
     html += '<footer class="sheet__foot"><span>' + esc(t('print.cutTip')) + '</span><span>' + esc(t('print.foot', { i: pageNo, n: pageTotal })) + '</span></footer>';
     html += '</section>';
+    return html;
+  }
+
+  /** P23：對照表列印項目（題目／答案；詞語用 word／意思＋例句），按知識點分組排。 */
+  function printListItems(deck, cards) {
+    var cardList = cards.filter(function (it) { return it.kind === 'card'; }).map(function (it) { return it.card; });
+    var labels = Pr.cardLabels(deck, cardList);
+    var labelById = {};
+    cardList.forEach(function (c, i) { if (c && c.id) labelById[c.id] = labels[i].label; });
+    var gm = Pr.groupMap(deck);
+    var rows = [];
+    cards.forEach(function (it) {
+      if (it.kind === 'vocab') {
+        var v = it.vocab;
+        rows.push({
+          label: '',
+          front: v.word,
+          back: v.meaning + (v.example ? '\n' + t('print.exampleTag') + v.example : ''),
+          g: 0,
+          gLabel: '',
+        });
+        return;
+      }
+      var c = it.card;
+      var g = c && c.kpId && gm[String(c.kpId)] ? gm[String(c.kpId)] : null;
+      rows.push({
+        label: labelById[c.id] || '',
+        front: P.displayFront(c.front),
+        back: P.displayFront(c.back),
+        g: g ? g.no : 0,
+        gLabel: g ? g.no + ' ' + g.label : '',
+      });
+    });
+    var ordered = Pr.listOrder(rows);
+    var vN = 0;
+    ordered.forEach(function (r) {
+      if (!r.label) { vN += 1; r.label = 'V-' + (vN < 10 ? '0' + vN : vN); }
+    });
+    return ordered;
+  }
+
+  /** P23：對照表版面（免剪）：號碼｜題目｜答案，答案欄左邊係摺線。 */
+  function printListHtml(deck, pages) {
+    var L = Pr.LIST;
+    var html = '<div id="print-sheets" class="print-sheets">';
+    pages.forEach(function (page, i) {
+      html += '<section class="sheet sheet--list" data-page="' + (i + 1) + '"';
+      html += ' style="--no-w:' + L.noW + 'mm;--q-w:' + L.qW + 'mm;--a-w:' + L.aW + 'mm;--fold:' + (L.noW + L.qW) + 'mm">';
+      html += '<header class="sheet__head"><span class="sheet__title">' + esc(deck.title || '') + ' · ' + esc(t('print.listTag')) + '</span><span class="sheet__date">' + esc(printDateLabel()) + '</span></header>';
+      html += '<div class="list"><i class="list__fold" aria-hidden="true"></i>';
+      page.forEach(function (cell) {
+        if (cell.sub) html += '<h3 class="list__sub">' + esc(cell.sub) + '</h3>';
+        var it = cell.item;
+        html += '<div class="list__row" data-n="' + esc(it.label) + '">';
+        html += '<span class="list__no">' + esc(it.label) + '</span>';
+        html += '<span class="list__q">' + esc(it.front) + '</span>';
+        html += '<span class="list__a">' + esc(it.back) + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '<footer class="sheet__foot"><span>' + esc(t('print.listHint')) + '</span><span>' + esc(t('print.footList', { i: i + 1, n: pages.length })) + '</span></footer>';
+      html += '</section>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  /** P24：練習紙項目——A 部填空（cloze 卡＋詞語例句挖空）、B 部簡答（其餘卡）。 */
+  function printWorksheetItems(deck, cards) {
+    var fill = [];
+    var short = [];
+    cards.forEach(function (it) {
+      if (it.kind === 'vocab') {
+        var v = it.vocab;
+        if (!v.example) return; // 冇例句唔硬作，跳過
+        var b = Pr.blankWord(v.example, v.word);
+        if (!b) return; // 例句冇該詞 → 跳過，唔亂挖
+        fill.push({ kind: 'fill', before: b.before, after: b.after, answer: b.word });
+        return;
+      }
+      var c = it.card;
+      var cp = Pr.clozeParts(c.front);
+      if (cp) {
+        var ans = String(c.back == null ? '' : c.back).trim() || cp.answer;
+        fill.push({ kind: 'fill', before: cp.before, after: cp.after, answer: ans });
+        return;
+      }
+      var back = P.displayFront(c.back);
+      short.push({
+        kind: 'short',
+        front: P.displayFront(c.front),
+        answer: back,
+        lines: Pr.wsShortLines(back),
+      });
+    });
+    var items = [];
+    var no = 0;
+    if (fill.length) {
+      items.push({ kind: 'head', text: t('print.wsHeadFill', { n: fill.length }) });
+      fill.forEach(function (x) { x.no = ++no; items.push(x); });
+    }
+    if (short.length) {
+      items.push({ kind: 'head', text: t('print.wsHeadShort', { n: short.length }) });
+      short.forEach(function (x) { x.no = ++no; items.push(x); });
+    }
+    return items;
+  }
+
+  /** P24：練習紙版面（A4）＋可選答案頁。 */
+  function printWsHtml(deck, pages, ansPages, size) {
+    var html = '<div id="print-sheets" class="print-sheets">';
+    var total = pages.length + ansPages.length;
+    pages.forEach(function (page, i) {
+      html += '<section class="sheet sheet--ws' + (size === 'big' ? ' ws--big' : '') + '" data-page="' + (i + 1) + '">';
+      html += '<header class="sheet__head"><span class="sheet__title">' + esc((deck.title || '') + ' · ' + t('print.wsTag')) + '</span><span class="sheet__date">' + esc(printDateLabel()) + '</span></header>';
+      if (i === 0) {
+        html += '<p class="ws-meta"><span>' + esc(t('print.wsName')) + '<i class="ws-lab"></i></span><span>' + esc(t('print.wsDate')) + '<i class="ws-lab ws-lab--date"></i></span></p>';
+      }
+      page.forEach(function (it) {
+        if (it.kind === 'head') {
+          html += '<h3 class="ws-head">' + esc(it.text) + '</h3>';
+          return;
+        }
+        html += '<div class="ws-item ws-item--' + it.kind + '" data-n="' + it.no + '">';
+        html += '<span class="ws-no">' + it.no + '.</span>';
+        if (it.kind === 'fill') {
+          html += '<p class="ws-q">' + esc(it.before) + '<i class="ws-blank" aria-hidden="true"></i>' + esc(it.after) + '</p>';
+        } else {
+          html += '<p class="ws-q">' + esc(it.front) + '</p>';
+          html += '<div class="ws-lines" aria-hidden="true">';
+          for (var k = 0; k < it.lines; k++) html += '<i></i>';
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+      html += '<footer class="sheet__foot"><span>' + esc(t('print.wsFoot')) + '</span><span>' + esc(t('print.footList', { i: i + 1, n: total })) + '</span></footer>';
+      html += '</section>';
+    });
+    ansPages.forEach(function (page, j) {
+      var i = pages.length + j;
+      html += '<section class="sheet sheet--ws sheet--ans" data-page="' + (i + 1) + '">';
+      html += '<header class="sheet__head"><span class="sheet__title">' + esc((deck.title || '') + ' · ' + t('print.ansTitle')) + '</span><span class="sheet__date">' + esc(printDateLabel()) + '</span></header>';
+      html += '<ol class="ws-ans">';
+      page.forEach(function (it) {
+        html += '<li data-n="' + it.no + '"><span class="ws-no">' + it.no + '.</span><span class="ws-a">' + esc(it.answer) + '</span></li>';
+      });
+      html += '</ol>';
+      html += '<footer class="sheet__foot"><span>' + esc(t('print.wsTag')) + '</span><span>' + esc(t('print.footList', { i: i + 1, n: total })) + '</span></footer>';
+      html += '</section>';
+    });
+    html += '</div>';
     return html;
   }
 
@@ -1073,8 +1259,22 @@
     }
     var cards = printItems(deck);
     var vocabN = printVocabCount(deck);
-    var est = Pr.estimate(cards.length, state.print.size, state.print.mode);
-    var modeLabel = state.print.mode === 'duplex' ? t('print.mode.duplex') : t('print.mode.single');
+    var isList = state.print.mode === 'list';
+    var isWs = state.print.mode === 'worksheet';
+    var modeLabel = state.print.mode === 'duplex' ? t('print.mode.duplex') : isList ? t('print.mode.list') : isWs ? t('print.mode.worksheet') : t('print.mode.single');
+    // P23：卡角組號（組序-卡序）同頁首圖例；只計今次真係印嘅卡
+    var printed = cards.filter(function (it) { return it.kind === 'card'; }).map(function (it) { return it.card; });
+    var labels = Pr.cardLabels(deck, printed);
+    var labelById = {};
+    printed.forEach(function (c, i) { if (c && c.id) labelById[c.id] = labels[i].label; });
+    var legend = Pr.legend(deck, printed);
+    var listRows = isList ? printListItems(deck, cards) : null;
+    var listPages = isList ? Pr.listPages(listRows) : null;
+    // P24：練習紙（填空＋簡答）＋可選答案頁
+    var wsItems = isWs ? printWorksheetItems(deck, cards) : null;
+    var wsEst = isWs ? Pr.wsEstimate(wsItems, state.print.wsSize, state.print.wsAnswers) : null;
+    var wsAns = isWs && state.print.wsAnswers ? Pr.wsAnswerPages(wsItems, state.print.wsSize) : null;
+    var est = isList || isWs ? null : Pr.estimate(cards.length, state.print.size, state.print.mode);
     html += '<section class="section print-controls">';
     html += '<h1 class="page-title">' + esc(t('print.title')) + '</h1>';
     html += '<p class="hint">' + esc(t('print.hint')) + '</p>';
@@ -1088,17 +1288,20 @@
     });
     html += '</div>';
 
-    html += '<h3 class="sub">' + esc(t('print.size')) + '</h3>';
-    html += '<div class="seg" role="group" id="print-size" aria-label="' + esc(t('print.size')) + '">';
-    Pr.SIZES.forEach(function (id) {
-      var on = state.print.size === id;
-      html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-size" data-size="' + id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t('print.size.' + id)) + '</button>';
-    });
-    html += '</div>';
+    if (!isList) {
+      html += '<h3 class="sub">' + esc(t('print.size')) + '</h3>';
+      html += '<div class="seg" role="group" id="print-size" aria-label="' + esc(t('print.size')) + '">';
+      Pr.SIZES.forEach(function (id) {
+        var on = state.print.size === id;
+        html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-size" data-size="' + id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t('print.size.' + id)) + '</button>';
+      });
+      html += '</div>';
+      if (state.print.size !== 'small') html += '<p class="hint">' + esc(t('print.tickTip')) + '</p>';
+    }
 
     html += '<h3 class="sub">' + esc(t('print.mode')) + '</h3>';
     html += '<div class="seg" role="group" id="print-mode" aria-label="' + esc(t('print.mode')) + '">';
-    [['duplex', 'print.mode.duplex'], ['single', 'print.mode.single']].forEach(function (m) {
+    [['duplex', 'print.mode.duplex'], ['single', 'print.mode.single'], ['list', 'print.mode.list']].forEach(function (m) {
       var on = state.print.mode === m[0];
       html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-mode" data-mode="' + m[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t(m[1])) + '</button>';
     });
@@ -1112,8 +1315,13 @@
     });
     html += '</div>';
 
-    var estTxt = t('print.est', { n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel });
-    if ((state.print.set || 'cards') === 'both') estTxt = t('print.estBoth', { cards: (deck.cards || []).length, vocab: vocabN, n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel });
+    var estTxt;
+    if (isList) {
+      estTxt = t('print.estList', { n: listRows.length, pages: listPages.length });
+    } else {
+      estTxt = t('print.est', { n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel });
+      if ((state.print.set || 'cards') === 'both') estTxt = t('print.estBoth', { cards: (deck.cards || []).length, vocab: vocabN, n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel });
+    }
     html += '<p class="print-est" id="print-est">' + esc(estTxt) + '</p>';
     html += '<div class="toolbar">';
     html += '<button type="button" class="btn btn--primary" data-act="do-print" id="btn-do-print"' + (cards.length ? '' : ' disabled') + '>' + esc(t('print.do')) + '</button>';
@@ -1121,12 +1329,13 @@
     html += '</div>';
     html += '</section>';
     if (!cards.length) return html;
+    if (isList) return html + printListHtml(deck, listPages);
 
     var chunks = Pr.chunk(cards, state.print.size);
     html += '<div id="print-sheets" class="print-sheets">';
     chunks.forEach(function (chunk, i) {
-      html += printSheetHtml(deck, chunk, 'front', i + 1, chunks.length);
-      if (state.print.mode === 'duplex') html += printSheetHtml(deck, chunk, 'back', i + 1, chunks.length);
+      html += printSheetHtml(deck, chunk, 'front', i + 1, chunks.length, labelById, legend);
+      if (state.print.mode === 'duplex') html += printSheetHtml(deck, chunk, 'back', i + 1, chunks.length, labelById, legend);
     });
     html += '</div>';
     return html;
@@ -2909,10 +3118,12 @@
         state.print.size = el.getAttribute('data-size') || 'mid';
         render();
         break;
-      case 'print-mode':
-        state.print.mode = el.getAttribute('data-mode') === 'single' ? 'single' : 'duplex';
+      case 'print-mode': {
+        var pm = el.getAttribute('data-mode');
+        state.print.mode = pm === 'single' ? 'single' : pm === 'list' ? 'list' : 'duplex';
         render();
         break;
+      }
       case 'print-scope':
         state.print.scope = el.getAttribute('data-scope') === 'unmastered' ? 'unmastered' : 'all';
         render();
