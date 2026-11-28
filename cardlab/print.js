@@ -56,6 +56,23 @@
     return out;
   }
 
+  /**
+   * P24：雙面背面排位。
+   *   flip='long'（長邊翻，書本式）→ 逐行左右反轉（答案喺同一張卡背後）；
+   *   flip='short'（短邊翻，日曆式）→ 上下反轉：以整頁 rows 為單位，補齊空格再反轉。
+   */
+  function mirrorSheet(cards, id, flip) {
+    var list = Array.isArray(cards) ? cards : [];
+    if (flip !== 'short') return mirrorRow(list, id);
+    var p = preset(id);
+    var total = p.cols * p.rows;
+    var grid = [];
+    for (var i = 0; i < total; i++) grid.push(i < list.length ? list[i] : null);
+    var out = [];
+    for (var r = p.rows - 1; r >= 0; r--) out = out.concat(grid.slice(r * p.cols, (r + 1) * p.cols));
+    return out;
+  }
+
   function pageCount(n, id, mode) {
     var s = sheetCount(n, id);
     return mode === 'duplex' ? s * 2 : s;
@@ -369,6 +386,7 @@
     sheetCount: sheetCount,
     chunk: chunk,
     mirrorRow: mirrorRow,
+    mirrorSheet: mirrorSheet,
     pageCount: pageCount,
     fitClass: fitClass,
     vocabItems: vocabItems,

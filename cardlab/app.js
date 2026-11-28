@@ -256,6 +256,10 @@
   'print.estWs': { yue: '{n} 題 → 約 {pages} 頁 A4', zh: '{n} 题 → 约 {pages} 页 A4', en: '{n} items → about {pages} A4 page(s)' },
   'print.estWsAns': { yue: '＋答案頁 {ap} 頁', zh: '＋答案页 {ap} 页', en: ' + {ap} answer page(s)' },
   'print.ansTitle': { yue: '答案', zh: '答案', en: 'Answers' },
+  'print.flip': { yue: '翻頁方向', zh: '翻页方向', en: 'Flip' },
+  'print.flip.long': { yue: '長邊翻（書本式）', zh: '长边翻（书本式）', en: 'Long edge (book)' },
+  'print.flip.short': { yue: '短邊翻（日曆式）', zh: '短边翻（日历式）', en: 'Short edge (calendar)' },
+  'print.estWs': { yue: '練習紙：{n} 題 → {pages} 頁（＋答案 {answers} 頁）', zh: '练习纸：{n} 题 → {pages} 页（＋答案 {answers} 页）', en: 'Worksheet: {n} items → {pages} page(s) (+{answers} answer page(s))' },
   'print.scope': { yue: '範圍', zh: '范围', en: 'Range' },
   'print.scope.all': { yue: '全部 {n} 張', zh: '全部 {n} 张', en: 'All {n}' },
   'print.scope.unmastered': { yue: '只印未掌握', zh: '只打印未掌握', en: 'Unmastered only' },
@@ -468,7 +472,7 @@
     // P19：超出每日軟上限時嘅一次性確認狀態 {n, used, cap, over}
     quotaGate: null,
     // P20：列印字卡設定（版面／雙面或單面／範圍）；P24：練習紙字級同答案頁
-    print: { size: 'mid', mode: 'duplex', scope: 'all', set: 'cards', wsSize: 'std', wsAnswers: false },
+    print: { size: 'mid', mode: 'duplex', scope: 'all', set: 'cards', wsSize: 'std', wsAnswers: false, flip: 'long' },
     // P2.0：理解頁知識點勾選狀態（唔好再靠 DOM checked attribute，遲到嘅重畫會冪走家長嘅勾選）
     kpPick: {},
     // P3：卡冊分類篩選（'' = 全部）
@@ -1008,7 +1012,11 @@
       cards.forEach(function (c) { out.push({ kind: 'card', card: c }); });
     }
     if (set !== 'cards') {
-      Pr.vocabItems(deck.vocabulary).forEach(function (v) { out.push({ kind: 'vocab', vocab: v }); });
+      var vs = Pr.vocabItems(deck.vocabulary);
+      if (state.print.scope === 'unmastered') {
+        vs = vs.filter(function (v) { return !Srs.isMastered(state.db.srs[vocabSrsKey(deck.id, v.id)]); });
+      }
+      vs.forEach(function (v) { out.push({ kind: 'vocab', vocab: v }); });
     }
     return out;
   }
@@ -1071,7 +1079,7 @@
   /** 一頁（正面／背面各一頁）：雙面背面會左右鏡像，答案先會印喺同一張卡後面。 */
   function printSheetHtml(deck, cards, kind, pageNo, pageTotal, labels, legend) {
     var p = Pr.preset(state.print.size);
-    var list = kind === 'back' ? Pr.mirrorRow(cards, state.print.size) : cards;
+    var list = kind === 'back' ? Pr.mirrorSheet(cards, state.print.size, state.print.flip) : cards;
     var cellKind = kind === 'back' ? 'back' : (state.print.mode === 'duplex' ? 'front' : 'single');
     var base = (pageNo - 1) * Pr.perSheet(state.print.size);
     var html = '';
@@ -1288,7 +1296,7 @@
     });
     html += '</div>';
 
-    if (!isList) {
+    if (!isList && !isWs) {
       html += '<h3 class="sub">' + esc(t('print.size')) + '</h3>';
       html += '<div class="seg" role="group" id="print-size" aria-label="' + esc(t('print.size')) + '">';
       Pr.SIZES.forEach(function (id) {
@@ -1301,14 +1309,43 @@
 
     html += '<h3 class="sub">' + esc(t('print.mode')) + '</h3>';
     html += '<div class="seg" role="group" id="print-mode" aria-label="' + esc(t('print.mode')) + '">';
-    [['duplex', 'print.mode.duplex'], ['single', 'print.mode.single'], ['list', 'print.mode.list']].forEach(function (m) {
+    [['duplex', 'print.mode.duplex'], ['single', 'print.mode.single'], ['list', 'print.mode.list'], ['worksheet', 'print.mode.worksheet']].forEach(function (m) {
       var on = state.print.mode === m[0];
       html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-mode" data-mode="' + m[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t(m[1])) + '</button>';
     });
     html += '</div>';
 
+    if (state.print.mode === 'duplex') {
+      html += '<h3 class="sub">' + esc(t('print.flip')) + '</h3>';
+      html += '<div class="seg" role="group" id="print-flip" aria-label="' + esc(t('print.flip')) + '">';
+      [['long', 'print.flip.long'], ['short', 'print.flip.short']].forEach(function (f) {
+        var on = (state.print.flip || 'long') === f[0];
+        html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-flip" data-flip="' + f[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t(f[1])) + '</button>';
+      });
+      html += '</div>';
+    }
+
+    // P24：練習紙選項（字級、答案頁）
+    if (isWs) {
+      html += '<h3 class="sub">' + esc(t('print.wsSize')) + '</h3>';
+      html += '<div class="seg" role="group" id="print-ws-size" aria-label="' + esc(t('print.wsSize')) + '">';
+      [['std', 'print.wsSize.std'], ['big', 'print.wsSize.big']].forEach(function (z) {
+        var on = (state.print.wsSize || 'std') === z[0];
+        html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-ws-size" data-ws-size="' + z[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t(z[1])) + '</button>';
+      });
+      html += '</div>';
+      html += '<h3 class="sub">' + esc(t('print.wsAnswers')) + '</h3>';
+      html += '<div class="seg" role="group" id="print-ws-answers" aria-label="' + esc(t('print.wsAnswers')) + '">';
+      [['off', false, 'print.wsAnswers.off'], ['on', true, 'print.wsAnswers.on']].forEach(function (z) {
+        var on = !!state.print.wsAnswers === z[1];
+        html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-ws-answers" data-answers="' + z[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(t(z[2])) + '</button>';
+      });
+      html += '</div>';
+      html += '<p class="hint">' + esc(t('print.wsHint')) + '</p>';
+    }
+
     html += '<h3 class="sub">' + esc(t('print.scope')) + '</h3>';
-    html += '<div class="seg" role="group" id="print-scope" aria-label="' + esc(t('print.scope')) + '"' + ((state.print.set || 'cards') === 'vocab' ? ' hidden' : '') + '>';
+    html += '<div class="seg" role="group" id="print-scope" aria-label="' + esc(t('print.scope')) + '">';
     [['all', t('print.scope.all', { n: (deck.cards || []).length })], ['unmastered', t('print.scope.unmastered')]].forEach(function (sc) {
       var on = state.print.scope === sc[0];
       html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-scope" data-scope="' + sc[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(sc[1]) + '</button>';
@@ -1318,6 +1355,8 @@
     var estTxt;
     if (isList) {
       estTxt = t('print.estList', { n: listRows.length, pages: listPages.length });
+    } else if (isWs) {
+      estTxt = t('print.estWs', { n: wsEst.n, pages: wsEst.pages, answers: wsEst.answers });
     } else {
       estTxt = t('print.est', { n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel });
       if ((state.print.set || 'cards') === 'both') estTxt = t('print.estBoth', { cards: (deck.cards || []).length, vocab: vocabN, n: cards.length, sheets: est.sheets, pages: est.pages, per: est.per, mode: modeLabel });
@@ -1330,6 +1369,12 @@
     html += '</section>';
     if (!cards.length) return html;
     if (isList) return html + printListHtml(deck, listPages);
+    if (isWs) {
+      if (!wsItems.length) return html + '<p class="empty" id="ws-empty">' + esc(t('print.wsNoItems')) + '</p>';
+      var wsP = Pr.wsPages(wsItems, { size: state.print.wsSize });
+      var wsA = state.print.wsAnswers ? Pr.wsAnswerPages(wsItems, state.print.wsSize).pages : [];
+      return html + printWsHtml(deck, wsP, wsA, state.print.wsSize);
+    }
 
     var chunks = Pr.chunk(cards, state.print.size);
     html += '<div id="print-sheets" class="print-sheets">';
@@ -3114,13 +3159,25 @@
         state.print.set = el.getAttribute('data-set') === 'vocab' ? 'vocab' : el.getAttribute('data-set') === 'both' ? 'both' : 'cards';
         render();
         break;
+      case 'print-flip':
+        state.print.flip = el.getAttribute('data-flip') === 'short' ? 'short' : 'long';
+        render();
+        break;
+      case 'print-ws-size':
+        state.print.wsSize = el.getAttribute('data-ws-size') === 'big' ? 'big' : 'std';
+        render();
+        break;
+      case 'print-ws-answers':
+        state.print.wsAnswers = el.getAttribute('data-answers') === 'on';
+        render();
+        break;
       case 'print-size':
         state.print.size = el.getAttribute('data-size') || 'mid';
         render();
         break;
       case 'print-mode': {
         var pm = el.getAttribute('data-mode');
-        state.print.mode = pm === 'single' ? 'single' : pm === 'list' ? 'list' : 'duplex';
+        state.print.mode = pm === 'single' ? 'single' : pm === 'list' ? 'list' : pm === 'worksheet' ? 'worksheet' : 'duplex';
         render();
         break;
       }

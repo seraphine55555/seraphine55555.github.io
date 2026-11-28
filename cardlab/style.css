@@ -651,6 +651,93 @@ img { max-width: 100%; height: auto; display: block; }
 .vcard .vocab__meaning { font-size: 16px; }
 #vocab-progress { margin-bottom: 4px; }
 
+/* ─────────────────────────── P24：練習紙（工作紙） ─────────────────────────── */
+.sheet--ws {
+  padding: 5mm 7mm 6mm;
+}
+.ws-meta {
+  display: flex;
+  gap: 8mm;
+  font-size: 9pt;
+  margin: 1mm 0 3mm;
+}
+.ws-lab {
+  display: inline-block;
+  width: 48mm;
+  border-bottom: 0.5pt solid #444;
+  height: 5mm;
+}
+.ws-lab--date {
+  width: 40mm;
+}
+.ws-head {
+  font-size: 11pt;
+  margin: 4mm 0 2mm;
+  padding-left: 2mm;
+  border-left: 2pt solid #333;
+}
+.ws-item {
+  display: flex;
+  gap: 2mm;
+  margin: 0 0 1mm;
+  font-size: 10pt;
+  line-height: 1.5;
+  break-inside: avoid;
+}
+.ws-no {
+  width: 8mm;
+  flex: 0 0 8mm;
+  text-align: right;
+  color: #555555;
+}
+.ws-q {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+.ws-blank {
+  display: inline-block;
+  min-width: 20mm;
+  border-bottom: 0.6pt solid #333333;
+  height: 1em;
+  vertical-align: baseline;
+}
+.ws-lines {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.6mm;
+}
+.ws-lines i {
+  display: block;
+  border-bottom: 0.4pt solid #bbbbbb;
+  height: 7.4mm;
+}
+.ws-item--short {
+  flex-direction: column;
+  gap: 0;
+}
+.sheet--ws .ws-item--short {
+  display: block;
+}
+.ws--big .ws-item {
+  font-size: 12pt;
+}
+.ws--big .ws-lines i {
+  height: 9mm;
+}
+.sheet--ans .ws-ans {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ws-ans li {
+  display: flex;
+  gap: 2mm;
+  font-size: 10pt;
+  padding: 1.1mm 0;
+  border-bottom: 0.3pt dotted #cccccc;
+}
+
 /* ─────────────────────────── P20：列印字卡 ───────────────────────────
  * A4 210×297mm、安全邊 **10mm**（可用 190×277mm）——留白寧可多，唔好被打印機食邊。
  *   大 85×52（2×5=10）／中 63×43（3×6=18，預設）／小 47×38（4×7=28）
