@@ -261,6 +261,10 @@
   'print.flip.short': { yue: '短邊翻（日曆式）', zh: '短边翻（日历式）', en: 'Short edge (calendar)' },
   'print.estWs': { yue: '練習紙：{n} 題 → {pages} 頁（＋答案 {answers} 頁）', zh: '练习纸：{n} 题 → {pages} 页（＋答案 {answers} 页）', en: 'Worksheet: {n} items → {pages} page(s) (+{answers} answer page(s))' },
   'print.scope': { yue: '範圍', zh: '范围', en: 'Range' },
+  'print.scope.tricky': { yue: '最常答錯', zh: '最常答错', en: 'Most missed' },
+  'print.trickyHint': { yue: '最常答錯＝答錯 2 次或以上（本機記錄）', zh: '最常答错＝答错 2 次或以上（本机记录）', en: 'Most missed = wrong 2+ times (local record)' },
+  'print.kp': { yue: '知識點', zh: '知识点', en: 'Knowledge point' },
+  'print.kpAll': { yue: '全部知識點（{n} 張）', zh: '全部知识点（{n} 张）', en: 'All knowledge points ({n})' },
   'print.scope.all': { yue: '全部 {n} 張', zh: '全部 {n} 张', en: 'All {n}' },
   'print.scope.unmastered': { yue: '只印未掌握', zh: '只打印未掌握', en: 'Unmastered only' },
   'print.est': { yue: '{n} 張卡 → {sheets} 張 A4（{mode}，共 {pages} 頁、每頁 {per} 張）', zh: '{n} 张卡 → {sheets} 张 A4（{mode}，共 {pages} 页、每页 {per} 张）', en: '{n} cards → {sheets} A4 sheet(s), {mode}, {pages} page(s), {per}/page' },
@@ -472,7 +476,7 @@
     // P19：超出每日軟上限時嘅一次性確認狀態 {n, used, cap, over}
     quotaGate: null,
     // P20：列印字卡設定（版面／雙面或單面／範圍）；P24：練習紙字級同答案頁
-    print: { size: 'mid', mode: 'duplex', scope: 'all', set: 'cards', wsSize: 'std', wsAnswers: false, flip: 'long' },
+    print: { size: 'mid', mode: 'duplex', scope: 'all', set: 'cards', wsSize: 'std', wsAnswers: false, flip: 'long', kp: '', deckFor: '' },
     // P2.0：理解頁知識點勾選狀態（唔好再靠 DOM checked attribute，遲到嘅重畫會冪走家長嘅勾選）
     kpPick: {},
     // P3：卡冊分類篩選（'' = 全部）
@@ -1000,14 +1004,58 @@
   }
 
   // ─────────────────────────── 列印字卡（P20） ───────────────────────────
+  /** P25：記住上次列印設定（版面／方式／內容／範圍／翻頁／練習紙選項）。 */
+  var PRINT_KEY = 'hub/flashcards/print/v1';
+
+  function savePrintSettings() {
+    try {
+      localStorage.setItem(PRINT_KEY, JSON.stringify({
+        size: state.print.size,
+        mode: state.print.mode,
+        set: state.print.set,
+        scope: state.print.scope,
+        flip: state.print.flip,
+        wsSize: state.print.wsSize,
+        wsAnswers: !!state.print.wsAnswers,
+      }));
+    } catch (e) { /* 私隱模式／滿咗就唔記，唔阻流程 */ }
+  }
+
+  function loadPrintSettings() {
+    try {
+      var raw = localStorage.getItem(PRINT_KEY);
+      if (!raw) return;
+      var p = JSON.parse(raw);
+      if (!p || typeof p !== 'object') return;
+      if (Pr.SIZES.indexOf(p.size) >= 0) state.print.size = p.size;
+      if (['duplex', 'single', 'list', 'worksheet'].indexOf(p.mode) >= 0) state.print.mode = p.mode;
+      if (['cards', 'vocab', 'both'].indexOf(p.set) >= 0) state.print.set = p.set;
+      if (['all', 'unmastered', 'tricky'].indexOf(p.scope) >= 0) state.print.scope = p.scope;
+      if (p.flip === 'short' || p.flip === 'long') state.print.flip = p.flip;
+      if (p.wsSize === 'big' || p.wsSize === 'std') state.print.wsSize = p.wsSize;
+      state.print.wsAnswers = !!p.wsAnswers;
+    } catch (e) { /* 壞資料就當冇 */ }
+  }
+
+  /** 「最常答錯」＝答錯 2 次或以上（本機 SRS 記錄；詞語用獨立 key）。 */
+  function printTricky(srsState) {
+    var s = Srs.normalize(srsState);
+    return s.tries - s.ok >= 2;
+  }
+
   /** P22：列印內容 = 字卡／詞語生字／兩樣；回傳 [{kind:'card', card}] 或 [{kind:'vocab', vocab}]。 */
   function printItems(deck) {
     var set = state.print.set || 'cards';
     var out = [];
     if (set !== 'vocab') {
       var cards = (deck.cards || []).slice();
+      if (state.print.kp) {
+        cards = cards.filter(function (c) { return c.kpId === state.print.kp; });
+      }
       if (state.print.scope === 'unmastered') {
         cards = cards.filter(function (c) { return !Srs.isMastered(state.db.srs[c.id]); });
+      } else if (state.print.scope === 'tricky') {
+        cards = cards.filter(function (c) { return printTricky(state.db.srs[c.id]); });
       }
       cards.forEach(function (c) { out.push({ kind: 'card', card: c }); });
     }
@@ -1015,6 +1063,8 @@
       var vs = Pr.vocabItems(deck.vocabulary);
       if (state.print.scope === 'unmastered') {
         vs = vs.filter(function (v) { return !Srs.isMastered(state.db.srs[vocabSrsKey(deck.id, v.id)]); });
+      } else if (state.print.scope === 'tricky') {
+        vs = vs.filter(function (v) { return printTricky(state.db.srs[vocabSrsKey(deck.id, v.id)]); });
       }
       vs.forEach(function (v) { out.push({ kind: 'vocab', vocab: v }); });
     }
@@ -1265,6 +1315,10 @@
       html += '<button type="button" class="btn btn--ghost" data-act="home">' + esc(t('nav.back')) + '</button></section>';
       return html;
     }
+    if (state.print.deckFor !== deck.id) {
+      state.print.deckFor = deck.id;
+      state.print.kp = '';
+    }
     var cards = printItems(deck);
     var vocabN = printVocabCount(deck);
     var isList = state.print.mode === 'list';
@@ -1346,11 +1400,24 @@
 
     html += '<h3 class="sub">' + esc(t('print.scope')) + '</h3>';
     html += '<div class="seg" role="group" id="print-scope" aria-label="' + esc(t('print.scope')) + '">';
-    [['all', t('print.scope.all', { n: (deck.cards || []).length })], ['unmastered', t('print.scope.unmastered')]].forEach(function (sc) {
+    [['all', t('print.scope.all', { n: (deck.cards || []).length })], ['unmastered', t('print.scope.unmastered')], ['tricky', t('print.scope.tricky')]].forEach(function (sc) {
       var on = state.print.scope === sc[0];
       html += '<button type="button" class="seg__btn' + (on ? ' is-on' : '') + '" data-act="print-scope" data-scope="' + sc[0] + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(sc[1]) + '</button>';
     });
     html += '</div>';
+
+    if ((state.print.set || 'cards') !== 'vocab' && (deck.knowledgePoints || []).length) {
+      html += '<label class="field" id="print-kp-wrap"><span>' + esc(t('print.kp')) + '</span>';
+      html += '<select id="print-kp" class="input" data-act="print-kp">';
+      html += '<option value="">' + esc(t('print.kpAll', { n: (deck.cards || []).length })) + '</option>';
+      (deck.knowledgePoints || []).forEach(function (kp) {
+        var cnt = (deck.cards || []).filter(function (c) { return c.kpId === kp.id; }).length;
+        html += '<option value="' + esc(kp.id) + '"' + (state.print.kp === kp.id ? ' selected' : '') + '>' + esc(kp.label + '（' + cnt + '）') + '</option>';
+      });
+      html += '</select>';
+      if (state.print.scope === 'tricky') html += '<small class="hint hint--soft">' + esc(t('print.trickyHint')) + '</small>';
+      html += '</label>';
+    }
 
     var estTxt;
     if (isList) {
@@ -3155,6 +3222,10 @@
       case 'print':
         go('#/print/' + (el.getAttribute('data-id') || ''));
         break;
+      case 'print-kp':
+        state.print.kp = String(el.value || '');
+        render();
+        break;
       case 'print-set':
         state.print.set = el.getAttribute('data-set') === 'vocab' ? 'vocab' : el.getAttribute('data-set') === 'both' ? 'both' : 'cards';
         render();
@@ -3182,7 +3253,8 @@
         break;
       }
       case 'print-scope':
-        state.print.scope = el.getAttribute('data-scope') === 'unmastered' ? 'unmastered' : 'all';
+        var sc = el.getAttribute('data-scope');
+        state.print.scope = sc === 'unmastered' ? 'unmastered' : sc === 'tricky' ? 'tricky' : 'all';
         render();
         break;
       case 'do-print':
@@ -3521,6 +3593,8 @@
       default:
         break;
     }
+    // P25：列印頁任何設定改動都記住（統一鉤，唔使逐個 case 記）
+    if (state.route && state.route.name === 'print') savePrintSettings();
   }
 
   function bind() {
@@ -3604,6 +3678,10 @@
         S.setKey(state.db, el.value);
         return;
       }
+      // P25：下拉／checkbox 用 data-act 一律交返 doAction（例：列印知識點）
+      if (el.getAttribute && el.getAttribute('data-act')) {
+        doAction(el.getAttribute('data-act'), el);
+      }
     });
 
     document.addEventListener('keydown', function (e) {
@@ -3644,6 +3722,7 @@
   function boot() {
     state.db = S.load();
     state.lang = state.db.settings.lang || 'zh';
+    loadPrintSettings();
     routeFromHash();
     if (state.route.name === 'done') {
       state.lastAnswers = [];
